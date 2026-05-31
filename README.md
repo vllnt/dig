@@ -156,12 +156,20 @@ steps = [
   { version = true },
 ]
 
-# AI — optional, local, OpenAI-compatible
+# AI — optional, OpenAI-compatible (any endpoint that speaks the OpenAI API)
 [llm]
 mode     = "tools"                      # tools | json | off   (off = pure deterministic)
-base_url = "http://localhost:11434/v1"  # Ollama / llama.cpp / LM Studio / vLLM / any
+base_url = "http://localhost:11434/v1"  # local runtime (Ollama / llama.cpp / LM Studio / vLLM)
+                                        # or a gateway (LiteLLM / OpenRouter) → 100+ providers
 model    = "qwen2.5:7b"                  # a small local model is enough
 ```
+
+`dig` speaks **only the OpenAI API shape** and never bundles a vendor SDK, so `base_url` accepts two kinds of endpoint:
+
+- **A local runtime** — Ollama, llama.cpp, LM Studio, vLLM. Default; keeps everything on-device.
+- **A gateway/proxy** — [LiteLLM](https://github.com/BerriAI/litellm), OpenRouter. One OpenAI-compatible URL fronting 100+ providers (Claude, GPT, Gemini, Bedrock, …), with per-model routing, fallback, and cost controls handled by the gateway, not `dig`.
+
+Either way `dig` sees one URL + one model name. Pointing at a remote endpoint trades the local-only guarantee for provider reach — your choice, per KB.
 
 ### Reading content (extraction & OCR)
 

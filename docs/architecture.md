@@ -181,15 +181,17 @@ Escalation is surgical: a conflict on `finance/` never blocks unrelated work on 
 AI is a thin judgment layer over the deterministic tools, **off by default**. It never touches files directly; it can only *propose* through the same changeset → state-machine path everything else uses.
 
 ```
-   small local model  ◀── OpenAI-compatible API ──▶  dig tool surface
-   (Ollama / llama.cpp /                              scan · find · hash ·
-    LM Studio / vLLM / any)                           policy-match · classify-stub ·
-        │  picks a tool, returns args                 propose-changeset · diff · dedup-detect
+   model endpoint     ◀── OpenAI-compatible API ──▶  dig tool surface
+   local runtime:                                     scan · find · hash ·
+     Ollama / llama.cpp / LM Studio / vLLM            policy-match · classify-stub ·
+   or gateway:                                        propose-changeset · diff · dedup-detect
+     LiteLLM / OpenRouter → 100+ providers
+        │  picks a tool, returns args
         ▼
    dig executes the tool deterministically, returns structured result, loops
 ```
 
-- **OpenAI-compatible only.** One client, configurable `base_url` + `model`. Points at localhost by default (Ollama / llama.cpp / LM Studio / vLLM); a remote endpoint is just a different URL. No vendor SDK.
+- **OpenAI-compatible only.** One client, configurable `base_url` + `model`; no vendor SDK. The endpoint is either a **local runtime** (Ollama / llama.cpp / LM Studio / vLLM — the default, fully on-device) or a **gateway/proxy** (LiteLLM / OpenRouter) that fronts 100+ providers behind the same OpenAI API. Routing, fallback, and cost control live in the gateway — `dig` only ever sees one URL + one model name. A remote endpoint is just a different `base_url`.
 - **Why small models suffice:** the hard parts (hashing, matching, moving, merging, journaling) are deterministic tools. The model's job is bounded and local: "does this doc match rule X?", "suggest a name from this text", "are these two notes the same topic?". Strong tools + narrow questions = a 7B-class model is enough.
 - **Graceful degradation:** `mode = tools` (function calling) → `mode = json` (constrained JSON for models without tool-calling) → `mode = off` (pure deterministic, no AI). dig stays fully functional at every level.
 - **Local-first guarantee:** with `mode = off` or a localhost endpoint, dig makes **zero external network calls**.
@@ -197,9 +199,9 @@ AI is a thin judgment layer over the deterministic tools, **off by default**. It
 ```toml
 [llm]
 mode     = "tools"                      # tools | json | off
-base_url = "http://localhost:11434/v1"  # OpenAI-compatible; localhost by default
+base_url = "http://localhost:11434/v1"  # local runtime, or a LiteLLM/OpenRouter gateway URL
 model    = "qwen2.5:7b"
-api_key_env = "DIG_LLM_API_KEY"         # only for remote endpoints
+api_key_env = "DIG_LLM_API_KEY"         # only for remote/gateway endpoints
 ```
 
 ### Extraction pipeline (feeds the AI layer)
