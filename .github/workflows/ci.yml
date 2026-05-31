@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # Active now: validates cross-doc links and anchors in the design docs.
+  # Catches the exact bug class fixed in the doc consistency pass
+  # (dangling cross-links, broken #section anchors).
+  docs:
+    name: docs (links & anchors)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Markdown links & anchors (offline)
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --offline
+            --include-fragments
+            --no-progress
+            'README.md'
+            './docs/**/*.md'
+          fail: true
+
+  # Dormant until P0 lands a go.mod. Skips cleanly (stays green) on the
+  # docs-only repo, auto-activates the moment Go code exists.
+  go-detect:
+    name: detect Go module
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if [ -f go.mod ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No go.mod yet — Go build/test/lint dormant until P0." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  go:
+    name: go (build · vet · test)
+    needs: go-detect
+    if: needs.go-detect.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: true
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test -race ./...
+
+  lint:
+    name: golangci-lint
+    needs: go-detect
+    if: needs.go-detect.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: true
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
