@@ -1,0 +1,15 @@
+# Built binary
+/dig
+/cmd/dig/dig
+
+# KB stores created during dev/testing
+.dig/
+
+# Go
+*.test
+*.out
+coverage.*
+
+# Editor / OS
+.DS_Store
+*.swp
