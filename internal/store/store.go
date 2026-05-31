@@ -53,7 +53,7 @@ func Open(digDir string) (*Store, error) {
 		return nil
 	})
 	if err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("init buckets: %w", err)
 	}
 	return &Store{blobs: be, db: db, clock: time.Now}, nil

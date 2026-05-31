@@ -73,6 +73,8 @@ jobs:
         with:
           go-version: 'stable'
           cache: true
-      - uses: golangci/golangci-lint-action@v6
+      # golangci-lint must be built with a Go >= the module's go directive,
+      # so pin the v2 line (the v1 'latest' binary lags and fails on newer modules).
+      - uses: golangci/golangci-lint-action@v7
         with:
-          version: latest
+          version: v2.12.2

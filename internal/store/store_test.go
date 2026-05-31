@@ -12,8 +12,15 @@ func openTest(t *testing.T) *Store {
 	if err != nil {
 		t.Fatalf("open store: %v", err)
 	}
-	t.Cleanup(func() { st.Close() })
+	t.Cleanup(func() { _ = st.Close() })
 	return st
+}
+
+func mustCommit(t *testing.T, st *Store, by string, entries []Entry) {
+	t.Helper()
+	if _, err := st.Commit(by, entries); err != nil {
+		t.Fatalf("commit: %v", err)
+	}
 }
 
 func put(t *testing.T, be StorageBackend, content []byte) string {
@@ -45,7 +52,7 @@ func TestDedupByHash(t *testing.T) {
 	if err != nil {
 		t.Fatalf("get: %v", err)
 	}
-	defer rc.Close()
+	defer func() { _ = rc.Close() }()
 	got, _ := io.ReadAll(rc)
 	if string(got) != "same bytes" {
 		t.Fatalf("blob content corrupted: %q", got)
@@ -94,8 +101,8 @@ func TestCommitAppendsAndChains(t *testing.T) {
 func TestUndoRestoresPriorState(t *testing.T) {
 	st := openTest(t)
 
-	st.Commit("scan", []Entry{{Path: "a.txt", Blob: "b3:a"}})
-	st.Commit("org", []Entry{{Path: "a.txt", Blob: "b3:a"}, {Path: "b.txt", Blob: "b3:b"}})
+	mustCommit(t, st, "scan", []Entry{{Path: "a.txt", Blob: "b3:a"}})
+	mustCommit(t, st, "org", []Entry{{Path: "a.txt", Blob: "b3:a"}, {Path: "b.txt", Blob: "b3:b"}})
 
 	prev, err := st.Undo()
 	if err != nil {
@@ -116,7 +123,7 @@ func TestUndoRestoresPriorState(t *testing.T) {
 
 func TestUndoAtRootErrors(t *testing.T) {
 	st := openTest(t)
-	st.Commit("scan", []Entry{{Path: "a.txt", Blob: "b3:a"}})
+	mustCommit(t, st, "scan", []Entry{{Path: "a.txt", Blob: "b3:a"}})
 	if _, err := st.Undo(); err == nil {
 		t.Fatal("undo at root manifest should error")
 	}

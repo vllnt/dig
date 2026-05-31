@@ -23,7 +23,7 @@ func newInitCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Initialized dig KB at %s\n", k.Root)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Initialized dig KB at %s\n", k.Root)
 			return nil
 		},
 	}
@@ -48,14 +48,14 @@ func newScanCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer st.Close()
+			defer func() { _ = st.Close() }()
 
 			entries, err := scan.Walk(k, st, dryRun)
 			if err != nil {
 				return err
 			}
 			if dryRun {
-				fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] would scan %d file(s); no changes written\n", len(entries))
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] would scan %d file(s); no changes written\n", len(entries))
 				return nil
 			}
 			m, err := st.Commit("scan", entries)
@@ -66,11 +66,11 @@ func newScanCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer idx.Close()
+			defer func() { _ = idx.Close() }()
 			if err := idx.Rebuild(m); err != nil {
 				return err
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Scanned %d file(s) → manifest %s\n", len(entries), m.ID)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Scanned %d file(s) → manifest %s\n", len(entries), m.ID)
 			return nil
 		},
 	}
@@ -94,7 +94,7 @@ func newFindCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer idx.Close()
+			defer func() { _ = idx.Close() }()
 
 			q := args[0]
 			for _, a := range args[1:] {
@@ -108,7 +108,7 @@ func newFindCmd() *cobra.Command {
 				return json.NewEncoder(cmd.OutOrStdout()).Encode(results)
 			}
 			if len(results) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "no matches")
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "no matches")
 				return nil
 			}
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 2, 2, ' ', 0)
@@ -117,7 +117,7 @@ func newFindCmd() *cobra.Command {
 				if len(r.Labels) > 0 {
 					labels = fmt.Sprintf("%v", r.Labels)
 				}
-				fmt.Fprintf(tw, "%s\t%s\n", r.Path, labels)
+				_, _ = fmt.Fprintf(tw, "%s\t%s\n", r.Path, labels)
 			}
 			return tw.Flush()
 		},
@@ -142,7 +142,7 @@ func newLogCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer st.Close()
+			defer func() { _ = st.Close() }()
 
 			hist, err := st.History()
 			if err != nil {
@@ -152,12 +152,12 @@ func newLogCmd() *cobra.Command {
 				return json.NewEncoder(cmd.OutOrStdout()).Encode(hist)
 			}
 			if len(hist) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "no history yet — run 'dig scan'")
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "no history yet — run 'dig scan'")
 				return nil
 			}
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 2, 2, ' ', 0)
 			for _, m := range hist {
-				fmt.Fprintf(tw, "%s\t%s\t%d entries\t%s\n",
+				_, _ = fmt.Fprintf(tw, "%s\t%s\t%d entries\t%s\n",
 					m.ID, m.CreatedBy, len(m.Entries), m.CreatedAt.Format("2006-01-02 15:04:05"))
 			}
 			return tw.Flush()
@@ -182,7 +182,7 @@ func newUndoCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer st.Close()
+			defer func() { _ = st.Close() }()
 
 			m, err := st.Undo()
 			if err != nil {
@@ -192,11 +192,11 @@ func newUndoCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer idx.Close()
+			defer func() { _ = idx.Close() }()
 			if err := idx.Rebuild(m); err != nil {
 				return err
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Reverted → head is now %s\n", m.ID)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Reverted → head is now %s\n", m.ID)
 			return nil
 		},
 	}

@@ -74,17 +74,17 @@ func (b *FSBackend) Put(hash string, r io.Reader) error {
 		return fmt.Errorf("create blob tmp: %w", err)
 	}
 	if _, err := io.Copy(f, r); err != nil {
-		f.Close()
-		os.Remove(tmp)
+		_ = f.Close()
+		_ = os.Remove(tmp)
 		return fmt.Errorf("write blob: %w", err)
 	}
 	if err := f.Close(); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return fmt.Errorf("close blob: %w", err)
 	}
 	// Atomic publish so a crashed write never leaves a partial blob.
 	if err := os.Rename(tmp, file); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return fmt.Errorf("publish blob: %w", err)
 	}
 	return nil

@@ -47,7 +47,7 @@ func Open(digDir string) (*FTS, error) {
 	if _, err := db.Exec(`CREATE VIRTUAL TABLE IF NOT EXISTS docs USING fts5(
 		path, labels, body, blob UNINDEXED
 	)`); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("create fts table: %w", err)
 	}
 	return &FTS{db: db}, nil
@@ -77,7 +77,7 @@ func (f *FTS) Rebuild(m *store.Manifest) error {
 	if err != nil {
 		return err
 	}
-	defer stmt.Close()
+	defer func() { _ = stmt.Close() }()
 
 	for _, e := range m.Entries {
 		labels := strings.Join(e.Labels, " ")
@@ -104,7 +104,7 @@ func (f *FTS) Query(q string, limit int) ([]Result, error) {
 	if err != nil {
 		return nil, fmt.Errorf("query: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var out []Result
 	for rows.Next() {

@@ -24,7 +24,7 @@ func TestWalkScansFilesAndSkipsDig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer st.Close()
+	defer func() { _ = st.Close() }()
 
 	entries, err := Walk(k, st, false)
 	if err != nil {
@@ -61,7 +61,7 @@ func TestWalkDryRunWritesNothing(t *testing.T) {
 	k, _ := kb.Init(root)
 	dig, _ := k.EnsureDig()
 	st, _ := store.Open(dig)
-	defer st.Close()
+	defer func() { _ = st.Close() }()
 
 	entries, err := Walk(k, st, true)
 	if err != nil {
