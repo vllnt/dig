@@ -264,6 +264,47 @@ func chtimes(t *testing.T, root, rel string, mt time.Time) {
 	}
 }
 
+// TestChainOrgExportPinned chains org's labels into export's filter, then
+// proves the --at pin: scan → org (labels finance) → export filtered →
+// mutate disk + rescan → export --at old manifest is byte-identical.
+func TestChainOrgExportPinned(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, "inbox/acme.pdf", "ACME invoice #1007")
+	write(t, root, "inbox/todo.md", "- [ ] things")
+	run(t, "init", root)
+	write(t, root, ".dig/policy.toml", e2ePolicy)
+	run(t, "--kb", root, "scan")
+	run(t, "--kb", root, "org") // M2: acme.pdf → finance/invoices + label finance
+
+	// Filtered export carries only the labeled file, with provenance.
+	out := run(t, "--kb", root, "export", "--filter", "label:finance")
+	if !strings.Contains(out, "finance/invoices/acme.pdf") || strings.Contains(out, "todo.md") {
+		t.Fatalf("label filter export wrong:\n%s", out)
+	}
+	if !strings.Contains(out, `"manifest":"M2"`) || !strings.Contains(out, `"src":"b3:`) {
+		t.Fatalf("provenance missing:\n%s", out)
+	}
+
+	pinned := run(t, "--kb", root, "export", "--at", "M2")
+
+	// Disk moves on: new file lands, gets scanned (M3).
+	write(t, root, "inbox/new.md", "later doc")
+	run(t, "--kb", root, "scan")
+
+	// Head export sees the new world; pinned export is byte-identical to before.
+	head := run(t, "--kb", root, "export")
+	if !strings.Contains(head, "new.md") {
+		t.Fatalf("head export should include new file:\n%s", head)
+	}
+	pinnedAgain := run(t, "--kb", root, "export", "--at", "M2")
+	if pinned != pinnedAgain {
+		t.Fatal("--at pinned export must be byte-identical across later changes")
+	}
+	if strings.Contains(pinnedAgain, "new.md") {
+		t.Fatal("pinned export must not see files from later manifests")
+	}
+}
+
 // Multi-rule interplay + conflicts surface in the plan rather than failing.
 func TestChainConflictReported(t *testing.T) {
 	root := t.TempDir()

@@ -2,7 +2,7 @@
 
 > Open, local, CLI-only agent harness that keeps knowledge bases organized to your policy — reversible, parallel-safe, extensible.
 
-**Now:** dataset-export
+**Now:** drift-reconcile
 **Last updated:** 2026-06-10
 
 ## vision-docs [DONE 2026-05]
@@ -54,16 +54,16 @@
 - [x] dedupe.3 dig dedup --dry-run + apply (journaled changeset)
 - [x] dedupe.4 Tests — never deletes the last copy; undo restores collapsed duplicates
 
-## dataset-export [ACTIVE]
+## dataset-export [DONE 2026-06]
 
 **Goal:** A KB slice exports as a reproducible, provenance-tagged dataset for ML training.
 **Exit criteria:** dig export --at @M re-emits a byte-identical dataset months later; every row carries src blob + manifest id.
 
-- [ ] dataset-export.1 Filter language — label:, path glob, date ranges
-- [ ] dataset-export.2 JSONL emitter with per-row provenance (src, manifest)
-- [ ] dataset-export.3 --at manifest pinning + determinism test (same manifest → same bytes)
+- [x] dataset-export.1 Filter language — label:, path glob, date ranges
+- [x] dataset-export.2 JSONL emitter with per-row provenance (src, manifest)
+- [x] dataset-export.3 --at manifest pinning + determinism test (same manifest → same bytes)
 
-## drift-reconcile [PLANNED]
+## drift-reconcile [ACTIVE]
 
 **Goal:** dig measures desired-vs-actual drift and converges the KB one-shot, folding human edits in as a concurrent writer.
 **Exit criteria:** dig drift reports misfiled/misnamed/duplicated/unsorted; reconcile converges per the coexistence contract; re-running reconcile on a converged KB is a no-op.
