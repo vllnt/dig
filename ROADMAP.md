@@ -104,12 +104,12 @@
 - [x] watch-harness.3 dig watch [--interval] + escalation queue surfaced (ESCALATED views, pins, proposals, pending dups)
 - [x] watch-harness.4 Soak test — files dropped mid-watch converge; manual-rule files propose and stay put; clean cancel
 
-## public-release [PLANNED]
+## public-release [BLOCKED — LICENSE decision needed (Apache-2.0 vs AGPL-3.0)]
 
 **Goal:** The repo goes public hardened, licensed, and installable.
 **Exit criteria:** License committed, main protection hardened per #2, binaries published, oss-readiness gate passes.
 
-- [ ] public-release.1 Decide + commit LICENSE — Apache-2.0 vs AGPL-3.0
+- [!] public-release.1 Decide + commit LICENSE — blocked: user call, Apache-2.0 vs AGPL-3.0 (see README §License)
 - [ ] public-release.2 Harden main — enforce_admins on, CI required checks, remove guard exemption (#2)
 - [ ] public-release.3 GoReleaser — cross-compiled binaries, checksums, install docs
 - [ ] public-release.4 oss-readiness audit — llms.txt, contributing, release notes
