@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "title": "dig — agents that keep your knowledge base in order",
+    "description": "Open-source CLI agent harness for knowledge bases: find, organize, dedupe, label, version, reconcile. You set the policy; dig keeps the library converged. Local-first, AI-optional, MIT."
+  },
+  "nav": {
+    "how": "How it works",
+    "features": "Features",
+    "faq": "FAQ",
+    "github": "GitHub"
+  },
+  "hero": {
+    "badge": "Open source · MIT · early scaffold",
+    "title": "Agents that keep your knowledge base in order",
+    "subtitle": "You set the policy — folder structure, naming, labels, no duplicates. dig detects drift, fixes it, and versions every change so nothing is ever lost. Runs fully on your machine.",
+    "cta_github": "Star on GitHub",
+    "cta_docs": "Read the architecture",
+    "terminal_title": "quick start"
+  },
+  "problem": {
+    "title": "Every knowledge base rots",
+    "body": "Files land in the wrong place. Names drift from convention. Duplicates pile up. Keeping a library tidy is real, recurring work — and the tools that could automate it are either single-purpose or too dangerous to let loose on real files.",
+    "agitate": "Movers move, organizers rename, linters flag. None of them manage the structure of a living library and keep it converged on your rules."
+  },
+  "how": {
+    "title": "Declare the policy. dig does the librarian's job.",
+    "subtitle": "Find, organize, dedupe, label, version, reconcile — driven by one policy file, never ad hoc.",
+    "step1_title": "Declare your policy",
+    "step1_body": "Rules, invariants, and workflows in one TOML file: where files belong, what they're named, which labels they get.",
+    "step2_title": "Let dig reconcile",
+    "step2_body": "dig compares the library against policy, reports drift, and brings it back — automatically where safe, by proposal where not.",
+    "step3_title": "Undo anything",
+    "step3_body": "Every change is journaled as a reversible changeset. Preview with dry-run, browse with log, step back with undo."
+  },
+  "features": {
+    "title": "One content-addressed core. Six jobs.",
+    "subtitle": "Dedupe, versioning, isolation, and merge fall out of one store design — not six bolted-on features.",
+    "f1_title": "Retrieve fast",
+    "f1_body": "Indexed, ranked find across the whole library — built for humans and for other harnesses via --json output.",
+    "f2_title": "Organize by policy",
+    "f2_body": "Declarative rules make the tree match your conventions — readable, like a librarian shelving books.",
+    "f3_title": "No duplicates",
+    "f3_body": "Identical content hashes identically. Duplicates are detected by construction and collapsed per policy.",
+    "f4_title": "Version everything",
+    "f4_body": "Full history of every move, rename, and label. Any change is reversible with dig undo.",
+    "f5_title": "Detect and fix drift",
+    "f5_body": "Policy is desired state. dig reports what is misfiled, misnamed, duplicated, or unlabeled — then reconciles.",
+    "f6_title": "Parallel-safe",
+    "f6_body": "Many agents, one library: isolated work views, automatic merge of disjoint changes, human escalation only on real conflicts."
+  },
+  "principles": {
+    "title": "Built like infrastructure, not an app",
+    "p1_title": "Local-first",
+    "p1_body": "Runs fully on your machine. No telemetry, no cloud requirement.",
+    "p2_title": "AI-optional",
+    "p2_body": "The deterministic core works with no model at all. Opt in with any OpenAI-compatible endpoint — a small local model is enough.",
+    "p3_title": "CLI-only",
+    "p3_body": "The command line is the whole interface. Any agent harness drives dig by running commands.",
+    "p4_title": "Single binary",
+    "p4_body": "Pure Go, cgo-free, cross-compiles everywhere. No runtime to install.",
+    "p5_title": "Coexists with humans",
+    "p5_body": "Keep editing with Obsidian, Finder, or your editor. dig reconciles around you — it never locks you out.",
+    "p6_title": "Extensible",
+    "p6_body": "Eight typed seams for storage, events, extraction, commands, and more. Small core, rich edges."
+  },
+  "faq": {
+    "title": "Questions you would ask",
+    "q1": "Is dig a RAG or Q&A assistant?",
+    "a1": "No. dig governs where files live and what they are called — it manages structure. Retrieval serves management, not chat. That lane is deliberate.",
+    "q2": "Does it need an LLM?",
+    "a2": "No. With AI mode off, the core is fully deterministic and offline. AI is opt-in and only makes small, bounded judgments while dig's tools do the structural work.",
+    "q3": "Will it overwrite my edits?",
+    "a3": "Never silently. dig observes direct edits, folds them into history, and reconciles them against policy. A deliberate human change is escalated, not overridden.",
+    "q4": "Can I use it today?",
+    "a4": "dig is an early scaffold: the design is public and the README describes intended behavior, but most commands are still being built. Star the repo to follow the build.",
+    "q5": "What is the license?",
+    "a5": "MIT. Open source, no strings."
+  },
+  "cta": {
+    "title": "Follow the build",
+    "body": "dig is being built in the open, phase by phase — the safety spine first, destructive features only on top of it. Star the repo to watch it land.",
+    "github": "Star on GitHub",
+    "roadmap": "View the roadmap"
+  },
+  "footer": {
+    "tagline": "An open-source agent harness for knowledge bases.",
+    "license": "MIT licensed",
+    "github": "GitHub",
+    "roadmap": "Roadmap",
+    "architecture": "Architecture"
+  },
+  "consent": {
+    "message": "We use privacy-respecting analytics to improve dig.",
+    "accept": "Accept",
+    "decline": "Decline"
+  }
+}

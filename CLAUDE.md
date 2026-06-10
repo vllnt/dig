@@ -1,0 +1,26 @@
+# dig
+
+Agent harness that keeps a knowledge base in order. Go CLI (`cmd/`, `internal/`) + landing page (`web/`).
+
+## Layout
+
+| Path | What |
+|------|------|
+| `cmd/`, `internal/` | Go CLI — the product |
+| `docs/` | Architecture, extensions, landscape docs |
+| `web/` | Landing page (dig.vllnt.com) — Next.js App Router on the @vllnt stack |
+
+## Rules (web/)
+
+- @web/.claude/rules/testing/policy.md
+- @web/.claude/rules/testing/no-mocking.md
+- @web/.claude/rules/testing/e2e.md
+- @web/.claude/rules/testing/ui.md
+- @web/.claude/rules/testing/coverage.md
+
+## Dev server (web/)
+
+- Port: 3977 (fixed — avoids collision with other local projects)
+- Local: `pnpm -C web dev` → http://localhost:3977
+- Expose (device/cross-machine/preview testing): ALWAYS `tailscale serve` — see @.claude/rules/dev-server.md
+- NEVER `next dev -H 0.0.0.0`, ngrok, or a public tunnel for routine dev.
