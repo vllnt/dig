@@ -373,6 +373,4 @@ Early days — design feedback welcome, especially on the policy schema and the 
 
 ## License
 
-**Apache-2.0** (proposed) — permissive + patent grant, maximizes adoption and contribution.
-
-Alternative under consideration: **AGPL-3.0**, which would stop a third party from running `dig` as a closed cloud service without contributing back — relevant given the closed-SaaS incumbents (Glean, Dust) in the same space. Decide before the first public release; relicensing later needs every contributor's sign-off.
+[MIT](LICENSE).
