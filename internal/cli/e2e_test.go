@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/bntvllnt/dig/internal/kb"
+	"github.com/bntvllnt/dig/internal/store"
 )
 
 // run executes the real cobra tree exactly as a user (or another harness)
@@ -364,6 +365,61 @@ func mustRename(t *testing.T, root, from, to string) {
 	}
 	if err := os.Rename(filepath.Join(root, filepath.FromSlash(from)), dst); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// TestChainWorkMergeUndo drives views over the CLI: create → list → merge
+// (after programmatic propose/stage, the worker surface) → undo unwinds the
+// merge like any other mutation.
+func TestChainWorkMergeUndo(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, "area/doc.txt", "content")
+	run(t, "init", root)
+	run(t, "--kb", root, "scan")
+
+	out := run(t, "--kb", root, "work", "create", "agent-1")
+	if !strings.Contains(out, "DRAFT") {
+		t.Fatalf("work create: %s", out)
+	}
+	// Worker fills the view programmatically (the API agents use).
+	k, err := kb.Resolve(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st, err := store.Open(k.Dig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.ProposeView("agent-1", []store.ViewOp{{From: "area/doc.txt", To: "sorted/doc.txt", Labels: []string{"sorted"}}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.StageView("agent-1"); err != nil {
+		t.Fatal(err)
+	}
+	_ = st.Close()
+
+	out = run(t, "--kb", root, "work", "list")
+	if !strings.Contains(out, "STAGED") {
+		t.Fatalf("work list should show STAGED: %s", out)
+	}
+
+	out = run(t, "--kb", root, "merge", "agent-1")
+	if !strings.Contains(out, "merged") {
+		t.Fatalf("merge: %s", out)
+	}
+	ds := diskState(t, root)
+	if _, ok := ds["sorted/doc.txt"]; !ok {
+		t.Fatalf("merge did not move on disk: %+v", ds)
+	}
+	if !strings.Contains(run(t, "--kb", root, "find", "sorted"), "sorted/doc.txt") {
+		t.Fatal("index not rebuilt after merge")
+	}
+
+	// A merge is a mutation like any other — undo reverses it.
+	run(t, "--kb", root, "undo")
+	ds = diskState(t, root)
+	if _, ok := ds["area/doc.txt"]; !ok {
+		t.Fatalf("undo of merge did not restore disk: %+v", ds)
 	}
 }
 

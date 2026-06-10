@@ -2,7 +2,7 @@
 
 > Open, local, CLI-only agent harness that keeps knowledge bases organized to your policy — reversible, parallel-safe, extensible.
 
-**Now:** parallel-views
+**Now:** conflict-escalation
 **Last updated:** 2026-06-10
 
 ## vision-docs [DONE 2026-05]
@@ -73,18 +73,18 @@
 - [x] drift-reconcile.3 dig reconcile — one-shot converge; human moves pinned (dig:pinned) → standing escalation, never overwritten
 - [x] drift-reconcile.4 Tests — human rename accepted as intent; violation flagged never overwritten; idempotency
 
-## parallel-views [PLANNED]
+## parallel-views [DONE 2026-06]
 
 **Goal:** Multiple workers operate on isolated views and disjoint changesets merge back automatically.
 **Exit criteria:** N concurrent workers on disjoint subtrees all merge clean with no lost ops; race detector green.
 
-- [ ] parallel-views.1 Work views — {base manifest, draft} fork as a pointer
-- [ ] parallel-views.2 Changeset state machine — explicit transition table (DRAFT→PROPOSED→STAGED→MERGED/ABORTED)
-- [ ] parallel-views.3 CAS commit on manifest parent + 3-way merge for disjoint changesets
-- [ ] parallel-views.4 dig work / dig merge CLI
-- [ ] parallel-views.5 Property + race tests — N workers, correct final manifest, no torn writes
+- [x] parallel-views.1 Work views — {base manifest, draft} fork as a pointer
+- [x] parallel-views.2 Changeset state machine — explicit transition table (DRAFT→PROPOSED→STAGED→MERGED/CONFLICT/ESCALATED/ABORTED)
+- [x] parallel-views.3 CAS commit + disjointness check in one serialized tx; overlap → CONFLICT, head untouched
+- [x] parallel-views.4 dig work <create|list|abort> / dig merge CLI
+- [x] parallel-views.5 Race tests — 8 concurrent workers, all merges land, no lost ops, history chain intact
 
-## conflict-escalation [PLANNED]
+## conflict-escalation [ACTIVE]
 
 **Goal:** Overlapping changesets resolve by policy precedence or escalate surgically to a human.
 **Exit criteria:** Escalation ladder holds — compatible ops union, precedence picks deterministically, unresolved conflicts lock only their subtree while the rest merges.

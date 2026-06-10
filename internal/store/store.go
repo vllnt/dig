@@ -45,7 +45,7 @@ func Open(digDir string) (*Store, error) {
 		return nil, fmt.Errorf("open store db: %w", err)
 	}
 	err = db.Update(func(tx *bbolt.Tx) error {
-		for _, b := range [][]byte{bktManifests, bktMeta} {
+		for _, b := range [][]byte{bktManifests, bktMeta, bktViews} {
 			if _, err := tx.CreateBucketIfNotExists(b); err != nil {
 				return err
 			}
