@@ -1,6 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const BASE_URL = process.env.BASE_URL || "http://localhost:3977";
+// NTK_PREVIEW_URL is set by `ntk promote` (the e2e gate runs this suite against
+// the live preview deployment — no local server in that mode). Falls back to
+// BASE_URL, then the fixed local dev port.
+const REMOTE_URL = process.env.NTK_PREVIEW_URL || process.env.BASE_URL;
+const BASE_URL = REMOTE_URL || "http://localhost:3977";
 
 export default defineConfig({
   forbidOnly: !!process.env.CI,
@@ -17,10 +21,14 @@ export default defineConfig({
     screenshot: "only-on-failure",
     trace: "on-first-retry",
   },
-  webServer: {
-    command: "pnpm dev",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-    url: BASE_URL,
-  },
+  // Boots the real app locally. Skipped when targeting a remote deployment
+  // (NTK_PREVIEW_URL / BASE_URL), e.g. the ntk promote e2e gate.
+  webServer: REMOTE_URL
+    ? undefined
+    : {
+        command: "pnpm dev",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+        url: BASE_URL,
+      },
 });
