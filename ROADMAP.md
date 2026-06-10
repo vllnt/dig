@@ -104,6 +104,17 @@
 - [x] watch-harness.3 dig watch [--interval] + escalation queue surfaced (ESCALATED views, pins, proposals, pending dups)
 - [x] watch-harness.4 Soak test — files dropped mid-watch converge; manual-rule files propose and stay put; clean cancel
 
+## dogfood-hardening [DONE 2026-06]
+
+**Goal:** dig proves itself on a real messy KB and beats MemPalace on every file-management function, with found friction fixed.
+**Exit criteria:** Full lifecycle exercised hands-on; every MemPalace command verified and matched/beaten or honestly split; friction issues closed; matrix in docs/landscape.md.
+
+- [x] dogfood-hardening.1 Dogfood full lifecycle on a realistic KB + dig's own docs/ (5 frictions logged → #3 #4 #5)
+- [x] dogfood-hardening.2 Verify all 14 MemPalace functions hands-on, same corpus; measured matrix in landscape.md (38bd24f)
+- [x] dogfood-hardening.3 Index file content from blob store + AND→OR natural-query fallback (#3, 2966f8a)
+- [x] dogfood-hardening.4 Watch surfaces standing items once; label ops render +label (#4)
+- [x] dogfood-hardening.5 Label-only rules accumulate; placement rules stay first-wins (#5)
+
 ## public-release [ACTIVE]
 
 **Goal:** The repo goes public hardened, licensed, and installable.
@@ -138,6 +149,7 @@
 
 ## Later
 
+- Landing page — web/ Next.js site, in-flight in worktree `dig-landing`
 - Workflows engine — [[workflow]] multi-step ingest procedures committing as one changeset
 - Import-aware source-code reorganization (currently an explicit non-goal)
 - dig query — DuckDB-style query-in-place over KB files
