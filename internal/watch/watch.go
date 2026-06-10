@@ -15,11 +15,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bntvllnt/dig/internal/drift"
-	"github.com/bntvllnt/dig/internal/index"
-	"github.com/bntvllnt/dig/internal/kb"
-	"github.com/bntvllnt/dig/internal/policy"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/drift"
+	"github.com/vllnt/dig/internal/index"
+	"github.com/vllnt/dig/internal/kb"
+	"github.com/vllnt/dig/internal/policy"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // Options configures the loop.

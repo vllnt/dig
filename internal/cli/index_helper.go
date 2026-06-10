@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/bntvllnt/dig/internal/index"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/index"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // rebuildIndex refreshes the KB's search index from a manifest, feeding file

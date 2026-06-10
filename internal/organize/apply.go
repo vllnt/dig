@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/bntvllnt/dig/internal/policy"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/policy"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // Apply executes the plan on disk and commits it as ONE journaled mutation

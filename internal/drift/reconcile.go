@@ -1,11 +1,11 @@
 package drift
 
 import (
-	"github.com/bntvllnt/dig/internal/dedup"
-	"github.com/bntvllnt/dig/internal/kb"
-	"github.com/bntvllnt/dig/internal/organize"
-	"github.com/bntvllnt/dig/internal/policy"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/dedup"
+	"github.com/vllnt/dig/internal/kb"
+	"github.com/vllnt/dig/internal/organize"
+	"github.com/vllnt/dig/internal/policy"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // Report is everything that has drifted: what externals changed, what policy

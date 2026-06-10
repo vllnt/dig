@@ -8,9 +8,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bntvllnt/dig/internal/kb"
-	"github.com/bntvllnt/dig/internal/policy"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/kb"
+	"github.com/vllnt/dig/internal/policy"
+	"github.com/vllnt/dig/internal/store"
 )
 
 func newWorkCmd() *cobra.Command {

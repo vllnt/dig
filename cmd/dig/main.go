@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bntvllnt/dig/internal/cli"
+	"github.com/vllnt/dig/internal/cli"
 )
 
 func main() {

@@ -16,7 +16,7 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // Result is one search hit, ranked by FTS5 relevance (best first).

@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/bntvllnt/dig/internal/kb"
-	"github.com/bntvllnt/dig/internal/policy"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/kb"
+	"github.com/vllnt/dig/internal/policy"
+	"github.com/vllnt/dig/internal/store"
 )
 
 func setupKB(t *testing.T, files map[string]string) (kb.KB, *store.Store, *store.Manifest) {

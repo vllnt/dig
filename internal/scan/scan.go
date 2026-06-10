@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/bntvllnt/dig/internal/kb"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/kb"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // Walk scans the KB root, stores each file's content as a blob, and returns

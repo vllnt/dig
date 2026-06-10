@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/bntvllnt/dig/internal/kb"
-	"github.com/bntvllnt/dig/internal/scan"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/kb"
+	"github.com/vllnt/dig/internal/scan"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // setupKB builds a real KB on disk with files, scans it, and returns the

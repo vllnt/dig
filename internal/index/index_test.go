@@ -3,7 +3,7 @@ package index
 import (
 	"testing"
 
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/store"
 )
 
 func openTest(t *testing.T) *FTS {

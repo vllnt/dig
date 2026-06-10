@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/bntvllnt/dig/internal/policy"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/policy"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // Set is one group of duplicates: the copy to keep and the copies to remove.

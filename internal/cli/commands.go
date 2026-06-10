@@ -7,11 +7,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bntvllnt/dig/internal/index"
-	"github.com/bntvllnt/dig/internal/kb"
-	"github.com/bntvllnt/dig/internal/organize"
-	"github.com/bntvllnt/dig/internal/scan"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/index"
+	"github.com/vllnt/dig/internal/kb"
+	"github.com/vllnt/dig/internal/organize"
+	"github.com/vllnt/dig/internal/scan"
+	"github.com/vllnt/dig/internal/store"
 )
 
 func newInitCmd() *cobra.Command {

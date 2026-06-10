@@ -15,7 +15,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // Record is one dataset row. Field order is fixed by the struct — part of the

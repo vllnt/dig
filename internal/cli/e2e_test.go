@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bntvllnt/dig/internal/kb"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/kb"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // run executes the real cobra tree exactly as a user (or another harness)

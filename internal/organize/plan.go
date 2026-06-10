@@ -11,8 +11,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bntvllnt/dig/internal/policy"
-	"github.com/bntvllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/policy"
+	"github.com/vllnt/dig/internal/store"
 )
 
 // OpKind enumerates plan operations.

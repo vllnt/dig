@@ -1,4 +1,4 @@
-module github.com/bntvllnt/dig
+module github.com/vllnt/dig
 
 go 1.25.0
 
