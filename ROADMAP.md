@@ -2,7 +2,7 @@
 
 > Open, local, CLI-only agent harness that keeps knowledge bases organized to your policy — reversible, parallel-safe, extensible.
 
-**Now:** drift-reconcile
+**Now:** parallel-views
 **Last updated:** 2026-06-10
 
 ## vision-docs [DONE 2026-05]
@@ -63,15 +63,15 @@
 - [x] dataset-export.2 JSONL emitter with per-row provenance (src, manifest)
 - [x] dataset-export.3 --at manifest pinning + determinism test (same manifest → same bytes)
 
-## drift-reconcile [ACTIVE]
+## drift-reconcile [DONE 2026-06]
 
 **Goal:** dig measures desired-vs-actual drift and converges the KB one-shot, folding human edits in as a concurrent writer.
 **Exit criteria:** dig drift reports misfiled/misnamed/duplicated/unsorted; reconcile converges per the coexistence contract; re-running reconcile on a converged KB is a no-op.
 
-- [ ] drift-reconcile.1 Scan-diff — disk vs last manifest → reconstructed human changeset
-- [ ] drift-reconcile.2 dig drift report — policy violations + unsorted + duplicates, --json
-- [ ] drift-reconcile.3 dig reconcile — one-shot converge, auto/propose split per rule
-- [ ] drift-reconcile.4 Tests — human rename accepted as intent; violation flagged never overwritten; idempotency
+- [x] drift-reconcile.1 Scan-diff — disk vs last manifest → reconstructed human changeset (renames via blob identity; labels survive)
+- [x] drift-reconcile.2 dig drift report — external edits + policy violations + pinned + unsorted + duplicates, --json
+- [x] drift-reconcile.3 dig reconcile — one-shot converge; human moves pinned (dig:pinned) → standing escalation, never overwritten
+- [x] drift-reconcile.4 Tests — human rename accepted as intent; violation flagged never overwritten; idempotency
 
 ## parallel-views [PLANNED]
 

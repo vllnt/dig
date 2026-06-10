@@ -28,6 +28,8 @@ func NewRoot() *cobra.Command {
 		newExportCmd(),
 		newOrgCmd(),
 		newDedupCmd(),
+		newDriftCmd(),
+		newReconcileCmd(),
 		newPolicyCmd(),
 		newLogCmd(),
 		newUndoCmd(),

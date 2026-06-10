@@ -305,6 +305,68 @@ func TestChainOrgExportPinned(t *testing.T) {
 	}
 }
 
+// TestChainHumanCoexistence is the full librarian-vs-human story over the CLI:
+// scan → org → human makes a mess (adds, renames a managed file, drops a dup)
+// → drift reports every class → reconcile auto-files the new, escalates the
+// human move, collapses the dup → undo unwinds reconcile's commits in order.
+func TestChainHumanCoexistence(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, "inbox/acme.pdf", "ACME invoice #1007")
+	run(t, "init", root)
+	write(t, root, ".dig/policy.toml", e2ePolicy)
+	run(t, "--kb", root, "scan")
+	run(t, "--kb", root, "org") // acme.pdf → finance/invoices/
+
+	// The human acts with their own tools.
+	write(t, root, "inbox/new-note.md", "# fresh")                  // add (auto-filed: notes/)
+	mustRename(t, root, "finance/invoices/acme.pdf", "keep/my.pdf") // deliberate move
+	write(t, root, "copy.md", "# fresh")                            // duplicate content (older=new-note? same mtime → tie OK)
+
+	// drift sees all classes, read-only.
+	out := run(t, "--kb", root, "drift")
+	for _, want := range []string{"EDIT", "renamed", "added", "POLICY"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("drift missing %q:\n%s", want, out)
+		}
+	}
+	if !strings.Contains(run(t, "--kb", root, "drift", "--json"), `"changes"`) {
+		t.Fatal("drift --json contract broken")
+	}
+
+	// reconcile: new file filed, human move escalated + left alone.
+	out = run(t, "--kb", root, "reconcile")
+	if !strings.Contains(out, "ESCALATE") || !strings.Contains(out, "keep/my.pdf") {
+		t.Fatalf("human move should be escalated:\n%s", out)
+	}
+	if !strings.Contains(out, "APPLY") {
+		t.Fatalf("new file should be auto-applied:\n%s", out)
+	}
+	ds := diskState(t, root)
+	if _, ok := ds["keep/my.pdf"]; !ok {
+		t.Fatal("reconcile moved a human-placed file — forbidden")
+	}
+	if _, ok := ds["notes/new-note.md"]; !ok {
+		t.Fatalf("new file not auto-filed: %+v", ds)
+	}
+
+	// Converged: a second reconcile is silent except the standing escalation.
+	out = run(t, "--kb", root, "reconcile")
+	if strings.Contains(out, "APPLY") || strings.Contains(out, "ABSORB") {
+		t.Fatalf("second reconcile should not re-apply or re-absorb:\n%s", out)
+	}
+}
+
+func mustRename(t *testing.T, root, from, to string) {
+	t.Helper()
+	dst := filepath.Join(root, filepath.FromSlash(to))
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(filepath.Join(root, filepath.FromSlash(from)), dst); err != nil {
+		t.Fatal(err)
+	}
+}
+
 // Multi-rule interplay + conflicts surface in the plan rather than failing.
 func TestChainConflictReported(t *testing.T) {
 	root := t.TempDir()

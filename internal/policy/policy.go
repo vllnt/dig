@@ -21,6 +21,12 @@ const File = "policy.toml"
 // UnsortedLabel marks files no rule matched.
 const UnsortedLabel = "unsorted"
 
+// PinnedLabel marks files a human deliberately placed (detected as a rename/
+// move by the reconcile loop). Policy never auto-moves a pinned entry — rule
+// disagreements on it are escalated instead. Removing the label re-subjects
+// the file to policy.
+const PinnedLabel = "dig:pinned"
+
 // Policy is the parsed, validated policy document.
 type Policy struct {
 	Rules []Rule      `toml:"rule"`

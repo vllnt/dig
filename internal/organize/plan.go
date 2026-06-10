@@ -41,6 +41,7 @@ type Conflict struct {
 // Plan is the full proposed changeset for one org run.
 type Plan struct {
 	Ops       []Op       `json:"ops"`
+	Pinned    []Op       `json:"pinned,omitempty"` // would-be moves on human-pinned entries — never auto-applied
 	Conflicts []Conflict `json:"conflicts,omitempty"`
 	Unsorted  []string   `json:"unsorted,omitempty"` // files no rule matched
 }
@@ -90,6 +91,16 @@ func BuildPlan(kbRoot string, head *store.Manifest, rules []policy.CompiledRule)
 			matched = true
 
 			target := r.Target(e.Path, e.ModTime)
+			// A pinned entry was deliberately placed by a human: policy never
+			// auto-moves it. The would-be op is surfaced for a human instead.
+			if hasLabel(e.Labels, policy.PinnedLabel) {
+				if target != e.Path {
+					plan.Pinned = append(plan.Pinned, Op{
+						Kind: OpMove, Rule: r.Name, From: e.Path, To: target,
+					})
+				}
+				break
+			}
 			if escapes(target) {
 				plan.Conflicts = append(plan.Conflicts, Conflict{
 					Path: e.Path, Rule: r.Name,

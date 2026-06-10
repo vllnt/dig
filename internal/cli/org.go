@@ -101,6 +101,10 @@ func renderPlan(cmd *cobra.Command, plan *organize.Plan, dryRun bool) {
 			_, _ = fmt.Fprintf(tw, "LABEL\t%s\t+%s\t(%s)\n", op.From, strings.Join(op.Labels, ","), op.Rule)
 		}
 	}
+	for _, op := range plan.Pinned {
+		_, _ = fmt.Fprintf(tw, "PINNED\t%s\twould → %s\t(%s) — human-placed; remove %s label to re-apply policy\n",
+			op.From, op.To, op.Rule, policy.PinnedLabel)
+	}
 	for _, c := range plan.Conflicts {
 		_, _ = fmt.Fprintf(tw, "CONFLICT\t%s\t%s\t(%s)\n", c.Path, c.Reason, c.Rule)
 	}
