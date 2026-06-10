@@ -136,6 +136,18 @@
 - [ ] site-launch.4 User docs — quickstart, policy/rules/workflows reference, command reference, synced from README + docs/
 - [ ] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption
 
+## harness-plugins [PLANNED]
+
+**Goal:** dig ships as a first-class plugin/integration for the major agent harnesses, so any agent can manage a KB out of the box.
+**Exit criteria:** Each listed harness can install its dig plugin and drive a KB (find/org/reconcile/export) through it; one shared integration contract doc keeps them consistent.
+
+- [ ] harness-plugins.1 Integration contract — one doc: how a harness drives dig (--json surfaces, exit codes, dig detection/install), the base every plugin builds on
+- [ ] harness-plugins.2 claude-code plugin — skill + slash commands packaging
+- [ ] harness-plugins.3 pi extension — pi.dev package
+- [ ] harness-plugins.4 codex plugin
+- [ ] harness-plugins.5 openclaw integration
+- [ ] harness-plugins.6 hermes integration
+
 ## public-extensibility [PLANNED]
 
 **Goal:** Third parties extend dig without forking — backup and store-elsewhere land first.
