@@ -46,11 +46,18 @@ func canTransition(from, to string) bool {
 }
 
 // ViewOp is one proposed change in a view: a move (To set) and/or labels.
+// Rule (optional) records the policy rule that produced the op — the handle
+// precedence resolution uses.
 type ViewOp struct {
 	From   string   `json:"from"`
 	To     string   `json:"to,omitempty"`
 	Labels []string `json:"labels,omitempty"`
+	Rule   string   `json:"rule,omitempty"`
 }
+
+// RuleRank resolves a rule name to its precedence (lower = stronger, i.e.
+// earlier in the policy file). Unknown rules return a negative value.
+type RuleRank func(rule string) int
 
 // View is an isolated unit of work: a pointer to a base manifest plus
 // proposed ops. Forking is O(1) — no file copying (architecture.md §1).
@@ -218,16 +225,21 @@ func (s *Store) AbortView(name string) (*View, error) {
 	return s.transitionView(name, StateAborted, nil)
 }
 
-// MergeView commits a STAGED view (STAGED → MERGED | CONFLICT) under the CAS
-// guard: in one serialized transaction it diffs the paths touched since the
-// view's base against the view's own paths. Disjoint → disk ops are applied,
-// the merged manifest commits, head advances. Overlap → CONFLICT with the
-// offending paths recorded; head and disk untouched.
+// MergeView commits a STAGED (or ESCALATED, after resolution) view under the
+// CAS guard, applying the escalation ladder per op (architecture.md §4):
 //
-// kbRoot is needed because merging applies the view's moves to the live tree
-// (same disk-then-manifest pattern as organize.Apply, inside the tx so merges
-// serialize and the disjoint check cannot race).
-func (s *Store) MergeView(kbRoot, name string) (*View, *Manifest, error) {
+//  1. path untouched since base ............... apply (clean)
+//  2. touched but compatible .................. apply (label union; label ops
+//     follow a file the head moved — blob retarget; move already done — noop)
+//  3. touched, both sides rule-attributed ..... earlier policy rule wins
+//     (incoming stronger → apply; weaker → drop, head stands)
+//  4. still conflicting ....................... HELD: the op joins the
+//     remainder, the view goes ESCALATED on the new head
+//
+// Escalation is surgical: clean/compatible/won ops MERGE in this call; only
+// the conflicted remainder is held. A conflict on finance/ never blocks
+// media/. Everything happens in one serialized tx (merges cannot race).
+func (s *Store) MergeView(kbRoot, name string, rank RuleRank) (*View, *Manifest, error) {
 	var outV *View
 	var outM *Manifest
 	err := s.db.Update(func(tx *bbolt.Tx) error {
@@ -253,98 +265,186 @@ func (s *Store) MergeView(kbRoot, name string) (*View, *Manifest, error) {
 			return fmt.Errorf("base manifest %s missing", v.Base)
 		}
 
-		// CAS + disjointness: paths changed between base and head vs paths
-		// the view touches.
-		changed := changedPaths(base, head)
-		var overlap []string
-		for _, op := range v.Ops {
-			if changed[op.From] {
-				overlap = append(overlap, op.From)
-			}
-			if op.To != "" && changed[op.To] {
-				overlap = append(overlap, op.To)
-			}
-		}
-		if len(overlap) > 0 {
-			v.State = StateConflict
-			v.Conflict = fmt.Sprintf("paths changed since base %s: %v", v.Base, overlap)
-			outV = v
-			return putView(b, v)
-		}
-
-		// Disjoint — apply ops to head's entries.
 		entries := make([]Entry, len(head.Entries))
 		copy(entries, head.Entries)
 		byPath := map[string]int{}
+		blobAt := map[string]int{} // blob → entry index (first), for retargeting
 		for i, e := range entries {
 			byPath[e.Path] = i
-		}
-		for _, op := range v.Ops {
-			i, ok := byPath[op.From]
-			if !ok {
-				v.State = StateConflict
-				v.Conflict = fmt.Sprintf("path %q vanished from head", op.From)
-				outV = v
-				return putView(b, v)
+			if _, ok := blobAt[e.Blob]; !ok {
+				blobAt[e.Blob] = i
 			}
-			if op.To != "" {
-				if j, taken := byPath[op.To]; taken && j != i {
-					v.State = StateConflict
-					v.Conflict = fmt.Sprintf("target %q already occupied at head", op.To)
-					outV = v
-					return putView(b, v)
+		}
+		changed := changedPaths(base, head)
+
+		type diskMove struct{ src, dst string }
+		var moves []diskMove
+		var remainder []ViewOp
+		applied := 0
+
+		for _, op := range v.Ops {
+			target := func(i int) { // apply op against entries[i]
+				if op.To != "" && entries[i].Path != op.To {
+					moves = append(moves, diskMove{
+						src: filepath.Join(kbRoot, filepath.FromSlash(entries[i].Path)),
+						dst: filepath.Join(kbRoot, filepath.FromSlash(op.To)),
+					})
+					delete(byPath, entries[i].Path)
+					entries[i].Path = op.To
+					byPath[op.To] = i
 				}
-				// Disk move (inside the tx: merges serialize on the db lock,
-				// so the check above cannot race with another merge).
-				src := filepath.Join(kbRoot, filepath.FromSlash(op.From))
-				dst := filepath.Join(kbRoot, filepath.FromSlash(op.To))
-				if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+				for _, l := range op.Labels {
+					entries[i].Labels = appendLabel(entries[i].Labels, l)
+				}
+				if op.Rule != "" {
+					entries[i].Rule = op.Rule
+				}
+				applied++
+			}
+
+			i, exists := byPath[op.From]
+			// Only From-side changes make an op "touched": a target path that
+			// changed since base is handled by occupancy (taken → hold) — a
+			// VACATED target is an opportunity, not a conflict.
+			touched := changed[op.From]
+
+			switch {
+			case exists && !touched:
+				// Rung 1 — clean. Target collision with an untouched path is
+				// still a hold (someone occupies it).
+				if op.To != "" {
+					if j, taken := byPath[op.To]; taken && j != i {
+						remainder = append(remainder, op)
+						continue
+					}
+				}
+				target(i)
+
+			case exists && op.To == "":
+				// Rung 2 — label-only on a touched path: labels union safely.
+				target(i)
+
+			case exists && op.To != "" && entries[i].Path == op.To:
+				// Rung 2 — head already moved it where we wanted: noop union.
+				target(i)
+
+			case !exists:
+				// Path gone at head — follow the blob (head renamed the file):
+				// label-only ops retarget; a move that agrees with where head
+				// already put the file is a noop union; disagreeing moves hold.
+				if srcBase, ok := base.Lookup(op.From); ok {
+					if j, found := blobAt[srcBase.Blob]; found &&
+						(op.To == "" || entries[j].Path == op.To) {
+						target(j) // Rung 2 — follow the file
+						continue
+					}
+				}
+				remainder = append(remainder, op)
+
+			default:
+				// Rung 3 — true conflict on a touched path: precedence if both
+				// sides carry rules, else hold for a human.
+				if rank != nil && op.Rule != "" && entries[i].Rule != "" {
+					or, hr := rank(op.Rule), rank(entries[i].Rule)
+					if or >= 0 && hr >= 0 {
+						if or < hr {
+							target(i) // incoming rule outranks — apply
+						}
+						// weaker or equal: head stands; op resolved by drop
+						continue
+					}
+				}
+				remainder = append(remainder, op)
+			}
+		}
+
+		// Disk + manifest only if something applied.
+		if applied > 0 {
+			for _, mv := range moves {
+				if err := os.MkdirAll(filepath.Dir(mv.dst), 0o755); err != nil {
 					return err
 				}
-				if err := os.Rename(src, dst); err != nil {
-					return fmt.Errorf("merge move %s: %w", op.From, err)
+				if err := os.Rename(mv.src, mv.dst); err != nil {
+					return fmt.Errorf("merge move %s: %w", mv.src, err)
 				}
-				delete(byPath, op.From)
-				entries[i].Path = op.To
-				byPath[op.To] = i
 			}
-			for _, l := range op.Labels {
-				entries[i].Labels = appendLabel(entries[i].Labels, l)
+			sort.Slice(entries, func(i, j int) bool { return entries[i].Path < entries[j].Path })
+			seq := decodeSeq(meta.Get(keySeq)) + 1
+			m := &Manifest{
+				ID:        "M" + fmt.Sprint(seq),
+				Parent:    headID,
+				CreatedAt: s.clock().UTC(),
+				CreatedBy: "merge/" + name,
+				Kind:      KindMutate,
+				Entries:   entries,
 			}
+			raw, err := json.Marshal(m)
+			if err != nil {
+				return err
+			}
+			if err := tx.Bucket(bktManifests).Put([]byte(m.ID), raw); err != nil {
+				return err
+			}
+			if err := meta.Put(keySeq, encodeSeq(seq)); err != nil {
+				return err
+			}
+			if err := meta.Put(keyHead, []byte(m.ID)); err != nil {
+				return err
+			}
+			outM = m
+			headID = m.ID
 		}
-		sort.Slice(entries, func(i, j int) bool { return entries[i].Path < entries[j].Path })
 
-		// Commit the merged manifest inside this same tx.
-		seq := decodeSeq(meta.Get(keySeq)) + 1
-		m := &Manifest{
-			ID:        "M" + fmt.Sprint(seq),
-			Parent:    headID,
-			CreatedAt: s.clock().UTC(),
-			CreatedBy: "merge/" + name,
-			Kind:      KindMutate,
-			Entries:   entries,
+		if len(remainder) == 0 {
+			v.State = StateMerged
+			v.Conflict = ""
+			v.Ops = nil
+		} else {
+			// Surgical escalation: held ops re-based on the new head so a
+			// later resolution merges against fresh state.
+			v.State = StateEscalated
+			v.Base = headID
+			v.Ops = remainder
+			v.Conflict = fmt.Sprintf("%d op(s) held for a human (others merged)", len(remainder))
 		}
-		raw, err := json.Marshal(m)
-		if err != nil {
-			return err
-		}
-		if err := tx.Bucket(bktManifests).Put([]byte(m.ID), raw); err != nil {
-			return err
-		}
-		if err := meta.Put(keySeq, encodeSeq(seq)); err != nil {
-			return err
-		}
-		if err := meta.Put(keyHead, []byte(m.ID)); err != nil {
-			return err
-		}
-		v.State = StateMerged
-		outV, outM = v, m
+		outV = v
 		return putView(b, v)
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 	return outV, outM, nil
+}
+
+// ResolveView settles an ESCALATED view: accept "mine" force-applies the held
+// ops (the human decided the view wins), accept "theirs" drops them (head
+// stands). Mine is implemented as a merge that treats every held op as clean.
+func (s *Store) ResolveView(kbRoot, name, accept string) (*View, *Manifest, error) {
+	switch accept {
+	case "theirs":
+		// Head stands; the held ops are discarded. ESCALATED → ABORTED.
+		v, err := s.transitionView(name, StateAborted, nil)
+		if err != nil {
+			return nil, nil, err
+		}
+		return v, nil, nil
+	case "mine":
+		// Re-stage the remainder as if clean: temporarily rebase the view onto
+		// the current head (transitionView guards ESCALATED → MERGED legality
+		// inside MergeView via the table).
+		v, err := s.GetView(name)
+		if err != nil {
+			return nil, nil, err
+		}
+		if v.State != StateEscalated {
+			return nil, nil, fmt.Errorf("resolve: view %q is %s, want ESCALATED", name, v.State)
+		}
+		// Rebase: ops were already re-based onto the post-merge head by
+		// MergeView, so a second merge now treats them against fresh state.
+		return s.MergeView(kbRoot, name, nil)
+	default:
+		return nil, nil, fmt.Errorf("resolve: accept must be 'mine' or 'theirs'")
+	}
 }
 
 // changedPaths returns every path that differs between two manifests (added,

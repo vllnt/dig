@@ -64,7 +64,7 @@ func TestViewStateMachine(t *testing.T) {
 		t.Fatalf("create: %v %+v", err, v)
 	}
 	// DRAFT → MERGED is illegal (never commit unvalidated work).
-	if _, _, err := st.MergeView(root, "w"); err == nil {
+	if _, _, err := st.MergeView(root, "w", nil); err == nil {
 		t.Fatal("DRAFT → MERGED must be rejected")
 	}
 	// DRAFT → STAGED is illegal (must propose first).
@@ -77,7 +77,7 @@ func TestViewStateMachine(t *testing.T) {
 	if _, err := st.StageView("w"); err != nil {
 		t.Fatal(err)
 	}
-	v, m, err := st.MergeView(root, "w")
+	v, m, err := st.MergeView(root, "w", nil)
 	if err != nil || v.State != StateMerged {
 		t.Fatalf("merge: %v %+v", err, v)
 	}
@@ -137,7 +137,7 @@ func TestConcurrentDisjointMergesAllLand(t *testing.T) {
 				errs[i] = err
 				return
 			}
-			v, _, err := st.MergeView(root, name)
+			v, _, err := st.MergeView(root, name, nil)
 			if err != nil {
 				errs[i] = err
 				return
@@ -182,8 +182,9 @@ func TestConcurrentDisjointMergesAllLand(t *testing.T) {
 	}
 }
 
-// Conflict POV: two views touching the SAME path — first merge wins, second
-// goes CONFLICT; head and disk are untouched by the loser.
+// Conflict POV: two views moving the SAME file differently — first merge
+// wins; the second's move is held (ESCALATED); head and disk untouched by
+// the loser.
 func TestOverlappingMergeConflicts(t *testing.T) {
 	root, st := setupViewKB(t, 1)
 
@@ -195,17 +196,20 @@ func TestOverlappingMergeConflicts(t *testing.T) {
 	mustV(t)(st.ProposeView("second", []ViewOp{{From: "area0/file0.txt", To: "b/two.txt"}}))
 	mustV(t)(st.StageView("second"))
 
-	if v, _, err := st.MergeView(root, "first"); err != nil || v.State != StateMerged {
+	if v, _, err := st.MergeView(root, "first", nil); err != nil || v.State != StateMerged {
 		t.Fatalf("first merge: %v %+v", err, v)
 	}
 	headBefore, _ := st.Head()
 
-	v, _, err := st.MergeView(root, "second")
+	v, _, err := st.MergeView(root, "second", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v.State != StateConflict {
-		t.Fatalf("second merge must CONFLICT, got %s", v.State)
+	if v.State != StateEscalated {
+		t.Fatalf("second merge must ESCALATE its held move, got %s", v.State)
+	}
+	if len(v.Ops) != 1 {
+		t.Fatalf("remainder should hold exactly the conflicted op: %+v", v.Ops)
 	}
 	headAfter, _ := st.Head()
 	if headAfter.ID != headBefore.ID {
@@ -214,7 +218,7 @@ func TestOverlappingMergeConflicts(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(root, "a/one.txt")); err != nil {
 		t.Fatal("winner's disk state disturbed by conflicting merge")
 	}
-	// CONFLICT can be aborted (resolution machinery is the next phase).
+	// ESCALATED can be aborted (= accept theirs).
 	if _, err := st.AbortView("second"); err != nil {
 		t.Fatal(err)
 	}

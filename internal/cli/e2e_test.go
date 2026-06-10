@@ -423,6 +423,55 @@ func TestChainWorkMergeUndo(t *testing.T) {
 	}
 }
 
+// TestChainEscalateResolve drives the escalation ladder over the CLI: two
+// views move the same file differently → second merge ESCALATES → human
+// resolves --theirs → view closed, winner's state stands.
+func TestChainEscalateResolve(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, "f.txt", "content")
+	run(t, "init", root)
+	run(t, "--kb", root, "scan")
+
+	k, _ := kb.Resolve(root)
+	st, err := store.Open(k.Dig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range []struct{ name, to string }{{"a", "x/f.txt"}, {"b", "y/f.txt"}} {
+		if _, err := st.CreateView(v.name); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := st.ProposeView(v.name, []store.ViewOp{{From: "f.txt", To: v.to}}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := st.StageView(v.name); err != nil {
+			t.Fatal(err)
+		}
+	}
+	_ = st.Close()
+
+	run(t, "--kb", root, "merge", "a")
+	out := run(t, "--kb", root, "merge", "b")
+	if !strings.Contains(out, "ESCALATED") {
+		t.Fatalf("second merge should escalate:\n%s", out)
+	}
+	out = run(t, "--kb", root, "work", "list")
+	if !strings.Contains(out, "ESCALATED") {
+		t.Fatalf("work list should show the escalation:\n%s", out)
+	}
+	// Human decides: head stands.
+	out = run(t, "--kb", root, "work", "resolve", "b", "--theirs")
+	if !strings.Contains(out, "ABORTED") {
+		t.Fatalf("resolve --theirs: %s", out)
+	}
+	ds := diskState(t, root)
+	if _, ok := ds["x/f.txt"]; !ok {
+		t.Fatalf("winner's placement should stand: %+v", ds)
+	}
+	// Choosing both flags or none is rejected.
+	runExpectErr(t, "--kb", root, "work", "resolve", "b")
+}
+
 // Multi-rule interplay + conflicts surface in the plan rather than failing.
 func TestChainConflictReported(t *testing.T) {
 	root := t.TempDir()

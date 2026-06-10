@@ -63,6 +63,7 @@ func Apply(kbRoot string, st *store.Store, head *store.Manifest, plan *Plan) (*s
 				ne.Path = op.To
 			}
 			ne.Labels = append(append([]string{}, e.Labels...), op.Labels...)
+			ne.Rule = op.Rule // provenance — precedence resolution keys off this
 		} else if unsorted[e.Path] {
 			ne.Labels = append(append([]string{}, e.Labels...), policy.UnsortedLabel)
 		}

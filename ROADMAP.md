@@ -2,7 +2,7 @@
 
 > Open, local, CLI-only agent harness that keeps knowledge bases organized to your policy — reversible, parallel-safe, extensible.
 
-**Now:** conflict-escalation
+**Now:** watch-harness
 **Last updated:** 2026-06-10
 
 ## vision-docs [DONE 2026-05]
@@ -84,15 +84,15 @@
 - [x] parallel-views.4 dig work <create|list|abort> / dig merge CLI
 - [x] parallel-views.5 Race tests — 8 concurrent workers, all merges land, no lost ops, history chain intact
 
-## conflict-escalation [ACTIVE]
+## conflict-escalation [DONE 2026-06]
 
 **Goal:** Overlapping changesets resolve by policy precedence or escalate surgically to a human.
 **Exit criteria:** Escalation ladder holds — compatible ops union, precedence picks deterministically, unresolved conflicts lock only their subtree while the rest merges.
 
-- [ ] conflict-escalation.1 Overlap detection + compatible-op union (e.g. label merges)
-- [ ] conflict-escalation.2 Policy precedence resolution
-- [ ] conflict-escalation.3 ESCALATED state + escalation queue + resolve/abort CLI
-- [ ] conflict-escalation.4 Subtree-scoped locking + tests (conflict on finance/ never blocks media/)
+- [x] conflict-escalation.1 Compatible-op union — label union, blob-follow retarget, same-target noop, vacated-target apply
+- [x] conflict-escalation.2 Policy precedence — Entry.Rule provenance + ViewOp.Rule; earlier rule wins deterministically, weaker drops
+- [x] conflict-escalation.3 ESCALATED state + dig work resolve --mine|--theirs; escalations visible in work list
+- [x] conflict-escalation.4 Partial merge — clean ops land, only conflicted remainder held (finance/ never blocks media/)
 
 ## watch-harness [PLANNED]
 

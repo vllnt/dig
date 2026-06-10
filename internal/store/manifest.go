@@ -12,6 +12,7 @@ type Entry struct {
 	Size    int64     `json:"size"`
 	ModTime time.Time `json:"mod_time"`
 	Labels  []string  `json:"labels,omitempty"`
+	Rule    string    `json:"rule,omitempty"` // provenance: the policy rule that last placed this entry
 }
 
 // Kind distinguishes how a manifest came to be — the distinction that makes
