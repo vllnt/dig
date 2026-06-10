@@ -9,7 +9,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bntvllnt/dig/internal/index"
 	"github.com/bntvllnt/dig/internal/kb"
 	"github.com/bntvllnt/dig/internal/organize"
 	"github.com/bntvllnt/dig/internal/policy"
@@ -69,12 +68,7 @@ func newOrgCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			idx, err := index.Open(k.Dig())
-			if err != nil {
-				return err
-			}
-			defer func() { _ = idx.Close() }()
-			if err := idx.Rebuild(m); err != nil {
+			if err := rebuildIndex(k.Dig(), st, m); err != nil {
 				return err
 			}
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Applied %d op(s) → manifest %s (undo with 'dig undo')\n", len(plan.Ops), m.ID)

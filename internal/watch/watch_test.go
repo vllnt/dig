@@ -125,6 +125,30 @@ func TestWatchModeNeverCollapsesDups(t *testing.T) {
 	}
 }
 
+// Regression (#4): standing items surface once, not every tick.
+func TestStandingItemsSurfaceOnce(t *testing.T) {
+	k, st, rules, dpol := setup(t)
+	write(t, k.Root, "inbox/photo.jpg", "jpg") // manual rule → standing proposal
+
+	surfaced := map[string]bool{}
+	s1, err := drift.Reconcile(k, st, rules, dpol, false, drift.ModeWatch)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dedupeStanding(s1, surfaced)
+	if len(s1.Proposed) != 1 {
+		t.Fatalf("first pass should surface the proposal: %+v", s1)
+	}
+	s2, err := drift.Reconcile(k, st, rules, dpol, false, drift.ModeWatch)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dedupeStanding(s2, surfaced)
+	if len(s2.Proposed) != 0 {
+		t.Fatalf("second pass must not re-surface the same proposal: %+v", s2.Proposed)
+	}
+}
+
 // THE soak test: a live KB with files dropped while the loop runs. The auto
 // rule converges them on disk; proposals surface; quiet ticks commit nothing;
 // ctx cancel exits cleanly.

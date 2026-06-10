@@ -119,6 +119,50 @@ label = ["doc"]`)
 	}
 }
 
+// Regression (#5): label-only rules ACCUMULATE — they don't consume the
+// match. Every matching label rule contributes; the first placement rule
+// still decides the target and stops the scan.
+func TestPlanLabelRulesAccumulate(t *testing.T) {
+	rs := rules(t, `
+[[rule]]
+name  = "all-docs"
+match = { ext = ["md"] }
+label = ["doc"]
+[[rule]]
+name  = "architecture"
+match = { path = "arch*" }
+label = ["architecture"]
+[[rule]]
+name  = "shelve"
+match = { ext = ["md"] }
+into  = "library"
+label = ["shelved"]
+[[rule]]
+name  = "never-reached"
+match = { ext = ["md"] }
+into  = "elsewhere"`)
+
+	plan, err := BuildPlan(t.TempDir(), manifest(
+		store.Entry{Path: "architecture.md", Blob: "b3:1", ModTime: mod},
+	), rs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(plan.Ops) != 1 || plan.Ops[0].Kind != OpMove || plan.Ops[0].To != "library/architecture.md" {
+		t.Fatalf("placement should come from the first placement rule: %+v", plan.Ops)
+	}
+	got := map[string]bool{}
+	for _, l := range plan.Ops[0].Labels {
+		got[l] = true
+	}
+	if !got["doc"] || !got["architecture"] || !got["shelved"] {
+		t.Fatalf("labels from ALL matching rules should accumulate: %+v", plan.Ops[0].Labels)
+	}
+	if plan.Ops[0].Rule != "shelve" {
+		t.Fatalf("move attribution should be the placement rule: %+v", plan.Ops[0])
+	}
+}
+
 // Label-only op when the file is already in place but missing labels.
 func TestPlanLabelOnly(t *testing.T) {
 	rs := rules(t, `

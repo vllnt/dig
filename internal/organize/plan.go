@@ -78,7 +78,13 @@ func BuildPlan(kbRoot string, head *store.Manifest, rules []policy.CompiledRule)
 	}
 
 	for _, e := range head.Entries {
+		// Rule semantics: label-only rules ACCUMULATE (every matching one
+		// contributes labels and matching continues); the first matching
+		// PLACEMENT rule (into/rename) decides the target and stops the scan.
 		matched := false
+		firstRule := ""
+		var wantLabels []string
+		var placement *policy.CompiledRule
 		for i := range rules {
 			r := &rules[i]
 			ok, err := r.Matches(e.Path, contentOf)
@@ -88,54 +94,83 @@ func BuildPlan(kbRoot string, head *store.Manifest, rules []policy.CompiledRule)
 			if !ok {
 				continue
 			}
-			matched = true
-
-			target := r.Target(e.Path, e.ModTime)
-			// A pinned entry was deliberately placed by a human: policy never
-			// auto-moves it. The would-be op is surfaced for a human instead.
-			if hasLabel(e.Labels, policy.PinnedLabel) {
-				if target != e.Path {
-					plan.Pinned = append(plan.Pinned, Op{
-						Kind: OpMove, Rule: r.Name, From: e.Path, To: target,
-					})
-				}
-				break
+			if !matched {
+				matched, firstRule = true, r.Name
 			}
-			if escapes(target) {
-				plan.Conflicts = append(plan.Conflicts, Conflict{
-					Path: e.Path, Rule: r.Name,
-					Reason: fmt.Sprintf("target %q escapes the KB root", target),
-				})
-				break
+			wantLabels = append(wantLabels, r.Label...)
+			if r.Into != "" || r.Rename != "" {
+				placement = r
+				break // first placement rule wins
 			}
-			if target != e.Path {
-				if claimer, taken := targets[target]; taken && claimer != e.Path {
-					plan.Conflicts = append(plan.Conflicts, Conflict{
-						Path: e.Path, Rule: r.Name,
-						Reason: fmt.Sprintf("target %q already taken by %s", target, claimer),
-					})
-					break
-				}
-				delete(targets, e.Path)
-				targets[target] = e.Path
-				plan.Ops = append(plan.Ops, Op{
-					Kind: OpMove, Rule: r.Name, From: e.Path, To: target, Labels: newLabels(e.Labels, r.Label),
-				})
-			} else if missing := newLabels(e.Labels, r.Label); len(missing) > 0 {
-				plan.Ops = append(plan.Ops, Op{
-					Kind: OpLabel, Rule: r.Name, From: e.Path, Labels: missing,
-				})
-			}
-			break // first matching rule wins
 		}
-		if !matched && !hasLabel(e.Labels, policy.UnsortedLabel) {
-			plan.Unsorted = append(plan.Unsorted, e.Path)
+		if !matched {
+			if !hasLabel(e.Labels, policy.UnsortedLabel) {
+				plan.Unsorted = append(plan.Unsorted, e.Path)
+			}
+			continue
+		}
+
+		target := e.Path
+		ruleName := ""
+		if placement != nil {
+			target = placement.Target(e.Path, e.ModTime)
+			ruleName = placement.Name
+		}
+		missing := newLabels(e.Labels, wantLabels)
+
+		// A pinned entry was deliberately placed by a human: policy never
+		// auto-moves it. The would-be op is surfaced for a human instead.
+		// Labels still accumulate — they don't fight the human's placement.
+		if hasLabel(e.Labels, policy.PinnedLabel) {
+			if target != e.Path {
+				plan.Pinned = append(plan.Pinned, Op{
+					Kind: OpMove, Rule: ruleName, From: e.Path, To: target,
+				})
+			}
+			if len(missing) > 0 {
+				plan.Ops = append(plan.Ops, Op{Kind: OpLabel, Rule: labelRule(ruleName, firstRule), From: e.Path, Labels: missing})
+			}
+			continue
+		}
+		if escapes(target) {
+			plan.Conflicts = append(plan.Conflicts, Conflict{
+				Path: e.Path, Rule: ruleName,
+				Reason: fmt.Sprintf("target %q escapes the KB root", target),
+			})
+			continue
+		}
+		if target != e.Path {
+			if claimer, taken := targets[target]; taken && claimer != e.Path {
+				plan.Conflicts = append(plan.Conflicts, Conflict{
+					Path: e.Path, Rule: ruleName,
+					Reason: fmt.Sprintf("target %q already taken by %s", target, claimer),
+				})
+				continue
+			}
+			delete(targets, e.Path)
+			targets[target] = e.Path
+			plan.Ops = append(plan.Ops, Op{
+				Kind: OpMove, Rule: ruleName, From: e.Path, To: target, Labels: missing,
+			})
+		} else if len(missing) > 0 {
+			plan.Ops = append(plan.Ops, Op{
+				Kind: OpLabel, Rule: labelRule(ruleName, firstRule), From: e.Path, Labels: missing,
+			})
 		}
 	}
 
 	sort.Slice(plan.Ops, func(i, j int) bool { return plan.Ops[i].From < plan.Ops[j].From })
 	sort.Strings(plan.Unsorted)
 	return plan, nil
+}
+
+// labelRule names a label op's rule attribution, falling back when no
+// placement rule fired (labels came from label-only rules).
+func labelRule(placement, fallback string) string {
+	if placement != "" {
+		return placement
+	}
+	return fallback
 }
 
 // newLabels returns the labels in want that are not already in have.

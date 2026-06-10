@@ -63,12 +63,7 @@ func newScanCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			idx, err := index.Open(dig)
-			if err != nil {
-				return err
-			}
-			defer func() { _ = idx.Close() }()
-			if err := idx.Rebuild(m); err != nil {
+			if err := rebuildIndex(dig, st, m); err != nil {
 				return err
 			}
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Scanned %d file(s) → manifest %s\n", len(entries), m.ID)
@@ -195,12 +190,7 @@ func newUndoCmd() *cobra.Command {
 					return fmt.Errorf("disk revert: %w", err)
 				}
 			}
-			idx, err := index.Open(dig)
-			if err != nil {
-				return err
-			}
-			defer func() { _ = idx.Close() }()
-			if err := idx.Rebuild(head); err != nil {
+			if err := rebuildIndex(dig, st, head); err != nil {
 				return err
 			}
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Reverted %s → head is now %s\n", undone.ID, head.ID)

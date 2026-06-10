@@ -12,10 +12,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bntvllnt/dig/internal/drift"
-	"github.com/bntvllnt/dig/internal/index"
 	"github.com/bntvllnt/dig/internal/kb"
 	"github.com/bntvllnt/dig/internal/policy"
 	"github.com/bntvllnt/dig/internal/store"
+	"github.com/bntvllnt/dig/internal/watch"
 )
 
 // loadRules loads + compiles the KB policy. Missing policy file is fine for
@@ -137,12 +137,7 @@ func newReconcileCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				idx, err := index.Open(k.Dig())
-				if err != nil {
-					return err
-				}
-				defer func() { _ = idx.Close() }()
-				if err := idx.Rebuild(head); err != nil {
+				if err := rebuildIndex(k.Dig(), st, head); err != nil {
 					return err
 				}
 			}
@@ -173,10 +168,10 @@ func renderSummary(cmd *cobra.Command, sum *drift.Summary, dryRun bool) {
 		}
 	}
 	for _, op := range sum.Applied {
-		_, _ = fmt.Fprintf(tw, "APPLY\t%s\t%s → %s\t(%s)\n", op.Kind, op.From, op.To, op.Rule)
+		_, _ = fmt.Fprintf(tw, "APPLY\t%s\t%s\t%s\t(%s)\n", op.Kind, op.From, watch.OpTarget(op.From, op.To, op.Labels), op.Rule)
 	}
 	for _, op := range sum.Proposed {
-		_, _ = fmt.Fprintf(tw, "PROPOSE\t%s\twould → %s\t(%s — rule autonomy; re-run to consent)\n", op.From, op.To, op.Rule)
+		_, _ = fmt.Fprintf(tw, "PROPOSE\t%s\twould %s\t(%s — rule autonomy; re-run to consent)\n", op.From, watch.OpTarget(op.From, op.To, op.Labels), op.Rule)
 	}
 	for _, op := range sum.Escalated {
 		_, _ = fmt.Fprintf(tw, "ESCALATE\t%s\twould → %s\t(%s) — human moved it; not auto-applied\n", op.From, op.To, op.Rule)

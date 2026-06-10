@@ -9,8 +9,10 @@ package index
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	_ "modernc.org/sqlite"
 
@@ -26,7 +28,7 @@ type Result struct {
 
 // IndexBackend is the seam for where the searchable index lives.
 type IndexBackend interface {
-	Rebuild(m *store.Manifest) error
+	Rebuild(m *store.Manifest, content ContentFunc) error
 	Query(q string, limit int) ([]Result, error)
 	Close() error
 }
@@ -56,11 +58,36 @@ func Open(digDir string) (*FTS, error) {
 // Close releases the database.
 func (f *FTS) Close() error { return f.db.Close() }
 
-// Rebuild replaces the index contents with the entries of m. Body text is
-// seeded from the path's terms; richer extracted text is added in a later phase
-// (the extraction pipeline). Rebuilding from the manifest keeps the index a
-// pure derived view.
-func (f *FTS) Rebuild(m *store.Manifest) error {
+// maxIndexText caps how much of a file's text lands in the index body.
+const maxIndexText = 256 << 10 // 256 KiB
+
+// ContentFunc returns a blob's content for indexing, or false to skip it
+// (binary, unreadable). Content comes from the BLOB STORE, not live disk —
+// the index stays a pure derived view of the manifest.
+type ContentFunc func(blob string) ([]byte, bool)
+
+// BlobContent adapts a StorageBackend into a ContentFunc: UTF-8 text only,
+// capped at maxIndexText.
+func BlobContent(be store.StorageBackend) ContentFunc {
+	return func(blob string) ([]byte, bool) {
+		rc, err := be.Get(blob)
+		if err != nil {
+			return nil, false
+		}
+		defer func() { _ = rc.Close() }()
+		buf, err := io.ReadAll(io.LimitReader(rc, maxIndexText))
+		if err != nil || !utf8.Valid(buf) {
+			return nil, false
+		}
+		return buf, true
+	}
+}
+
+// Rebuild replaces the index contents with the entries of m. Body holds the
+// path's terms plus the file's text (via content, when provided) — so find
+// matches what files SAY, not just what they are called. Rebuilding from the
+// manifest + blob store keeps the index a pure derived view.
+func (f *FTS) Rebuild(m *store.Manifest, content ContentFunc) error {
 	tx, err := f.db.Begin()
 	if err != nil {
 		return err
@@ -82,6 +109,11 @@ func (f *FTS) Rebuild(m *store.Manifest) error {
 	for _, e := range m.Entries {
 		labels := strings.Join(e.Labels, " ")
 		body := pathTerms(e.Path)
+		if content != nil {
+			if text, ok := content(e.Blob); ok {
+				body += "\n" + string(text)
+			}
+		}
 		if _, err := stmt.Exec(e.Path, labels, body, e.Blob); err != nil {
 			return fmt.Errorf("index %s: %w", e.Path, err)
 		}
@@ -89,7 +121,11 @@ func (f *FTS) Rebuild(m *store.Manifest) error {
 	return tx.Commit()
 }
 
-// Query runs an FTS5 match across path, labels, and body, ranked by relevance.
+// Query runs an FTS5 match across path, labels, and body, ranked by
+// relevance. Strict first (every term must match), and when a multi-term
+// query finds nothing, it falls back to any-term matching so natural
+// questions ("who did I talk to about renewal") still hit the documents
+// that contain the meaningful terms.
 func (f *FTS) Query(q string, limit int) ([]Result, error) {
 	if strings.TrimSpace(q) == "" {
 		return nil, nil
@@ -97,9 +133,20 @@ func (f *FTS) Query(q string, limit int) ([]Result, error) {
 	if limit <= 0 {
 		limit = 20
 	}
+	out, err := f.match(ftsQuery(q, "AND"), limit)
+	if err != nil {
+		return nil, err
+	}
+	if len(out) == 0 && len(strings.Fields(q)) > 1 {
+		return f.match(ftsQuery(q, "OR"), limit)
+	}
+	return out, nil
+}
+
+func (f *FTS) match(expr string, limit int) ([]Result, error) {
 	rows, err := f.db.Query(
 		`SELECT path, blob, labels FROM docs WHERE docs MATCH ? ORDER BY rank LIMIT ?`,
-		ftsQuery(q), limit,
+		expr, limit,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("query: %w", err)
@@ -129,13 +176,13 @@ func pathTerms(p string) string {
 }
 
 // ftsQuery turns a user query into a safe FTS5 expression: each term becomes a
-// quoted prefix match, AND-ed together. Quoting avoids FTS5 syntax injection.
-func ftsQuery(q string) string {
+// quoted prefix match, joined by op. Quoting avoids FTS5 syntax injection.
+func ftsQuery(q string, op string) string {
 	fields := strings.Fields(q)
 	terms := make([]string, 0, len(fields))
 	for _, t := range fields {
 		t = strings.ReplaceAll(t, `"`, `""`)
 		terms = append(terms, `"`+t+`"*`)
 	}
-	return strings.Join(terms, " AND ")
+	return strings.Join(terms, " "+op+" ")
 }

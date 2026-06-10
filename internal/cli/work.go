@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bntvllnt/dig/internal/index"
 	"github.com/bntvllnt/dig/internal/kb"
 	"github.com/bntvllnt/dig/internal/policy"
 	"github.com/bntvllnt/dig/internal/store"
@@ -124,12 +123,7 @@ func newWorkCmd() *cobra.Command {
 				return err
 			}
 			if m != nil {
-				idx, err := index.Open(k.Dig())
-				if err != nil {
-					return err
-				}
-				defer func() { _ = idx.Close() }()
-				if err := idx.Rebuild(m); err != nil {
+				if err := rebuildIndex(k.Dig(), st, m); err != nil {
 					return err
 				}
 				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "resolved %q (%s) → manifest %s\n", v.Name, accept, m.ID)
@@ -167,12 +161,7 @@ func newMergeCmd() *cobra.Command {
 				return err
 			}
 			if m != nil {
-				idx, err := index.Open(k.Dig())
-				if err != nil {
-					return err
-				}
-				defer func() { _ = idx.Close() }()
-				if err := idx.Rebuild(m); err != nil {
+				if err := rebuildIndex(k.Dig(), st, m); err != nil {
 					return err
 				}
 			}
