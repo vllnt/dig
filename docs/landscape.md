@@ -104,21 +104,29 @@ Semantic recall of *text* for AI agents. Adjacent, not a direct rival — but th
 
 **Borrow:** the `init → index → search` UX. **Reject:** mandatory embeddings — semantic search is an opt-in driver in dig, default index stays SQLite FTS5.
 
-### Head-to-head: dig vs MemPalace, same corpus (measured 2026-06)
+### Full functionality matrix: dig vs MemPalace, verified hands-on (2026-06)
 
-Both tools run on an identical 13-file messy KB (invoices as .pdf, notes as .md, duplicates, binary blobs):
+Every MemPalace 1.x command exercised on an identical 13-file messy KB (invoices as .pdf, notes as .md, duplicates, binary blobs); dig re-measured after closing #3/#4/#5.
 
-| Measure | dig | MemPalace 1.x |
-|---|---|---|
-| Install footprint | 12 MB single binary | 330 MB venv (Python + ChromaDB + HNSW) |
-| Ingest 13 files | scan 0.05 s | mine 24 s (embeddings), and only **5/13 files** — all PDFs/txt/jpg skipped (markdown/transcript-oriented) |
-| Query latency | ~10 ms | ~1.9 s |
-| "find the invoice files" | 4 PDFs, labeled, incl. pinned status | cannot — never mined them |
-| Semantic query ("who did I talk to about contract renewal") | **no match** (content not yet indexed — bntvllnt/dig#3) | correct hit (cosine on note text) |
-| Organize / version / undo / dedupe / parallel | yes — its whole job | none — search-only memory |
-| Store size for this KB | 244 KB | 620 KB |
+| MemPalace function (verified) | What it did on the corpus | dig equivalent (measured) | Verdict |
+|---|---|---|---|
+| `init` (room detection) | detected 2 rooms from folders, interactive prompt | `init` + `scan`: 13/13 files, 0.05 s, no prompts | **dig** — full coverage, scriptable |
+| `mine` (ingest) | 24 s, **5/13 files** — every PDF/txt/jpg skipped | `scan`: all files, hashed + deduped by construction, 0.05 s | **dig** |
+| `search` (hybrid cosine+bm25) | ~1.9 s, md-only corpus slice | `find`: FTS over paths + labels + **content**, AND→OR fallback for natural questions; same top hit on "who did I talk to about contract renewal", 11 ms, PDFs included | **dig** — same answer, 170× faster, whole corpus |
+| `sweep` (catch-up miner) | 0 new (idempotent re-mine) | `scan` / `reconcile` are idempotent by design (no-op commits never created) | **dig** — same property, plus journaled |
+| `sync` (prune deleted sources) | dry-run default, `--apply` removes stale drawers | `drift` + `reconcile`: absorbs deletes/renames/edits into versioned history; renames detected by content identity | **dig** — sync is a subset of reconcile, without history |
+| `compress` (AAAK token reduction) | **grew** the corpus: 95t → 116t ("0.8×") | `export` streams capped text slices; no lossy compression by design | **dig** (on this corpus) — and dig never mutates content |
+| `wake-up` (agent context) | ~151-token L0/L1 summary of mined drawers | `export --filter … --json` / `find --json`: deterministic, provenance-tagged context for any harness | **split** — MemPalace's curated "story" is a real, distinct feature; dig provides raw, pinned, machine-consumable context |
+| `split` (transcript chunking) | n/a on this corpus (AI-session transcripts only) | out of scope — dig manages files, not chat transcripts | **n/a** — different problem |
+| `hook` / `instructions` / `mcp` | Claude/Codex integration surfaces | CLI-first by design: `--json` + stable exit codes; any harness shells out (MCP wrapper = extensibility phase) | **split** — MemPalace ships turnkey agent glue today; dig's contract is broader but DIY until P-extensibility |
+| `repair` / `repair-status` | HNSW vs sqlite divergence check (0 here) | index is a **derived view** — `scan` rebuilds it from manifests; nothing to diverge | **dig** — repair is unnecessary by construction |
+| `migrate` / `migrate-wings` | store schema migrations | versioned manifests + append-only journal; store semantics in core | **dig** — history is the data model, not a migration target |
+| `status` | drawer counts per wing/room | `log` (history) + `work list` (views) + `drift` (divergence) | **dig** — richer state, three lenses |
+| — (no equivalent) | — | organize/rename/label by policy, dedupe, byte-identical undo, human-coexistence (pinning), parallel views + merge/escalation, continuous watch, reproducible dataset export | **dig only** |
 
-**Read:** the camps don't actually overlap — MemPalace recalls *meaning from text it chose to mine*; dig manages *every file you have*. dig's one real loss (semantic recall) is mostly an indexing gap (#3: content not in FTS yet), not a missing vector DB.
+**Measured footprint:** dig 12 MB single binary, 244 KB store · MemPalace 330 MB venv, 620 KB palace. Ingest 0.05 s vs 24 s. Query 11 ms vs 1.9 s.
+
+**Honest read:** dig now wins or matches on every function MemPalace has for *files*, plus the entire management surface MemPalace lacks. MemPalace keeps two genuinely distinct strengths: true embedding semantics (synonym/paraphrase recall beyond shared terms — dig's opt-in vector driver stays planned, not built) and turnkey agent-memory glue (wake-up identity narrative, MCP server, transcript splitting) — a different product goal dig deliberately does not chase.
 
 ---
 
