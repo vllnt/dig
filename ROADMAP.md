@@ -147,6 +147,7 @@
 - [ ] harness-plugins.4 codex plugin
 - [ ] harness-plugins.5 openclaw integration
 - [ ] harness-plugins.6 hermes integration
+- [ ] harness-plugins.7 MCP server — expose the CLI surface (find/org/drift/reconcile/export) as MCP tools, thin wrapper over the integration contract
 
 ## public-extensibility [PLANNED]
 
@@ -170,12 +171,32 @@
 - [ ] remote-reach.4 Extraction pipeline — PDF text layer (pure-Go) + tesseract OCR shell-out
 - [ ] remote-reach.5 Opt-in extractor/classifier drivers wired into rules ({vendor} fields)
 
+## semantic-retrieval [PLANNED]
+
+**Goal:** Opt-in semantic search closes the one gap MemPalace kept — paraphrase recall with zero shared terms — without touching the deterministic FTS default.
+**Exit criteria:** Vector IndexBackend driver works against a local embedding endpoint; hybrid FTS+vector with reranking beats FTS-only on the eval set; dig scores published on LongMemEval and BEAM.
+
+- [ ] semantic-retrieval.1 Vector IndexBackend driver — opt-in, embeddings via the OpenAI-compatible endpoint, FTS stays default
+- [ ] semantic-retrieval.2 Hybrid retrieval + reranking — FTS ∪ vector candidates, rerank (RRF first, model reranker optional)
+- [ ] semantic-retrieval.3 LongMemEval harness + published score (MemPalace's benchmark — 96.6% R@5 is the bar)
+- [ ] semantic-retrieval.4 BEAM benchmark harness + published score
+
+## entity-graph [PLANNED]
+
+**Goal:** dig understands WHO and WHAT is in the KB — entities resolved across files, relations queryable — feeding labels, dedupe, and find.
+**Exit criteria:** "ACME" == "ACME Corp" across invoices/notes/contracts; entity labels applied by policy; relations (file↔entity↔entity) queryable via the CLI.
+
+- [ ] entity-graph.1 Entity extraction — extractor-pipeline stage (regex/LLM), entities stored as manifest metadata
+- [ ] entity-graph.2 Entity resolution — same-entity detection across mentions (deterministic rules first, LLM judgment opt-in)
+- [ ] entity-graph.3 Knowledge graph — entity/relation store derived from manifests, `dig entities` / graph-aware `find`
+- [ ] entity-graph.4 Policy hooks — match/label/file by entity ({vendor} from resolved entities, not just regex)
+
 ## Later
 
+- Mental models — scope undefined; decide what this means for dig (KB organization templates? agent memory schemas?) before it becomes work
 - Workflows engine — [[workflow]] multi-step ingest procedures committing as one changeset
 - Import-aware source-code reorganization (currently an explicit non-goal)
 - dig query — DuckDB-style query-in-place over KB files
-- Semantic / vector search as opt-in IndexBackend driver
 - Vision-model OCR fallback when tesseract absent
 - Migrate branch protection to GitHub rulesets if collaborators join
 - Homebrew tap once binaries are public
