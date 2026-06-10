@@ -1,17 +1,18 @@
+import { Terminal } from "@vllnt/ui";
 import { useTranslations } from "next-intl";
 
-import { Terminal } from "./terminal";
-
-const POLICY_SNIPPET = `[[rule]]
-name   = "invoices"
-match  = { ext = ["pdf"], content_matches = "invoice" }
-into   = "finance/invoices/{year}"
-rename = "{vendor}-{invoice_no}.pdf"
-label  = ["finance", "invoice"]
-
-[dedup]
-strategy    = "keep-oldest"
-on_conflict = "escalate"   # never silently delete`;
+const POLICY_SNIPPET = [
+  "[[rule]]",
+  'name   = "invoices"',
+  'match  = { ext = ["pdf"], content_matches = "invoice" }',
+  'into   = "finance/invoices/{year}"',
+  'rename = "{vendor}-{invoice_no}.pdf"',
+  'label  = ["finance", "invoice"]',
+  "",
+  "[dedup]",
+  'strategy    = "keep-oldest"',
+  'on_conflict = "escalate"   # never silently delete',
+].map((content) => ({ content, type: "output" as const }));
 
 const STEPS = ["step1", "step2", "step3"] as const;
 
@@ -19,7 +20,7 @@ export function HowItWorks() {
   const t = useTranslations("how");
 
   return (
-    <section className="border-t border-border" id="how">
+    <section className="scroll-mt-16 border-t border-border" id="how">
       <div className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-24">
         <div className="flex flex-col gap-4 text-center">
           <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -43,7 +44,7 @@ export function HowItWorks() {
           ))}
         </div>
         <div className="mx-auto w-full max-w-2xl">
-          <Terminal code={POLICY_SNIPPET} title=".dig/policy.toml" />
+          <Terminal lines={POLICY_SNIPPET} title=".dig/policy.toml" />
         </div>
       </div>
     </section>

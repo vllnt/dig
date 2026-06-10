@@ -22,7 +22,10 @@ export function Features() {
   const t = useTranslations("features");
 
   return (
-    <section className="border-t border-border bg-muted/30" id="features">
+    <section
+      className="scroll-mt-16 border-t border-border bg-muted/30"
+      id="features"
+    >
       <div className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-24">
         <div className="flex flex-col gap-4 text-center">
           <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">

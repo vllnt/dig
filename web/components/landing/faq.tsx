@@ -6,7 +6,10 @@ export function Faq() {
   const t = useTranslations("faq");
 
   return (
-    <section className="border-t border-border bg-muted/30" id="faq">
+    <section
+      className="scroll-mt-16 border-t border-border bg-muted/30"
+      id="faq"
+    >
       <div className="mx-auto flex max-w-3xl flex-col gap-12 px-6 py-24">
         <h2 className="text-balance text-center text-3xl font-semibold tracking-tight sm:text-4xl">
           {t("title")}

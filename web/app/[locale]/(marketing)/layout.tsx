@@ -22,20 +22,26 @@ export default function MarketingLayout({
             dig
           </Link>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a className="hidden hover:text-foreground sm:block" href="#how">
+            <a
+              className="hidden transition-colors hover:text-foreground sm:block"
+              href="#how"
+            >
               {t("how")}
             </a>
             <a
-              className="hidden hover:text-foreground sm:block"
+              className="hidden transition-colors hover:text-foreground sm:block"
               href="#features"
             >
               {t("features")}
             </a>
-            <a className="hidden hover:text-foreground sm:block" href="#faq">
+            <a
+              className="hidden transition-colors hover:text-foreground sm:block"
+              href="#faq"
+            >
               {t("faq")}
             </a>
             <a
-              className="font-medium text-foreground hover:text-foreground/80"
+              className="font-medium text-foreground transition-colors hover:text-foreground/80"
               href={GITHUB_URL}
               rel="noreferrer"
               target="_blank"
@@ -55,7 +61,7 @@ export default function MarketingLayout({
           </div>
           <div className="flex gap-4">
             <a
-              className="hover:text-foreground"
+              className="transition-colors hover:text-foreground"
               href={GITHUB_URL}
               rel="noreferrer"
               target="_blank"
@@ -63,7 +69,7 @@ export default function MarketingLayout({
               {f("github")}
             </a>
             <a
-              className="hover:text-foreground"
+              className="transition-colors hover:text-foreground"
               href={ROADMAP_URL}
               rel="noreferrer"
               target="_blank"
@@ -71,7 +77,7 @@ export default function MarketingLayout({
               {f("roadmap")}
             </a>
             <a
-              className="hover:text-foreground"
+              className="transition-colors hover:text-foreground"
               href={ARCHITECTURE_URL}
               rel="noreferrer"
               target="_blank"
