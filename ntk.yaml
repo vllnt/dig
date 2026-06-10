@@ -43,7 +43,7 @@ apps:
         NEXT_PUBLIC_SITE_URL: https://dig.vllnt.com
     build:
       dockerfile: web/Dockerfile
-      context: web
+      context: .              # deployer git-context build roots COPY at the repo root; Dockerfile selects web/
       args:
         # NEXT_PUBLIC_* inline at build time — must be build args, not runtime env.
         NEXT_PUBLIC_SITE_URL: https://dig.vllnt.com

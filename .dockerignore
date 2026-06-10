@@ -1,0 +1,16 @@
+# Build context is the repo root (the deployer builds from a git context).
+# Keep the context lean; the image only needs web/.
+.git
+.claude
+web/.claude
+/dig
+cmd
+internal
+docs
+web/node_modules
+web/.next
+web/test-results
+web/playwright-report
+web/tsconfig.tsbuildinfo
+**/.env*
+!web/.env.example

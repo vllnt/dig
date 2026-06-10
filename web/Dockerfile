@@ -1,8 +1,10 @@
 # dig web — production image (Next.js 16 standalone output).
 #
-# Built by the vllnt platform (BuildKit) from ntk.yaml. The build context is
-# web/ (the Go CLI at the repo root is NOT part of this image). NEXT_PUBLIC_*
-# values arrive as build args (Next.js inlines them at build time).
+# Built by the vllnt platform (BuildKit) from ntk.yaml. The deployer builds from
+# a git context rooted at the REPO ROOT (it ignores build.context for git
+# builds), so all COPY paths are repo-root-relative and select the web/ subdir
+# explicitly — the Go CLI at the repo root is simply never COPYed in.
+# NEXT_PUBLIC_* values arrive as build args (Next.js inlines them at build time).
 
 # syntax=docker/dockerfile:1.6
 
@@ -11,10 +13,10 @@ WORKDIR /src
 
 RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
 
-COPY package.json pnpm-lock.yaml ./
+COPY web/package.json web/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-COPY . .
+COPY web/ ./
 
 ARG NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
