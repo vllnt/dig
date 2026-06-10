@@ -128,7 +128,7 @@ func newReconcileCmd() *cobra.Command {
 			}
 			defer func() { _ = st.Close() }()
 
-			sum, err := drift.Reconcile(k, st, rules, dpol, dryRun)
+			sum, err := drift.Reconcile(k, st, rules, dpol, dryRun, drift.ModeOneShot)
 			if err != nil {
 				return err
 			}
@@ -160,8 +160,7 @@ func newReconcileCmd() *cobra.Command {
 
 func renderSummary(cmd *cobra.Command, sum *drift.Summary, dryRun bool) {
 	out := cmd.OutOrStdout()
-	if len(sum.Absorbed) == 0 && len(sum.Applied) == 0 && len(sum.Escalated) == 0 &&
-		len(sum.Collapsed) == 0 && len(sum.DupTies) == 0 && len(sum.Conflicts) == 0 {
+	if sum.Empty() {
 		_, _ = fmt.Fprintln(out, "already converged — nothing to reconcile")
 		return
 	}
@@ -175,6 +174,9 @@ func renderSummary(cmd *cobra.Command, sum *drift.Summary, dryRun bool) {
 	}
 	for _, op := range sum.Applied {
 		_, _ = fmt.Fprintf(tw, "APPLY\t%s\t%s → %s\t(%s)\n", op.Kind, op.From, op.To, op.Rule)
+	}
+	for _, op := range sum.Proposed {
+		_, _ = fmt.Fprintf(tw, "PROPOSE\t%s\twould → %s\t(%s — rule autonomy; re-run to consent)\n", op.From, op.To, op.Rule)
 	}
 	for _, op := range sum.Escalated {
 		_, _ = fmt.Fprintf(tw, "ESCALATE\t%s\twould → %s\t(%s) — human moved it; not auto-applied\n", op.From, op.To, op.Rule)

@@ -35,12 +35,18 @@ type Policy struct {
 
 // Rule maps matching files to a target folder, name, and labels.
 // At least one of Into / Rename / Label must be set.
+//
+// Autonomy is earned rule-by-rule (architecture.md §3): in watch mode only
+// rules marked "auto" apply unattended — everything else proposes. In an
+// explicit one-shot reconcile the user's invocation is consent, so rules
+// apply unless marked "propose".
 type Rule struct {
-	Name   string   `toml:"name"`
-	Match  Match    `toml:"match"`
-	Into   string   `toml:"into"`   // target dir template, KB-root-relative
-	Rename string   `toml:"rename"` // target filename template
-	Label  []string `toml:"label"`
+	Name     string   `toml:"name"`
+	Match    Match    `toml:"match"`
+	Into     string   `toml:"into"`   // target dir template, KB-root-relative
+	Rename   string   `toml:"rename"` // target filename template
+	Label    []string `toml:"label"`
+	Autonomy string   `toml:"autonomy"` // "" (default) | "auto" | "propose"
 }
 
 // Match holds the conditions a file must meet. All set fields must hold (AND).
@@ -134,6 +140,11 @@ func (p *Policy) Validate() error {
 		}
 		if r.Match.Ext == nil && r.Match.Mime == nil && r.Match.Path == "" && r.Match.ContentMatches == "" {
 			return fmt.Errorf("rule %q: empty match would apply to every file; use path = \"*\" to be explicit", r.Name)
+		}
+		switch r.Autonomy {
+		case "", "auto", "propose":
+		default:
+			return fmt.Errorf("rule %q: autonomy %q must be auto or propose", r.Name, r.Autonomy)
 		}
 	}
 	switch p.Dedup.Strategy {

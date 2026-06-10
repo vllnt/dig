@@ -2,7 +2,7 @@
 
 > Open, local, CLI-only agent harness that keeps knowledge bases organized to your policy — reversible, parallel-safe, extensible.
 
-**Now:** watch-harness
+**Now:** public-release
 **Last updated:** 2026-06-10
 
 ## vision-docs [DONE 2026-05]
@@ -94,15 +94,15 @@
 - [x] conflict-escalation.3 ESCALATED state + dig work resolve --mine|--theirs; escalations visible in work list
 - [x] conflict-escalation.4 Partial merge — clean ops land, only conflicted remainder held (finance/ never blocks media/)
 
-## watch-harness [PLANNED]
+## watch-harness [DONE 2026-06]
 
 **Goal:** dig runs continuously — observes edits, reconciles, escalates — with autonomy earned rule-by-rule.
 **Exit criteria:** dig watch converges a live KB unattended; trusted rules auto-apply, the rest propose; escalation queue is surfaced and actionable.
 
-- [ ] watch-harness.1 Filesystem watcher → incremental scan-diff
-- [ ] watch-harness.2 Per-rule autonomy config — propose | auto
-- [ ] watch-harness.3 dig watch long-running command + escalation queue surfacing
-- [ ] watch-harness.4 Soak test — sustained human + agent edits, no divergence
+- [x] watch-harness.1 Polling watch loop → reconcile per tick (quiet tick commits nothing; inotify trigger in Later)
+- [x] watch-harness.2 Per-rule autonomy — autonomy = "auto" | "propose"; watch applies auto-only, one-shot = consent
+- [x] watch-harness.3 dig watch [--interval] + escalation queue surfaced (ESCALATED views, pins, proposals, pending dups)
+- [x] watch-harness.4 Soak test — files dropped mid-watch converge; manual-rule files propose and stay put; clean cancel
 
 ## public-release [PLANNED]
 

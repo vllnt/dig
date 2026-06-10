@@ -156,7 +156,7 @@ func TestReconcileEscalatesHumanMovesNeverOverwrites(t *testing.T) {
 
 	// First reconcile: files a.pdf under docs/ per policy (auto — it's drift,
 	// not a human decision).
-	sum, err := Reconcile(k, st, rules, dpol, false)
+	sum, err := Reconcile(k, st, rules, dpol, false, ModeOneShot)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +172,7 @@ func TestReconcileEscalatesHumanMovesNeverOverwrites(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sum, err = Reconcile(k, st, rules, dpol, false)
+	sum, err = Reconcile(k, st, rules, dpol, false, ModeOneShot)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -190,12 +190,12 @@ func TestReconcileAutoFilesNewFiles(t *testing.T) {
 	k, st, _ := setupKB(t, map[string]string{"keep.txt": "x"})
 	rules, dpol := mustRules(t, testPolicy)
 
-	if _, err := Reconcile(k, st, rules, dpol, false); err != nil {
+	if _, err := Reconcile(k, st, rules, dpol, false, ModeOneShot); err != nil {
 		t.Fatal(err)
 	}
 	write(t, k.Root, "dropped.pdf", "new pdf")
 
-	sum, err := Reconcile(k, st, rules, dpol, false)
+	sum, err := Reconcile(k, st, rules, dpol, false, ModeOneShot)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,12 +212,12 @@ func TestReconcileIdempotent(t *testing.T) {
 	k, st, _ := setupKB(t, map[string]string{"inbox/a.pdf": "pdf"})
 	rules, dpol := mustRules(t, testPolicy)
 
-	if _, err := Reconcile(k, st, rules, dpol, false); err != nil {
+	if _, err := Reconcile(k, st, rules, dpol, false, ModeOneShot); err != nil {
 		t.Fatal(err)
 	}
 	before, _ := st.History()
 
-	sum, err := Reconcile(k, st, rules, dpol, false)
+	sum, err := Reconcile(k, st, rules, dpol, false, ModeOneShot)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,7 +236,7 @@ func TestReconcileDryRunTouchesNothing(t *testing.T) {
 	rules, dpol := mustRules(t, testPolicy)
 
 	histBefore, _ := st.History()
-	sum, err := Reconcile(k, st, rules, dpol, true)
+	sum, err := Reconcile(k, st, rules, dpol, true, ModeOneShot)
 	if err != nil {
 		t.Fatal(err)
 	}

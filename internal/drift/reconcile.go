@@ -61,15 +61,33 @@ func BuildReport(k kb.KB, st *store.Store, rules []policy.CompiledRule, dpol pol
 	}, nil
 }
 
+// Mode selects the autonomy posture of a reconcile run.
+const (
+	// ModeOneShot: the user invoked reconcile explicitly — that is consent.
+	// Every rule applies unless it is marked autonomy = "propose".
+	ModeOneShot = "oneshot"
+	// ModeWatch: unattended. Only rules marked autonomy = "auto" apply;
+	// everything else proposes. Autonomy is earned rule-by-rule.
+	ModeWatch = "watch"
+)
+
 // Summary is what one reconcile run did (or, dry-run, would do).
 type Summary struct {
-	Absorbed  []Change            `json:"absorbed,omitempty"`  // external edits folded into history
-	Applied   []organize.Op       `json:"applied,omitempty"`   // policy ops executed
-	Escalated []organize.Op       `json:"escalated,omitempty"` // ops on human-moved paths — held for a human
-	Conflicts []organize.Conflict `json:"conflicts,omitempty"`
-	Collapsed []dedup.Set         `json:"collapsed,omitempty"`
-	DupTies   []dedup.Conflict    `json:"dup_ties,omitempty"`
-	Head      string              `json:"head"`
+	Absorbed   []Change            `json:"absorbed,omitempty"`  // external edits folded into history
+	Applied    []organize.Op       `json:"applied,omitempty"`   // policy ops executed
+	Proposed   []organize.Op       `json:"proposed,omitempty"`  // ops held by rule autonomy — awaiting consent
+	Escalated  []organize.Op       `json:"escalated,omitempty"` // ops on human-moved paths — held for a human
+	Conflicts  []organize.Conflict `json:"conflicts,omitempty"`
+	Collapsed  []dedup.Set         `json:"collapsed,omitempty"`   // dup sets removed (one-shot)
+	DupPending []dedup.Set         `json:"dup_pending,omitempty"` // dup sets reported, not removed (watch)
+	DupTies    []dedup.Conflict    `json:"dup_ties,omitempty"`
+	Head       string              `json:"head"`
+}
+
+// Empty reports whether the run found nothing at all to do or surface.
+func (s *Summary) Empty() bool {
+	return len(s.Absorbed)+len(s.Applied)+len(s.Proposed)+len(s.Escalated)+
+		len(s.Conflicts)+len(s.Collapsed)+len(s.DupPending)+len(s.DupTies) == 0
 }
 
 // Reconcile converges the KB on policy in one shot:
@@ -83,7 +101,8 @@ type Summary struct {
 //
 // Every mutation is a separate journaled commit — `dig undo` unwinds
 // reconcile step by step. Dry-run computes everything and commits nothing.
-func Reconcile(k kb.KB, st *store.Store, rules []policy.CompiledRule, dpol policy.DedupPolicy, dryRun bool) (*Summary, error) {
+// mode (ModeOneShot|ModeWatch) decides which rules may act unattended.
+func Reconcile(k kb.KB, st *store.Store, rules []policy.CompiledRule, dpol policy.DedupPolicy, dryRun bool, mode string) (*Summary, error) {
 	head, err := st.Head()
 	if err != nil {
 		return nil, err
@@ -116,32 +135,58 @@ func Reconcile(k kb.KB, st *store.Store, rules []policy.CompiledRule, dpol polic
 	if err != nil {
 		return nil, err
 	}
-	sum.Applied = plan.Ops
+	// Partition by rule autonomy: an op only acts unattended when its rule's
+	// autonomy permits it in this mode.
+	autonomy := map[string]string{}
+	for _, r := range rules {
+		autonomy[r.Name] = r.Autonomy
+	}
+	actPlan := &organize.Plan{Conflicts: plan.Conflicts, Unsorted: plan.Unsorted}
+	for _, op := range plan.Ops {
+		a := autonomy[op.Rule]
+		acts := a != "propose" // one-shot default
+		if mode == ModeWatch {
+			acts = a == "auto"
+		}
+		if acts {
+			actPlan.Ops = append(actPlan.Ops, op)
+		} else {
+			sum.Proposed = append(sum.Proposed, op)
+		}
+	}
+	sum.Applied = actPlan.Ops
 	sum.Escalated = plan.Pinned
 	sum.Conflicts = plan.Conflicts
-	if !dryRun && (!plan.Empty() || len(plan.Unsorted) > 0) {
-		head, err = organize.Apply(k.Root, st, head, plan)
+	if !dryRun && (!actPlan.Empty() || len(actPlan.Unsorted) > 0) {
+		head, err = organize.Apply(k.Root, st, head, actPlan)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// 3. dedup — collapse what is unambiguous.
+	// 3. dedup — collapse what is unambiguous. Removing files unattended is a
+	// step beyond labeling/moving: watch mode only REPORTS duplicate sets
+	// (DupPending); collapsing needs an explicit one-shot reconcile or
+	// 'dig dedup'.
 	dheadEntries := head
 	if dryRun {
 		// Project the org ops onto the entries so dedup sees the would-be tree.
-		dheadEntries = projectPlan(head, plan)
+		dheadEntries = projectPlan(head, actPlan)
 	}
 	dplan, err := dedup.BuildPlan(dheadEntries, dpol)
 	if err != nil {
 		return nil, err
 	}
-	sum.Collapsed = dplan.Sets
 	sum.DupTies = dplan.Conflicts
-	if !dryRun && !dplan.Empty() {
-		head, err = dedup.Apply(k.Root, st, head, dplan)
-		if err != nil {
-			return nil, err
+	if mode == ModeWatch {
+		sum.DupPending = dplan.Sets
+	} else {
+		sum.Collapsed = dplan.Sets
+		if !dryRun && !dplan.Empty() {
+			head, err = dedup.Apply(k.Root, st, head, dplan)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

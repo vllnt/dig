@@ -30,6 +30,7 @@ func NewRoot() *cobra.Command {
 		newDedupCmd(),
 		newDriftCmd(),
 		newReconcileCmd(),
+		newWatchCmd(),
 		newPolicyCmd(),
 		newWorkCmd(),
 		newMergeCmd(),
