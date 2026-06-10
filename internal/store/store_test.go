@@ -18,7 +18,7 @@ func openTest(t *testing.T) *Store {
 
 func mustCommit(t *testing.T, st *Store, by string, entries []Entry) {
 	t.Helper()
-	if _, err := st.Commit(by, entries); err != nil {
+	if _, err := st.Commit(by, "", entries); err != nil {
 		t.Fatalf("commit: %v", err)
 	}
 }
@@ -71,14 +71,14 @@ func TestGetMissingBlob(t *testing.T) {
 func TestCommitAppendsAndChains(t *testing.T) {
 	st := openTest(t)
 
-	m1, err := st.Commit("scan", []Entry{{Path: "a.txt", Blob: "b3:1"}})
+	m1, err := st.Commit("scan", KindObserve, []Entry{{Path: "a.txt", Blob: "b3:1"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if m1.ID != "M1" || m1.Parent != "" {
 		t.Fatalf("root manifest wrong: id=%s parent=%q", m1.ID, m1.Parent)
 	}
-	m2, err := st.Commit("org", []Entry{{Path: "b.txt", Blob: "b3:2"}})
+	m2, err := st.Commit("org", KindMutate, []Entry{{Path: "b.txt", Blob: "b3:2"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,9 +104,12 @@ func TestUndoRestoresPriorState(t *testing.T) {
 	mustCommit(t, st, "scan", []Entry{{Path: "a.txt", Blob: "b3:a"}})
 	mustCommit(t, st, "org", []Entry{{Path: "a.txt", Blob: "b3:a"}, {Path: "b.txt", Blob: "b3:b"}})
 
-	prev, err := st.Undo()
+	undone, prev, err := st.Undo()
 	if err != nil {
 		t.Fatalf("undo: %v", err)
+	}
+	if undone.ID != "M2" {
+		t.Fatalf("undone manifest should be M2, got %s", undone.ID)
 	}
 	if prev.ID != "M1" {
 		t.Fatalf("undo should land on M1, got %s", prev.ID)
@@ -124,14 +127,14 @@ func TestUndoRestoresPriorState(t *testing.T) {
 func TestUndoAtRootErrors(t *testing.T) {
 	st := openTest(t)
 	mustCommit(t, st, "scan", []Entry{{Path: "a.txt", Blob: "b3:a"}})
-	if _, err := st.Undo(); err == nil {
+	if _, _, err := st.Undo(); err == nil {
 		t.Fatal("undo at root manifest should error")
 	}
 }
 
 func TestUndoEmptyErrors(t *testing.T) {
 	st := openTest(t)
-	if _, err := st.Undo(); err == nil {
+	if _, _, err := st.Undo(); err == nil {
 		t.Fatal("undo on empty store should error")
 	}
 }

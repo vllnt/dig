@@ -2,7 +2,7 @@
 
 > Open, local, CLI-only agent harness that keeps knowledge bases organized to your policy — reversible, parallel-safe, extensible.
 
-**Now:** organize
+**Now:** dedupe
 **Last updated:** 2026-06-10
 
 ## vision-docs [DONE 2026-05]
@@ -30,21 +30,21 @@
 - [x] foundation.5 Cobra CLI — init, scan --dry-run, find --json, log, undo
 - [x] foundation.6 Tests (12, -race) + golangci-lint v2 green + CI green on main
 
-## organize [ACTIVE]
+## organize [DONE 2026-06]
 
 **Goal:** dig restructures a KB per declarative rules — the first destructive feature, fully reversible.
 **Exit criteria:** TOML rules move/rename/label files; --dry-run previews the full plan; org → undo restores byte-identical state; unmatched files untouched and labeled unsorted.
 
-- [ ] organize.1 Policy schema — TOML [[rule]] match/into/rename/label, parser + validation
-- [ ] organize.2 Matchers — ext, mime, path glob, content_matches (plaintext), size/date
-- [ ] organize.3 Template engine — {year} {month} {name} {ext} from entry metadata
-- [ ] organize.4 Changeset builder — rules over head manifest → op list (move/rename/label)
-- [ ] organize.5 dig org --dry-run — render the full op plan, touch nothing
-- [ ] organize.6 dig org apply — atomic disk ops + journal commit + index rebuild
-- [ ] organize.7 dig policy validate — lint the policy file, explain rule matches
-- [ ] organize.8 E2E — org → undo byte-identical; unmatched → unsorted label; idempotent re-run
+- [x] organize.1 Policy schema — TOML [[rule]] match/into/rename/label, parser + validation
+- [x] organize.2 Matchers — ext, mime, path glob, content_matches (plaintext), size/date
+- [x] organize.3 Template engine — {year} {month} {name} {ext} from entry metadata
+- [x] organize.4 Changeset builder — rules over head manifest → op list (move/rename/label)
+- [x] organize.5 dig org --dry-run — render the full op plan, touch nothing
+- [x] organize.6 dig org apply — atomic disk ops + journal commit + index rebuild
+- [x] organize.7 dig policy validate — lint the policy file, explain rule matches
+- [x] organize.8 E2E — org → undo byte-identical; unmatched → unsorted label; idempotent re-run
 
-## dedupe [PLANNED]
+## dedupe [ACTIVE]
 
 **Goal:** Duplicates are detected from the store and collapsed per policy — never silently deleted.
 **Exit criteria:** dig dedup reports duplicate sets, collapses per strategy, escalates on conflict, and undo restores every copy.

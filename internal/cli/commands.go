@@ -9,6 +9,7 @@ import (
 
 	"github.com/bntvllnt/dig/internal/index"
 	"github.com/bntvllnt/dig/internal/kb"
+	"github.com/bntvllnt/dig/internal/organize"
 	"github.com/bntvllnt/dig/internal/scan"
 	"github.com/bntvllnt/dig/internal/store"
 )
@@ -58,7 +59,7 @@ func newScanCmd() *cobra.Command {
 				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] would scan %d file(s); no changes written\n", len(entries))
 				return nil
 			}
-			m, err := st.Commit("scan", entries)
+			m, err := st.Commit("scan", store.KindObserve, entries)
 			if err != nil {
 				return err
 			}
@@ -171,6 +172,7 @@ func newUndoCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "undo",
 		Short: "Revert the last changeset (move head to its parent)",
+		Long:  "Moves the head manifest back to its parent. If the undone changeset was a\nmutation dig made to disk (org, dedup), the disk changes are reversed too.\nUndoing a scan only rewinds history — your files are never touched.",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			k, err := kb.Resolve(kbFlag)
@@ -184,19 +186,24 @@ func newUndoCmd() *cobra.Command {
 			}
 			defer func() { _ = st.Close() }()
 
-			m, err := st.Undo()
+			undone, head, err := st.Undo()
 			if err != nil {
 				return err
+			}
+			if undone.Kind == store.KindMutate {
+				if err := organize.Revert(k.Root, st, undone, head); err != nil {
+					return fmt.Errorf("disk revert: %w", err)
+				}
 			}
 			idx, err := index.Open(dig)
 			if err != nil {
 				return err
 			}
 			defer func() { _ = idx.Close() }()
-			if err := idx.Rebuild(m); err != nil {
+			if err := idx.Rebuild(head); err != nil {
 				return err
 			}
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Reverted → head is now %s\n", m.ID)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Reverted %s → head is now %s\n", undone.ID, head.ID)
 			return nil
 		},
 	}

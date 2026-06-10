@@ -14,6 +14,16 @@ type Entry struct {
 	Labels  []string  `json:"labels,omitempty"`
 }
 
+// Kind distinguishes how a manifest came to be — the distinction that makes
+// undo safe. Observation commits (scan) record what disk already looks like;
+// undoing one only moves the head pointer and never touches files. Mutation
+// commits (org, dedup) record changes dig itself made to disk; undoing one
+// also reverses those disk changes.
+const (
+	KindObserve = "observe"
+	KindMutate  = "mutate"
+)
+
 // Manifest is an immutable snapshot of the tree at one point in history.
 // ID is sequential (M1, M2, ...); Parent links to the previous head, forming
 // the journal's chain. The root manifest has Parent == "".
@@ -21,7 +31,8 @@ type Manifest struct {
 	ID        string    `json:"id"`
 	Parent    string    `json:"parent"`
 	CreatedAt time.Time `json:"created_at"`
-	CreatedBy string    `json:"created_by"` // e.g. "scan", "org", "work/cleanup"
+	CreatedBy string    `json:"created_by"`     // e.g. "scan", "org", "work/cleanup"
+	Kind      string    `json:"kind,omitempty"` // KindObserve (default) or KindMutate
 	Entries   []Entry   `json:"entries"`
 }
 

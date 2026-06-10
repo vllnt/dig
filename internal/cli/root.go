@@ -25,6 +25,8 @@ func NewRoot() *cobra.Command {
 		newInitCmd(),
 		newScanCmd(),
 		newFindCmd(),
+		newOrgCmd(),
+		newPolicyCmd(),
 		newLogCmd(),
 		newUndoCmd(),
 	)

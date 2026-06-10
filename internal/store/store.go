@@ -66,8 +66,13 @@ func (s *Store) Close() error { return s.db.Close() }
 func (s *Store) Blobs() StorageBackend { return s.blobs }
 
 // Commit appends a new manifest with the given entries, parented on the current
-// head, and advances head. Returns the stored manifest.
-func (s *Store) Commit(createdBy string, entries []Entry) (*Manifest, error) {
+// head, and advances head. Returns the stored manifest. kind is KindObserve for
+// commits that record disk as found (scan) or KindMutate for commits recording
+// changes dig itself made (org, dedup) — empty defaults to KindObserve.
+func (s *Store) Commit(createdBy string, kind string, entries []Entry) (*Manifest, error) {
+	if kind == "" {
+		kind = KindObserve
+	}
 	var out *Manifest
 	err := s.db.Update(func(tx *bbolt.Tx) error {
 		meta := tx.Bucket(bktMeta)
@@ -79,6 +84,7 @@ func (s *Store) Commit(createdBy string, entries []Entry) (*Manifest, error) {
 			Parent:    string(meta.Get(keyHead)),
 			CreatedAt: s.clock().UTC(),
 			CreatedBy: createdBy,
+			Kind:      kind,
 			Entries:   entries,
 		}
 		buf, err := json.Marshal(m)
@@ -146,11 +152,12 @@ func (s *Store) History() ([]*Manifest, error) {
 	return out, err
 }
 
-// Undo moves head to the current head's parent and returns the new head.
-// Returns an error if there is nothing to undo (no commits, or at root).
-func (s *Store) Undo() (*Manifest, error) {
-	var out *Manifest
-	err := s.db.Update(func(tx *bbolt.Tx) error {
+// Undo moves head to the current head's parent. It returns the manifest that
+// was undone and the new head, so callers can reverse disk changes when the
+// undone manifest was a mutation (KindMutate). Errors if there is nothing to
+// undo (no commits, or at root).
+func (s *Store) Undo() (undone *Manifest, head *Manifest, err error) {
+	err = s.db.Update(func(tx *bbolt.Tx) error {
 		meta := tx.Bucket(bktMeta)
 		id := string(meta.Get(keyHead))
 		if id == "" {
@@ -166,12 +173,13 @@ func (s *Store) Undo() (*Manifest, error) {
 		if err := meta.Put(keyHead, []byte(cur.Parent)); err != nil {
 			return err
 		}
-		return loadManifest(tx, cur.Parent, &out)
+		undone = cur
+		return loadManifest(tx, cur.Parent, &head)
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return out, nil
+	return undone, head, nil
 }
 
 func loadManifest(tx *bbolt.Tx, id string, dst **Manifest) error {
