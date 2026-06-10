@@ -2,6 +2,7 @@ package organize
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -74,8 +75,8 @@ func Apply(kbRoot string, st *store.Store, head *store.Manifest, plan *Plan) (*s
 
 // Revert reverses the disk effects of an undone mutation manifest: every blob
 // that lives at a different path in the parent moves back; entries the parent
-// has but disk lost are restored from the blob store. Labels are manifest-only
-// and revert with the head pointer itself.
+// has but disk lost (e.g. duplicates a dedup removed) are restored from the
+// blob store. Labels are manifest-only and revert with the head pointer itself.
 func Revert(kbRoot string, st *store.Store, undone, parent *store.Manifest) error {
 	if parent == nil {
 		return nil
@@ -112,6 +113,36 @@ func Revert(kbRoot string, st *store.Store, undone, parent *store.Manifest) erro
 		if err := os.Rename(mv.tmp, mv.to); err != nil {
 			return fmt.Errorf("settle revert %s: %w", mv.to, err)
 		}
+	}
+
+	// Restore pass: parent entries missing on disk (e.g. duplicates a dedup
+	// removed) come back from the blob store — content never dies there.
+	for _, e := range parent.Entries {
+		dst := filepath.Join(kbRoot, filepath.FromSlash(e.Path))
+		if _, err := os.Stat(dst); err == nil {
+			continue
+		}
+		rc, err := st.Blobs().Get(e.Blob)
+		if err != nil {
+			return fmt.Errorf("restore %s: blob %s: %w", e.Path, e.Blob, err)
+		}
+		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+			_ = rc.Close()
+			return err
+		}
+		f, err := os.Create(dst)
+		if err != nil {
+			_ = rc.Close()
+			return fmt.Errorf("restore %s: %w", e.Path, err)
+		}
+		if _, err := io.Copy(f, rc); err != nil {
+			_ = f.Close()
+			_ = rc.Close()
+			return fmt.Errorf("restore %s: %w", e.Path, err)
+		}
+		_ = f.Close()
+		_ = rc.Close()
+		_ = os.Chtimes(dst, e.ModTime, e.ModTime)
 	}
 	pruneEmptyDirs(kbRoot)
 	return nil

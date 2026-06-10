@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/bntvllnt/dig/internal/kb"
 )
@@ -194,6 +195,73 @@ func TestChainGuardrails(t *testing.T) {
 	// Policy exists but no scan yet.
 	write(t, root, ".dig/policy.toml", e2ePolicy)
 	runExpectErr(t, "--kb", root, "org")
+}
+
+// TestChainOrgDedupUndoUndo stacks both mutate features and unwinds them in
+// order: scan → org → dedup → undo (dedup back) → undo (org back) → disk
+// byte-identical to the original. The chain proves mutate-reverts compose.
+func TestChainOrgDedupUndoUndo(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, "inbox/acme.pdf", "ACME invoice #1007")
+	write(t, root, "copies/acme-copy.pdf", "ACME invoice #1007") // duplicate content
+	write(t, root, "inbox/todo.md", "- [ ] things")
+	// Distinct mtimes so dedup's keep-oldest is deterministic.
+	older := timeAt(t, 2024)
+	newer := timeAt(t, 2025)
+	chtimes(t, root, "inbox/acme.pdf", older)
+	chtimes(t, root, "copies/acme-copy.pdf", newer)
+
+	run(t, "init", root)
+	write(t, root, ".dig/policy.toml", e2ePolicy)
+	run(t, "--kb", root, "scan")
+	pristine := diskState(t, root)
+
+	// org moves both pdfs... second one CONFLICTS (same target) — kept where
+	// it is; dedup later removes it as a duplicate. The chain shows the two
+	// features covering each other's gaps.
+	run(t, "--kb", root, "org")
+	out := run(t, "--kb", root, "dedup", "--dry-run")
+	if !strings.Contains(out, "KEEP") {
+		t.Fatalf("dedup dry-run should find the duplicate:\n%s", out)
+	}
+	ds := diskState(t, root)
+	nFiles := len(ds)
+
+	out = run(t, "--kb", root, "dedup")
+	if !strings.Contains(out, "Removed 1 duplicate") {
+		t.Fatalf("dedup output: %s", out)
+	}
+	if len(diskState(t, root)) != nFiles-1 {
+		t.Fatal("dedup should remove exactly one file")
+	}
+
+	// Unwind: undo dedup → duplicate restored; undo org → original tree.
+	run(t, "--kb", root, "undo")
+	if len(diskState(t, root)) != nFiles {
+		t.Fatal("undo of dedup did not restore the removed duplicate")
+	}
+	run(t, "--kb", root, "undo")
+	after := diskState(t, root)
+	if len(after) != len(pristine) {
+		t.Fatalf("full unwind file count: want %d got %d", len(pristine), len(after))
+	}
+	for p, c := range pristine {
+		if after[p] != c {
+			t.Fatalf("full unwind not byte-identical at %s", p)
+		}
+	}
+}
+
+func timeAt(t *testing.T, year int) time.Time {
+	t.Helper()
+	return time.Date(year, 6, 1, 0, 0, 0, 0, time.UTC)
+}
+
+func chtimes(t *testing.T, root, rel string, mt time.Time) {
+	t.Helper()
+	if err := os.Chtimes(filepath.Join(root, filepath.FromSlash(rel)), mt, mt); err != nil {
+		t.Fatal(err)
+	}
 }
 
 // Multi-rule interplay + conflicts surface in the plan rather than failing.

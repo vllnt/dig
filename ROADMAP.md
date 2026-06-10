@@ -2,7 +2,7 @@
 
 > Open, local, CLI-only agent harness that keeps knowledge bases organized to your policy — reversible, parallel-safe, extensible.
 
-**Now:** dedupe
+**Now:** dataset-export
 **Last updated:** 2026-06-10
 
 ## vision-docs [DONE 2026-05]
@@ -44,17 +44,17 @@
 - [x] organize.7 dig policy validate — lint the policy file, explain rule matches
 - [x] organize.8 E2E — org → undo byte-identical; unmatched → unsorted label; idempotent re-run
 
-## dedupe [ACTIVE]
+## dedupe [DONE 2026-06]
 
 **Goal:** Duplicates are detected from the store and collapsed per policy — never silently deleted.
 **Exit criteria:** dig dedup reports duplicate sets, collapses per strategy, escalates on conflict, and undo restores every copy.
 
-- [ ] dedupe.1 Duplicate-set detection — same blob, multiple paths, from head manifest
-- [ ] dedupe.2 [dedup] policy — strategy keep-oldest/newest/path-priority, on_conflict escalate
-- [ ] dedupe.3 dig dedup --dry-run + apply (journaled changeset)
-- [ ] dedupe.4 Tests — never deletes the last copy; undo restores collapsed duplicates
+- [x] dedupe.1 Duplicate-set detection — same blob, multiple paths, from head manifest
+- [x] dedupe.2 [dedup] policy — strategy keep-oldest/keep-newest, mtime tie → escalate
+- [x] dedupe.3 dig dedup --dry-run + apply (journaled changeset)
+- [x] dedupe.4 Tests — never deletes the last copy; undo restores collapsed duplicates
 
-## dataset-export [PLANNED]
+## dataset-export [ACTIVE]
 
 **Goal:** A KB slice exports as a reproducible, provenance-tagged dataset for ML training.
 **Exit criteria:** dig export --at @M re-emits a byte-identical dataset months later; every row carries src blob + manifest id.
