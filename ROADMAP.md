@@ -136,6 +136,18 @@
 - [ ] site-launch.4 User docs — quickstart, policy/rules/workflows reference, command reference, synced from README + docs/
 - [ ] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption
 
+## eval-harness [PLANNED]
+
+**Goal:** dig measures itself — one repeatable loop that dogfoods the full lifecycle on generated corpora and scores retrieval against the standard memory/IR benchmarks, continuously.
+**Exit criteria:** One command runs the full loop (generate KB → lifecycle regression → benchmark scores → scoreboard diff); scores + cost pairs tracked in-repo; a score regression fails CI.
+
+- [ ] eval-harness.1 Corpus generator — deterministic synthetic messy KBs (S/M/L; dupes, binaries, renames, nested chaos), seeded for reproducibility
+- [ ] eval-harness.2 Lifecycle loop — automated full-journey regression (scan→find→org→dedup→drift→reconcile→watch→export→undo) over generated corpora, asserting the core invariants (byte-identical undo, idempotency, no lost ops)
+- [ ] eval-harness.3 Retrieval metrics core — recall@k, NDCG@10, MRR over labeled query sets; pairs reporting (score + latency + footprint) per the field standard
+- [ ] eval-harness.4 Benchmark adapters — LongMemEval, LoCoMo, BEAM ingestion (sessions → KB files) + official scoring
+- [ ] eval-harness.5 FTS baseline scoreboard — pre-vector scores on every adapter, published in docs/evals.md (the bar semantic-retrieval must beat)
+- [ ] eval-harness.6 CI eval loop — nightly + on-demand workflow; scoreboard diff posted; regression gates block
+
 ## harness-plugins [PLANNED]
 
 **Goal:** dig ships as a first-class plugin/integration for the major agent harnesses, so any agent can manage a KB out of the box.
@@ -178,8 +190,9 @@
 
 - [ ] semantic-retrieval.1 Vector IndexBackend driver — opt-in, embeddings via the OpenAI-compatible endpoint, FTS stays default
 - [ ] semantic-retrieval.2 Hybrid retrieval + reranking — FTS ∪ vector candidates, rerank (RRF first, model reranker optional)
-- [ ] semantic-retrieval.3 LongMemEval harness + published score (MemPalace's benchmark — 96.6% R@5 is the bar)
-- [ ] semantic-retrieval.4 BEAM benchmark harness + published score
+- [ ] semantic-retrieval.3 Published LongMemEval score via eval-harness (MemPalace's benchmark — 96.6% R@5 is the bar)
+- [ ] semantic-retrieval.4 Published BEAM score via eval-harness (unsaturated frontier — 64.1/48.6 are today's best)
+- [ ] semantic-retrieval.5 Published LoCoMo score via eval-harness (third leg of every memory leaderboard)
 
 ## entity-graph [PLANNED]
 
