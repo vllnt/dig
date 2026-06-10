@@ -1,0 +1,51 @@
+# ntk.yaml — repo-deployable config for vllnt/dig.
+# Field reference: vllnt/infra docs/specs/ntk-authoring.md.
+#
+# Monorepo: the dig CLI (the product) lives at the repo root (cmd/, internal/)
+# and ships as a Go binary — NOT via ntk. This file deploys ONLY the marketing
+# /landing site in web/ (Next.js 16 on the @vllnt stack) to dig.vllnt.com.
+#
+# Lifecycle (ADR-081 / docs/specs/ntk.md):
+#   PR open/sync -> preview at pr-<N>-dig.preview.vllnt.ai (public + no-index).
+#   push main + `ntk promote --to prod` -> dig.vllnt.com (e2e gate runs first).
+#
+# Public-safe: declares no image, no secrets, no internal infra identifiers.
+project: dig
+
+apps:
+  - name: dig
+    cell: apps              # T1 vllnt-apps cell (ADR-090/091); without this, promote targets mgmt
+    path: web               # monorepo: the deployable app is the web/ landing site
+    port: 3000
+    healthcheck: /
+    domains:
+      production: dig.vllnt.com
+    visibility:
+      production: public      # OVH LB + WAF chain (R1/R20)
+      preview: public         # shareable review URL + enforced no-index
+    tls:
+      production:
+        secretName: dig-vllnt-com-tls   # non-*.vllnt.ai apex needs its own LE cert (A22/A66)
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { cpu: 1000m, memory: 1024Mi }
+    db:
+      engine: none
+    env:
+      # Previews canonicalize to production: the platform no-indexes previews
+      # (X-Robots-Tag) and rel=canonical -> dig.vllnt.com tells crawlers where
+      # the real content lives.
+      production:
+        SITE_URL: https://dig.vllnt.com
+        NEXT_PUBLIC_SITE_URL: https://dig.vllnt.com
+      preview:
+        SITE_URL: https://dig.vllnt.com
+        NEXT_PUBLIC_SITE_URL: https://dig.vllnt.com
+    build:
+      dockerfile: web/Dockerfile
+      context: web
+      args:
+        # NEXT_PUBLIC_* inline at build time — must be build args, not runtime env.
+        NEXT_PUBLIC_SITE_URL: https://dig.vllnt.com
+    e2e:
+      command: pnpm -C web test:e2e   # Playwright; ntk promote runs it vs NTK_PREVIEW_URL (A69)
