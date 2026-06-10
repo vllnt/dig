@@ -135,6 +135,7 @@
 - [ ] site-launch.3 Install strategy — curl installer script + Homebrew tap + `go install`, all fed by GoReleaser artifacts (needs public-release.3), install page on the site
 - [ ] site-launch.4 User docs — quickstart, policy/rules/workflows reference, command reference, synced from README + docs/
 - [ ] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption
+- [ ] site-launch.6 Leaderboard page — benchmark scores (LongMemEval, LoCoMo, BEAM + cost pairs) rendered from eval-harness's docs/evals.md scoreboard, vs MemPalace/mem0/ByteRover published numbers
 
 ## eval-harness [PLANNED]
 
