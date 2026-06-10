@@ -13,3 +13,6 @@ coverage.*
 # Editor / OS
 .DS_Store
 *.swp
+
+# Local agent worktrees / session config
+.claude/
