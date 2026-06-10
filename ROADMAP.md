@@ -125,6 +125,17 @@
 - [ ] public-release.3 GoReleaser — cross-compiled binaries, checksums, install docs
 - [ ] public-release.4 oss-readiness audit — llms.txt, contributing, release notes
 
+## site-launch [PLANNED]
+
+**Goal:** dig.vllnt.com is live — the web app ships, users can install dig through a clear strategy, and user docs are published.
+**Exit criteria:** Site resolves at dig.vllnt.com; a newcomer installs dig from it in under a minute via a documented channel; quickstart + policy reference + command docs published and synced with the CLI.
+
+- [ ] site-launch.1 Land the web app — merge worktree `dig-landing` (web/ Next.js), builds green
+- [ ] site-launch.2 Deploy to dig.vllnt.com — hosting + DNS + CI deploy on main
+- [ ] site-launch.3 Install strategy — curl installer script + Homebrew tap + `go install`, all fed by GoReleaser artifacts (needs public-release.3), install page on the site
+- [ ] site-launch.4 User docs — quickstart, policy/rules/workflows reference, command reference, synced from README + docs/
+- [ ] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption
+
 ## public-extensibility [PLANNED]
 
 **Goal:** Third parties extend dig without forking — backup and store-elsewhere land first.
@@ -149,7 +160,6 @@
 
 ## Later
 
-- Landing page — web/ Next.js site, in-flight in worktree `dig-landing`
 - Workflows engine — [[workflow]] multi-step ingest procedures committing as one changeset
 - Import-aware source-code reorganization (currently an explicit non-goal)
 - dig query — DuckDB-style query-in-place over KB files
