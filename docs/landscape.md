@@ -104,6 +104,22 @@ Semantic recall of *text* for AI agents. Adjacent, not a direct rival — but th
 
 **Borrow:** the `init → index → search` UX. **Reject:** mandatory embeddings — semantic search is an opt-in driver in dig, default index stays SQLite FTS5.
 
+### Head-to-head: dig vs MemPalace, same corpus (measured 2026-06)
+
+Both tools run on an identical 13-file messy KB (invoices as .pdf, notes as .md, duplicates, binary blobs):
+
+| Measure | dig | MemPalace 1.x |
+|---|---|---|
+| Install footprint | 12 MB single binary | 330 MB venv (Python + ChromaDB + HNSW) |
+| Ingest 13 files | scan 0.05 s | mine 24 s (embeddings), and only **5/13 files** — all PDFs/txt/jpg skipped (markdown/transcript-oriented) |
+| Query latency | ~10 ms | ~1.9 s |
+| "find the invoice files" | 4 PDFs, labeled, incl. pinned status | cannot — never mined them |
+| Semantic query ("who did I talk to about contract renewal") | **no match** (content not yet indexed — bntvllnt/dig#3) | correct hit (cosine on note text) |
+| Organize / version / undo / dedupe / parallel | yes — its whole job | none — search-only memory |
+| Store size for this KB | 244 KB | 620 KB |
+
+**Read:** the camps don't actually overlap — MemPalace recalls *meaning from text it chose to mine*; dig manages *every file you have*. dig's one real loss (semantic recall) is mostly an indexing gap (#3: content not in FTS yet), not a missing vector DB.
+
 ---
 
 ## Camp F — KB assistants & governance (the framing twin)
