@@ -3,7 +3,7 @@
 > Open, local, CLI-only agent harness that keeps knowledge bases organized to your policy — reversible, parallel-safe, extensible.
 
 **Now:** public-release
-**Last updated:** 2026-06-10
+**Last updated:** 2026-06-11
 
 ## vision-docs [DONE 2026-05]
 
@@ -132,10 +132,11 @@
 
 - [ ] site-launch.1 Land the web app — merge worktree `dig-landing` (web/ Next.js), builds green
 - [ ] site-launch.2 Deploy to dig.vllnt.com — hosting + DNS + CI deploy on main
-- [ ] site-launch.3 Install strategy — curl installer script + Homebrew tap + `go install`, all fed by GoReleaser artifacts (needs public-release.3), install page on the site
+- [ ] site-launch.3 Install strategy — primary: `curl -fsSL https://dig.vllnt.com/install.sh | sh` (installer served at site root `/install.sh`); secondary: Homebrew tap + `go install`; all fed by GoReleaser artifacts (needs public-release.3); install page + homepage install CTA on the site
 - [ ] site-launch.4 User docs — quickstart, policy/rules/workflows reference, command reference, synced from README + docs/
 - [ ] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption
 - [ ] site-launch.6 Leaderboard page — benchmark scores (LongMemEval, LoCoMo, BEAM + cost pairs) rendered from eval-harness's docs/evals.md scoreboard, vs MemPalace/mem0/ByteRover published numbers
+- [ ] site-launch.7 Crawlability — robots.txt + sitemap.xml (sitemap URL declared in robots.txt); both resolve at site root
 
 ## eval-harness [PLANNED]
 
@@ -151,16 +152,19 @@
 
 ## harness-plugins [PLANNED]
 
-**Goal:** dig ships as a first-class plugin/integration for the major agent harnesses, so any agent can manage a KB out of the box.
-**Exit criteria:** Each listed harness can install its dig plugin and drive a KB (find/org/reconcile/export) through it; one shared integration contract doc keeps them consistent.
+**Goal:** dig ships skill-first — one portable dig skill is the canonical instruction set and each agent harness gets a thin shim that points at it, so any agent can manage a KB out of the box.
+**Exit criteria:** The portable skill drives a KB (find/org/reconcile/export) unchanged across every listed harness; each harness shim is a thin pointer to it; one shared integration contract keeps surfaces consistent.
 
-- [ ] harness-plugins.1 Integration contract — one doc: how a harness drives dig (--json surfaces, exit codes, dig detection/install), the base every plugin builds on
-- [ ] harness-plugins.2 claude-code plugin — skill + slash commands packaging
-- [ ] harness-plugins.3 pi extension — pi.dev package
-- [ ] harness-plugins.4 codex plugin
-- [ ] harness-plugins.5 openclaw integration
-- [ ] harness-plugins.6 hermes integration
+- [ ] harness-plugins.1 Integration contract — one doc: how a harness drives dig (--json surfaces, exit codes, dig detection/install), the base every shim builds on
+- [ ] harness-plugins.8 Portable dig skill — skills/dig/SKILL.md, the canonical instruction set (when to reach for dig, --json surfaces, detect/install); every harness shim points here (codebase-intelligence model)
+- [ ] harness-plugins.2 claude-code shim — `.claude` skill + slash commands, thin pointer to the portable skill (hp.8)
+- [ ] harness-plugins.9 cursor shim — `.cursor/rules/dig.mdc` rule, thin auto-generated pointer (between markers) to the portable skill
+- [ ] harness-plugins.3 pi shim — pi.dev package, thin pointer to the portable skill
+- [ ] harness-plugins.4 codex shim — thin pointer to the portable skill
+- [ ] harness-plugins.5 openclaw shim — thin pointer to the portable skill
+- [ ] harness-plugins.6 hermes shim — thin pointer to the portable skill
 - [ ] harness-plugins.7 MCP server — expose the CLI surface (find/org/drift/reconcile/export) as MCP tools, thin wrapper over the integration contract
+- [ ] harness-plugins.10 Agent entry docs — AGENTS.md (cross-harness standard) + GEMINI.md beside the existing CLAUDE.md, each pointing at the portable skill
 
 ## public-extensibility [PLANNED]
 
