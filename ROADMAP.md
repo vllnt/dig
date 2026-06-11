@@ -211,7 +211,7 @@
 
 ## Later
 
-- Mental models — scope undefined; decide what this means for dig (KB organization templates? agent memory schemas?) before it becomes work
+- Policy presets — ready-made `policy.toml` templates + `dig init --template <name>` selector so a newcomer organizes by a known method instead of hand-writing TOML. v1 set: PARA (Projects/Areas/Resources/Archives → into-rules), Johnny Decimal (numbered areas/categories → rename templates), Zettelkasten (flat atomic notes + `{id}-` prefix; filing layer only — backlinks are [[entity-graph]], not filing), Palace (nested Wings/Rooms/Drawers container layout — the deterministic folder scheme, not the recall mnemonic). Gate: every preset must compile to a deterministic folder/label layout the org engine enforces; mnemonics that don't map to a layout are out.
 - Workflows engine — [[workflow]] multi-step ingest procedures committing as one changeset
 - Import-aware source-code reorganization (currently an explicit non-goal)
 - dig query — DuckDB-style query-in-place over KB files
