@@ -167,17 +167,17 @@
 **Goal:** dig ships skill-first — one portable dig skill is the canonical instruction set and each agent harness gets a thin shim that points at it, so any agent can manage a KB out of the box.
 **Exit criteria:** The portable skill drives a KB (find/org/reconcile/export) unchanged across every listed harness; each harness shim is a thin pointer to it; one shared integration contract keeps surfaces consistent.
 
-- [ ] harness-plugins.1 Integration contract — one doc: how a harness drives dig (--json surfaces, exit codes, dig detection/install), the base every shim builds on
+- [x] harness-plugins.1 Integration contract — docs/integration.md: the three entry paths (MCP / HTTP daemon / direct CLI), detect+install, the read/write command surface with --json + exit-code rules; the base every shim and adapter builds on (2026-06-12)
 - [x] harness-plugins.8 Portable dig skill — skills/dig/SKILL.md: the canonical instruction set (when to reach for dig, --json surfaces, detect/install, MCP usage, rules); every harness shim points here (2026-06-12)
 - [~] harness-plugins.2 claude-code plugin — `.claude-plugin/plugin.json` ships the dig skill (hp.8, auto-discovered) + the `dig mcp` server (inline mcpServers, so it doesn't auto-load in dig's own repo sessions); `/plugin install dig@dig`. Remaining: slash commands + the retention hook (agent-memory.1) (2026-06-12)
-- [ ] harness-plugins.9 cursor shim — `.cursor/rules/dig.mdc` rule, thin auto-generated pointer (between markers) to the portable skill
-- [ ] harness-plugins.3 pi shim — pi.dev package, thin pointer to the portable skill
-- [ ] harness-plugins.4 codex shim — thin pointer to the portable skill
-- [ ] harness-plugins.5 openclaw shim — thin pointer to the portable skill
-- [ ] harness-plugins.6 hermes shim — thin pointer to the portable skill
+- [x] harness-plugins.9 cursor shim — `.cursor/rules/dig.mdc` rule pointing at the portable skill + integration contract; opt-in MCP note (2026-06-12)
+- [ ] harness-plugins.3 pi shim — pi.dev package, thin pointer to the portable skill (format TBC)
+- [x] harness-plugins.4 codex shim — codex reads the canonical AGENTS.md (#13), which points at the portable skill + integration contract (2026-06-12)
+- [ ] harness-plugins.5 openclaw shim — thin pointer to the portable skill (format TBC)
+- [ ] harness-plugins.6 hermes shim — thin pointer to the portable skill (format TBC)
 - [~] harness-plugins.7 dig MCP server (`dig mcp`) — stdio JSON-RPC server live: exposes find/drift/log/export (read) + org/reconcile (preview-by-default, apply-gated) + undo as MCP tools, executing the CLI in-process so there's no logic drift; protocol-tested (handshake → tools/list → tools/call) against a real KB. Remaining: HTTP/SSE transport + retain/recall (agent-memory) tools (2026-06-12)
 - [x] harness-plugins.10 Agent entry docs — AGENTS.md (cross-harness standard, #13) + GEMINI.md beside the existing CLAUDE.md, each pointing at AGENTS.md + the portable skill (2026-06-12)
-- [ ] harness-plugins.11 gemini-cli shim — thin pointer to the portable skill
+- [x] harness-plugins.11 gemini-cli shim — gemini-cli reads GEMINI.md (#20), which points at AGENTS.md + the portable skill (2026-06-12)
 - [ ] harness-plugins.12 antigravity shim — thin pointer to the portable skill
 - [x] harness-plugins.13 Plugin marketplace — `.claude-plugin/marketplace.json` (marketplace "dig", plugin source "./") so `/plugin marketplace add vllnt/dig` → `/plugin install dig@dig`; schema-verified (2026-06-12)
 
