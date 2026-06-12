@@ -128,6 +128,7 @@ dig log
 | `dig init <root>` | Create a library at a directory | planned |
 | `dig scan` | Index files into the content-addressed store | planned |
 | `dig find <query>` | Search the library, ranked results. FTS by default; opt-in semantic + hybrid (`--mode`, `[retrieval]` policy) | planned |
+| `dig recall <query>` | Emit a token-budgeted, provenance-tagged context pack for a query — the agent-memory recall primitive (`--budget`, `--mode`, `--json`) | planned |
 | `dig embed` | Drain the semantic-index backlog in the background (resumable; `watch` also drains it per tick) | planned |
 | `dig mcp` | Run dig as an MCP server (stdio) — exposes find/drift/log/export + org/reconcile/undo as tools for any agent harness | planned |
 | `dig serve` | Run a localhost HTTP+JSON daemon over the CLI — for SDKs/apps that embed dig without shelling out (loopback only) | planned |

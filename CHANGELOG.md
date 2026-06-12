@@ -8,6 +8,9 @@ All notable changes to dig are documented here. The format is based on
 
 ### Added
 
+- **`dig recall <query>`** — the agent-memory recall primitive: a token-budgeted
+  (`--budget`), provenance-tagged context pack ranked from the KB (text or
+  `--json`), so an agent loads relevant memory without overflowing its context.
 - **Semantic + hybrid retrieval** — opt-in vector index behind a `[retrieval]` policy,
   embeddings via any OpenAI-compatible endpoint, stored in `.dig/vectors.db` as a derived
   view with a blob-keyed cache. `dig find --mode fts|vector|hybrid`; hybrid fuses FTS and
