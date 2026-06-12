@@ -1,0 +1,32 @@
+# Changelog
+
+All notable changes to dig are documented here. The format is based on
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+- **Semantic + hybrid retrieval** — opt-in vector index behind a `[retrieval]` policy,
+  embeddings via any OpenAI-compatible endpoint, stored in `.dig/vectors.db` as a derived
+  view with a blob-keyed cache. `dig find --mode fts|vector|hybrid`; hybrid fuses FTS and
+  vector rankings with Reciprocal Rank Fusion. FTS stays the deterministic default.
+- **Background semantic indexing** — scans queue unseen blobs instantly; `dig embed` drains
+  the backlog with per-file commits (interruptible, resumable) and `dig watch` drains it per
+  tick. An unreachable endpoint degrades gracefully and never blocks the deterministic spine.
+- **Multilingual / cross-lingual recall** — validated via config only (`model = "bge-m3"`):
+  a query in one language retrieves documents written in another.
+- **Benchmark eval harness** (`tools/eval`) — LongMemEval, LoCoMo, and BEAM adapters scoring
+  retrieval through the real pipeline (recall@k, hit@k, NDCG@10, MRR). Full LongMemEval-S:
+  hybrid hit@5 **98.0%** vs the published 96.6% bar. Scoreboard in `docs/evals.md`.
+- **`dig --version`** — build metadata (version, commit, date).
+- **Release tooling** — GoReleaser cross-compiles checksummed binaries for
+  linux/darwin/windows × amd64/arm64; a `vX.Y.Z` tag publishes a GitHub release.
+
+### Changed
+
+- `main` branch protection hardened (`enforce_admins`, required CI checks) ahead of going
+  public.
+
+[Unreleased]: https://github.com/vllnt/dig/commits/main

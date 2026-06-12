@@ -26,6 +26,12 @@ jobs:
             --include-fragments
             --no-progress
             'README.md'
+            'CONTRIBUTING.md'
+            'SECURITY.md'
+            'AGENTS.md'
+            'CHANGELOG.md'
+            'CODE_OF_CONDUCT.md'
+            'ROADMAP.md'
             './docs/**/*.md'
           fail: true
 

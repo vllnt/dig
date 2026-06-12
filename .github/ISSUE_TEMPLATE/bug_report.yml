@@ -1,0 +1,45 @@
+name: Bug report
+description: Something in dig doesn't behave as expected
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you do, and what went wrong?
+      placeholder: Running `dig reconcile` on a converged KB applied a move it shouldn't have.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The exact command sequence. A minimal KB or policy snippet helps a lot.
+      placeholder: |
+        1. dig init /tmp/kb
+        2. (policy.toml …)
+        3. dig scan
+        4. dig reconcile
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. actual
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: dig version
+      description: Output of `dig --version`
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS / arch
+      placeholder: macOS 14 arm64 / Ubuntu 24.04 amd64
+    validations:
+      required: true

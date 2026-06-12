@@ -1,0 +1,31 @@
+# dig
+
+> Open, local, reversible **data + retrieval + memory primitive for AI agents**. A Go CLI over a content-addressed store: organize a knowledge base to a declarative policy, retrieve it fast (deterministic full-text + opt-in semantic/hybrid), reconcile drift, and remember across sessions — every mutation journaled and `undo`-able. Local-first and offline by default; AI is an opt-in layer that only ever proposes through the same reversible spine.
+
+Key facts:
+- Language: Go (`cmd/dig`, `internal/`). Pure-Go, CGO-free, single static binary.
+- Store: BLAKE3 content-addressed blobs + bbolt manifests + journal. Search: SQLite FTS5 (pure-Go), rebuilt from manifests. Optional vector index in `.dig/vectors.db`.
+- Retrieval: `dig find --mode fts|vector|hybrid`. FTS is the default; vector/hybrid (RRF fusion) opt in via a `[retrieval]` policy and any OpenAI-compatible embedding endpoint. Background-indexed, resumable.
+- Benchmarks (through the real pipeline, fully local): LongMemEval-S full 500q hybrid hit@5 **98.0%** (vs published 96.6%); LoCoMo recall@5 85.3%; BEAM 128K tier published. See `docs/evals.md`.
+- License: MIT. Status: pre-1.0, private, under active development.
+
+## Docs
+
+- [README](README.md): concept, install, quick start, command reference, policy, stack
+- [Architecture](docs/architecture.md): content store, reconcile loop, concurrency state machine, AI layer, semantic retrieval
+- [Extensions](docs/extensions.md): 8 typed extension seams × 4 transport tiers, capability model
+- [Landscape](docs/landscape.md): prior art, competitive positioning, extensibility models
+- [Evals](docs/evals.md): benchmark methodology + scoreboards (LongMemEval, LoCoMo, BEAM)
+- [Roadmap](ROADMAP.md): phased plan, outcome-slug task IDs
+
+## Contributing
+
+- [CONTRIBUTING](CONTRIBUTING.md): build, test gate, conventions, workflow
+- [AGENTS](AGENTS.md): canonical instructions for AI agents working in the repo
+- [Security](SECURITY.md): private vulnerability reporting
+- [Changelog](CHANGELOG.md): notable changes
+
+## Optional
+
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- Landing page source: `web/` (Next.js, dig.vllnt.com)
