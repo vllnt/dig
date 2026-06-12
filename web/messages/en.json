@@ -7,7 +7,20 @@
     "how": "How it works",
     "features": "Features",
     "faq": "FAQ",
+    "benchmarks": "Benchmarks",
     "github": "GitHub"
+  },
+  "leaderboard": {
+    "meta_title": "Benchmarks — dig retrieval scoreboard",
+    "meta_description": "dig's measured retrieval scores on LongMemEval, LoCoMo, and BEAM — hybrid hit@5 98.0% on LongMemEval, beating the published bar, fully local on CPU.",
+    "title": "dig beats the published bar — fully local",
+    "subtitle": "Retrieval recall through dig's real scan → store → index pipeline, on CPU with small open embedding models. No reranker, no LLM in the loop.",
+    "headline_label": "{metric} on {benchmark}",
+    "headline_bar": "vs. {system}'s published {bar}% on the same benchmark and model class",
+    "baselines_title": "Published numbers from other systems",
+    "baselines_intro": "Shown for context. Retrieval recall and LLM-judged QA accuracy are different measurements — recall is structurally higher, since finding the evidence is easier than answering from it. dig reports retrieval metrics because dig is the retrieval/memory layer; answering belongs to the agent driving it.",
+    "method_title": "Method",
+    "method_body": "Each benchmark is mapped onto a real dig knowledge base (one file per session or turn), indexed with the production FTS + vector pipeline, and scored per question against its evidence with standard IR metrics (recall@k, hit@k, NDCG@10, MRR). FTS is the deterministic default; vector and hybrid (Reciprocal Rank Fusion) opt in via a [retrieval] policy. Full methodology and reproduction commands live in docs/evals.md."
   },
   "hero": {
     "badge": "Open source · MIT · early scaffold",
