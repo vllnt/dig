@@ -6,6 +6,7 @@
 package recall
 
 import (
+	"strings"
 	"unicode/utf8"
 
 	"github.com/vllnt/dig/internal/index"
@@ -13,6 +14,7 @@ import (
 	"github.com/vllnt/dig/internal/policy"
 	"github.com/vllnt/dig/internal/retrieval"
 	"github.com/vllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/vector"
 )
 
 // charsPerToken approximates token budgets in characters (~4 chars/token).
@@ -94,7 +96,10 @@ func Build(k kb.KB, rp policy.RetrievalPolicy, mode retrieval.Mode, query string
 		if limit > remaining {
 			limit = remaining
 		}
-		snippet := truncate(string(text), limit)
+		// Land the snippet on the passage that matches the query, not the
+		// document head — so recalling a long session returns the exact
+		// exchange, not its opening lines.
+		snippet := bestWindow(string(text), query, limit)
 		if snippet == "" {
 			continue
 		}
@@ -108,6 +113,67 @@ func Build(k kb.KB, rp policy.RetrievalPolicy, mode retrieval.Mode, query string
 	}
 	pack.UsedTokens = used / charsPerToken
 	return pack, nil
+}
+
+// bestWindow returns the ~n-char window of text most relevant to query, so a
+// recall snippet lands on the matching passage rather than the document head.
+// A document that already fits, an empty query, or no term hit anywhere all
+// fall back to the head (rune-safe truncation) — the prior behavior.
+func bestWindow(text, query string, n int) string {
+	if n <= 0 {
+		return ""
+	}
+	if len(text) <= n {
+		return truncate(text, n)
+	}
+	terms := queryTerms(query)
+	if len(terms) == 0 {
+		return truncate(text, n)
+	}
+	// Window the document with the shared chunker; ~20% overlap keeps a passage
+	// straddling a boundary whole in at least one window.
+	best, bestScore := "", 0
+	for _, w := range vector.Chunk(text, n, n/5) {
+		if s := scoreWindow(w, terms); s > bestScore {
+			best, bestScore = w, s
+		}
+	}
+	if bestScore == 0 {
+		return truncate(text, n)
+	}
+	return truncate(best, n)
+}
+
+// queryTerms lowercases the query into distinct, meaningful terms (1-char and
+// duplicate tokens dropped).
+func queryTerms(query string) []string {
+	seen := map[string]bool{}
+	var out []string
+	for _, t := range strings.Fields(strings.ToLower(query)) {
+		t = strings.Trim(t, ".,;:!?\"'()[]{}")
+		if len(t) < 2 || seen[t] {
+			continue
+		}
+		seen[t] = true
+		out = append(out, t)
+	}
+	return out
+}
+
+// scoreWindow ranks a window by query coverage: one point per distinct term
+// present, plus a point for any term that repeats — so the densest passage wins.
+func scoreWindow(window string, terms []string) int {
+	lc := strings.ToLower(window)
+	score := 0
+	for _, t := range terms {
+		if c := strings.Count(lc, t); c > 0 {
+			score++
+			if c > 1 {
+				score++
+			}
+		}
+	}
+	return score
 }
 
 // truncate caps s to at most n bytes, backing off to a rune boundary so it

@@ -130,6 +130,51 @@ func TestBuildDefaultsBudget(t *testing.T) {
 	}
 }
 
+// TestBuildLandsOnPassage proves recall returns the query-relevant window of a
+// long document, not its head — the "lands on the exact exchange" behavior for
+// captured sessions.
+func TestBuildLandsOnPassage(t *testing.T) {
+	head := strings.Repeat("HEADMARKER unrelated preamble chatter. ", 150) // ~5.7k chars
+	passage := "The ACME ledger migration is owned by Dana, targeted for Q3."
+	tail := strings.Repeat(" closing remarks and goodbyes. ", 50)
+	k := buildKB(t, map[string]string{"memory/session.md": head + passage + tail})
+
+	pack, err := Build(k, policy.RetrievalPolicy{}, retrieval.ModeFTS, "ledger migration Dana Q3", 200)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pack.Items) == 0 {
+		t.Fatal("expected the session to be recalled")
+	}
+	// The passage sits ~5.7k chars in; the per-item budget is only a few hundred
+	// chars, so head-truncation (the old behavior) would return pure HEADMARKER
+	// filler with no "Dana". Surfacing the passage at all proves windowing works.
+	got := pack.Items[0].Content
+	if !strings.Contains(got, "Dana") || !strings.Contains(got, "ledger migration") {
+		t.Fatalf("recall did not land on the matching passage:\n%q", got)
+	}
+	if strings.HasPrefix(got, "HEADMARKER") {
+		t.Fatalf("recall returned the document head instead of the passage:\n%q", got)
+	}
+}
+
+// TestBuildWindowFallsBackToHead proves a matched document with no query term in
+// its body (FTS matched on a label/path) still yields a head snippet, not empty.
+func TestBuildWindowFallsBackToHead(t *testing.T) {
+	long := "alpha beta " + strings.Repeat("ordinary sentence content here. ", 200)
+	if got := bestWindow(long, "zzdoesnotappear", 300); got == "" || !strings.HasPrefix(long, got) {
+		t.Fatalf("no-match window should fall back to the head prefix, got %q", got)
+	}
+	// Empty query → head.
+	if got := bestWindow(long, "", 300); !strings.HasPrefix(long, got) {
+		t.Fatalf("empty query should fall back to the head, got %q", got)
+	}
+	// Small doc → whole doc.
+	if got := bestWindow("tiny doc", "doc", 300); got != "tiny doc" {
+		t.Fatalf("small doc should return whole, got %q", got)
+	}
+}
+
 func TestTruncateRuneSafe(t *testing.T) {
 	s := "héllo wörld"
 	for n := 0; n <= len(s)+2; n++ {
