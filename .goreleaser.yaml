@@ -1,0 +1,80 @@
+# GoReleaser config for dig — cross-compiled, reproducible release binaries.
+# Local check: `goreleaser build --snapshot --clean`
+# Release: pushing a tag `vX.Y.Z` triggers .github/workflows/release.yml.
+version: 2
+
+project_name: dig
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: dig
+    main: ./cmd/dig
+    binary: dig
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .CommitDate }}
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: dig
+    formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+      - LICENSE
+      - docs/*
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - Merge pull request
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\(.+\))??!?:.+$'
+      order: 0
+    - title: Fixes
+      regexp: '^.*?fix(\(.+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
+
+release:
+  github:
+    owner: vllnt
+    name: dig
+  draft: false
+  prerelease: auto
+  footer: |
+    ## Install
+
+    ```sh
+    # one-liner (served from the site, fed by these artifacts)
+    curl -fsSL https://dig.vllnt.com/install.sh | sh
+
+    # or with Go
+    go install github.com/vllnt/dig/cmd/dig@latest
+    ```

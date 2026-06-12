@@ -16,3 +16,4 @@ coverage.*
 
 # Local agent worktrees / session config
 .claude/
+/dist
