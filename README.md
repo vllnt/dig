@@ -102,7 +102,8 @@ dig log
 |---------|------|--------|
 | `dig init <root>` | Create a library at a directory | planned |
 | `dig scan` | Index files into the content-addressed store | planned |
-| `dig find <query>` | Search the library, ranked results | planned |
+| `dig find <query>` | Search the library, ranked results. FTS by default; opt-in semantic + hybrid (`--mode`, `[retrieval]` policy) | planned |
+| `dig embed` | Drain the semantic-index backlog in the background (resumable; `watch` also drains it per tick) | planned |
 | `dig export` | Emit a reproducible, manifest-pinned dataset (JSONL etc.) for ML training | planned |
 | `dig org` | Apply organization policy (move / rename / label). `--dry-run` previews | planned |
 | `dig run <workflow>` | Execute a named workflow; commits its steps as one reversible changeset | planned |

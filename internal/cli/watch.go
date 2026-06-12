@@ -44,7 +44,9 @@ func newWatchCmd() *cobra.Command {
 
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "watching %s every %s — Ctrl-C to stop\n", k.Root, interval)
 			return watch.Run(ctx, k, st, rules, dpol, watch.Options{
-				Interval: interval,
+				Interval:  interval,
+				Retrieval: loadRetrieval(k.Dig()),
+				Warn:      cmd.ErrOrStderr(),
 				OnPass: func(sum *drift.Summary, escalated []*store.View) {
 					watch.Render(cmd.OutOrStdout(), sum, escalated)
 				},

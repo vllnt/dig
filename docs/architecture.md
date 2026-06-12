@@ -204,6 +204,37 @@ model    = "qwen2.5:7b"
 api_key_env = "DIG_LLM_API_KEY"         # only for remote/gateway endpoints
 ```
 
+### Semantic retrieval (shipped — the first AI-layer feature)
+
+`find` is deterministic FTS by default. A `[retrieval]` policy turns on the **vector
+index**: file text is chunked, embedded through the same OpenAI-compatible endpoint
+contract, and stored in `.dig/vectors.db` as a derived view rebuilt from manifests —
+exactly like the FTS index. **Hybrid** mode fuses both rankings with Reciprocal Rank
+Fusion; `dig find --mode fts|vector|hybrid` overrides per query.
+
+```toml
+[retrieval]
+mode     = "hybrid"                     # off (default) | hybrid | vector
+base_url = "http://127.0.0.1:8092/v1"   # any OpenAI-compatible /embeddings endpoint
+model    = "nomic-embed-text-v1.5"
+doc_prefix   = "search_document: "      # model task prefixes (model-specific, optional)
+query_prefix = "search_query: "
+api_key_env  = "DIG_EMBED_API_KEY"      # only for remote/gateway endpoints
+```
+
+- **Indexing is background work.** A scan never blocks on the endpoint: it syncs
+  the docs view instantly and queues unseen blobs; only a small budget embeds
+  inline. `dig embed` drains the backlog explicitly (per-file commits —
+  interruptible, resumable) and a running `dig watch` drains it every tick.
+- **Embeddings are blob-keyed.** The content-addressed store makes incremental
+  embedding free: a moved or renamed file re-embeds nothing; only new content costs.
+- **Cache invalidation is explicit.** Model / prefix / chunking changes drop the
+  vector cache wholesale — mixing embedding spaces would corrupt ranking silently.
+- **Graceful degradation.** An unreachable endpoint never blocks the deterministic
+  spine: `scan` warns and continues (FTS stays fresh), `find --mode fts` always works,
+  and semantic modes fail loudly with the endpoint error.
+- Scores against the standard memory benchmarks live in [evals.md](evals.md).
+
 ### Extraction pipeline (feeds the AI layer)
 
 Content-based decisions need text. Extraction runs cheapest-first, so the model — and any network — are last resorts:

@@ -137,7 +137,7 @@ func newReconcileCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				if err := rebuildIndex(k.Dig(), st, head); err != nil {
+				if err := rebuildIndex(k.Dig(), st, head, cmd.ErrOrStderr()); err != nil {
 					return err
 				}
 			}
