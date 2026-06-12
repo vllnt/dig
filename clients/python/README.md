@@ -26,6 +26,10 @@ dig = DigClient()  # http://127.0.0.1:3978
 # search — fts (default), vector, or hybrid (semantic)
 hits = dig.find("invoice acme 2024", mode="hybrid", limit=5)
 
+# agent memory — capture, then recall a token-budgeted pack
+dig.retain(session_markdown, as_="memory/sessions/today.md")
+pack = dig.recall("billing ledger decision", budget=1000)
+
 # reorganize by policy — preview, then apply (reversible)
 dig.org(apply=False)   # preview the plan
 dig.org(apply=True)    # commit it

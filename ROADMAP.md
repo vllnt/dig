@@ -192,7 +192,7 @@
 - [ ] public-extensibility.4 T2 gRPC subprocess backend — first out-of-tree StorageBackend
 - [ ] public-extensibility.5 T3 WASM (wazero) + signing — sandboxed untrusted extensions
 - [~] public-extensibility.6 Configurable primitives — rrf_k, candidate_factor, chunk_size, chunk_overlap exposed as `[retrieval]` policy config (0 = default; chunk changes re-embed via the cache fingerprint); validated, tested, documented in architecture.md + /docs (2026-06-12). Remaining: pluggable reranker (composable-pipeline.4)
-- [~] public-extensibility.7 Programmatic API — `dig serve` localhost HTTP+JSON daemon over the CLI contract shipped: GET /find /drift /log /export + POST /org /reconcile /undo (apply-gated), loopback-only bind enforced, in-process CLI reuse; httptest + real-binary tested (2026-06-12). Remaining: a stable importable Go SDK package (internal/ is currently unexported)
+- [~] public-extensibility.7 Programmatic API — `dig serve` localhost HTTP+JSON daemon over the CLI contract shipped: GET /find /recall /drift /log /export + POST /retain /org /reconcile /undo (apply-gated), loopback-only bind enforced, in-process CLI reuse; httptest + real-binary tested (recall/retain memory endpoints added 2026-06-13). Remaining: a stable importable Go SDK package (internal/ is currently unexported)
 
 ## mental-models [PLANNED]
 
@@ -264,8 +264,8 @@
 **Exit criteria:** an agent built on the Vercel AI SDK, Mastra, and LangChain (Python) each uses dig as its memory/retriever — via MCP or a native adapter — with no dig-specific glue beyond install, all against the same KB.
 
 - [ ] integrations.1 MCP-first reach — land `dig mcp` (harness-plugins.7) as the universal entry; verify it drives a KB from Claude + the Vercel AI SDK unchanged
-- [~] integrations.2 TypeScript/JS SDK — `@vllnt/dig` (clients/typescript): dependency-free typed client over the `dig serve` daemon (find/drift/log/export/org/reconcile/undo, apply-gated); built + tested in CI against a real spawned daemon (no mocks) (2026-06-12). Remaining: AI SDK `tool()` helpers
-- [~] integrations.3 Python SDK — `vllnt-dig` (clients/python): stdlib-only (urllib) typed client over the `dig serve` daemon, same surface as the TS SDK; CI-tested against a real spawned daemon (no mocks); PyPI-publish CI gated on PYPI_TOKEN (2026-06-12). Remaining: LangChain/LlamaIndex adapters build on it
+- [~] integrations.2 TypeScript/JS SDK — `@vllnt/dig` (clients/typescript): dependency-free typed client over the `dig serve` daemon (find/recall/retain/drift/log/export/org/reconcile/undo, apply-gated; recall/retain make it a memory client) — typed `RecallPack`; built + tested in CI against a real spawned daemon (no mocks) (recall/retain added 2026-06-13). Remaining: AI SDK `tool()` helpers
+- [~] integrations.3 Python SDK — `vllnt-dig` (clients/python): stdlib-only (urllib) typed client over the `dig serve` daemon, same surface as the TS SDK incl. recall/retain memory; CI-tested against a real spawned daemon (no mocks); PyPI-publish CI gated on PYPI_TOKEN (recall/retain added 2026-06-13). Remaining: LangChain/LlamaIndex adapters build on it
 - [~] integrations.4 Vercel AI SDK adapter — `@vllnt/dig/ai` exports `digTools(client)` → AI SDK `tool()` defs (zod) for the dig surface, mutations apply-gated; tested via tools' execute() against a real daemon; example in the SDK README (2026-06-12). Remaining: retain-after memory middleware (needs agent-memory)
 - [ ] integrations.5 Mastra adapter — dig as Memory + RAG store (MCP-native)
 - [ ] integrations.6 LangChain / LangGraph adapter (py + js) — Retriever · VectorStore · BaseMemory · Tool

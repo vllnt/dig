@@ -57,6 +57,35 @@ class DigClient:
             "GET", "/find", {"kb": kb, "query": query, "mode": mode, "limit": limit}
         )
 
+    def recall(
+        self,
+        query: str,
+        kb: str | None = None,
+        mode: str | None = None,
+        budget: int | None = None,
+    ) -> dict[str, Any]:
+        """Load a token-budgeted, provenance-tagged context pack for ``query``.
+
+        The agent-memory recall primitive: snippets land on the matching passage.
+        ``budget`` caps the pack in tokens; ``mode`` is fts (default), vector, or
+        hybrid.
+        """
+        return self._request(
+            "GET", "/recall", {"kb": kb, "query": query, "mode": mode, "budget": budget}
+        )
+
+    def retain(
+        self, content: str, kb: str | None = None, as_: str | None = None
+    ) -> Any:
+        """Capture ``content`` into the KB and index it — the capture primitive.
+
+        Writes to a dated ``memory/`` path by default; pass ``as_`` to choose the
+        path. Reversible with :meth:`undo`.
+        """
+        return self._request(
+            "POST", "/retain", {"kb": kb, "as": as_}, data=content.encode("utf-8")
+        )
+
     def drift(self, kb: str | None = None) -> Any:
         """Report how the KB diverges from its policy. Read-only."""
         return self._request("GET", "/drift", {"kb": kb})
@@ -86,12 +115,14 @@ class DigClient:
         """Revert the last changeset."""
         return self._request("POST", "/undo", {"kb": kb})
 
-    def _request(self, method: str, path: str, params: dict[str, Any]) -> Any:
+    def _request(
+        self, method: str, path: str, params: dict[str, Any], data: bytes | None = None
+    ) -> Any:
         query = {k: _str(v) for k, v in params.items() if v is not None}
         url = self.base_url + path
         if query:
             url += "?" + urllib.parse.urlencode(query)
-        req = urllib.request.Request(url, method=method)  # noqa: S310 (loopback only)
+        req = urllib.request.Request(url, data=data, method=method)  # noqa: S310 (loopback only)
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310
                 return _parse(resp.read())

@@ -21,6 +21,36 @@ export interface FindResult {
 /** Retrieval mode for {@link DigClient.find}. */
 export type RetrievalMode = "fts" | "vector" | "hybrid";
 
+/** One retrieved source in a {@link RecallPack}: a snippet plus provenance. */
+export interface RecallItem {
+  /** KB-relative path. */
+  path: string;
+  /** Content-addressed blob id. */
+  blob: string;
+  /** Fusion/similarity score (vector/hybrid modes). */
+  score?: number;
+  /** The query-relevant snippet of the source. */
+  content: string;
+}
+
+/** A token-budgeted, provenance-tagged recall result from {@link DigClient.recall}. */
+export interface RecallPack {
+  query: string;
+  /** KB root the pack was drawn from. */
+  kb: string;
+  /** Head manifest id — pins the pack to a point in history. */
+  manifest: string;
+  budgetTokens: number;
+  usedTokens: number;
+  items: RecallItem[];
+}
+
+/** Result of {@link DigClient.retain}. */
+export interface RetainResult {
+  /** The daemon's confirmation line, e.g. "Retained memory/… → manifest M2". */
+  output: string;
+}
+
 /** Options shared by every call: which KB to target (omit to use the daemon's working-dir KB). */
 export interface KbOptions {
   /** KB name or path. */
@@ -89,6 +119,46 @@ export class DigClient {
     });
   }
 
+  /**
+   * Load a token-budgeted, provenance-tagged context pack for a query — the
+   * agent-memory recall primitive. Snippets land on the matching passage.
+   *
+   * @example
+   * const pack = await dig.recall("billing ledger decision", { budget: 1000 });
+   * for (const item of pack.items) console.log(item.path, item.content);
+   */
+  async recall(
+    query: string,
+    options: KbOptions & { mode?: RetrievalMode; budget?: number } = {},
+  ): Promise<RecallPack> {
+    return this.request<RecallPack>("GET", "/recall", {
+      kb: options.kb,
+      query,
+      mode: options.mode,
+      budget: options.budget,
+    });
+  }
+
+  /**
+   * Capture content (an agent session, a note, a document) into the KB and
+   * index it — the agent-memory capture primitive. Writes to a dated memory/
+   * path by default; pass `as` to choose the path. Reversible with undo.
+   *
+   * @example
+   * await dig.retain(sessionMarkdown, { as: "memory/sessions/today.md" });
+   */
+  async retain(
+    content: string,
+    options: KbOptions & { as?: string } = {},
+  ): Promise<RetainResult> {
+    return this.request<RetainResult>(
+      "POST",
+      "/retain",
+      { kb: options.kb, as: options.as },
+      content,
+    );
+  }
+
   /** Report how the KB diverges from its policy. Read-only. */
   async drift(options: KbOptions = {}): Promise<unknown> {
     return this.request("GET", "/drift", { kb: options.kb });
@@ -135,12 +205,15 @@ export class DigClient {
     method: "GET" | "POST",
     path: string,
     params: Record<string, string | number | boolean | undefined>,
+    body?: string,
   ): Promise<T> {
     const url = new URL(this.baseUrl + path);
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined) url.searchParams.set(key, String(value));
     }
-    const response = await this.doFetch(url, { method });
+    const init: RequestInit = { method };
+    if (body !== undefined) init.body = body;
+    const response = await this.doFetch(url, init);
     const text = await response.text();
     if (!response.ok) {
       const message = parseError(text) ?? response.statusText;

@@ -132,7 +132,7 @@ dig log
 | `dig recall <query>` | Emit a token-budgeted, provenance-tagged context pack for a query — the agent-memory recall primitive (`--budget`, `--mode`, `--json`) | planned |
 | `dig embed` | Drain the semantic-index backlog in the background (resumable; `watch` also drains it per tick) | planned |
 | `dig mcp` | Run dig as an MCP server (stdio) — exposes find/recall/retain/drift/log/export + org/reconcile/undo as tools for any agent harness (dig as a memory layer) | planned |
-| `dig serve` | Run a localhost HTTP+JSON daemon over the CLI — for SDKs/apps that embed dig without shelling out (loopback only) | planned |
+| `dig serve` | Run a localhost HTTP+JSON daemon over the CLI — find/recall/drift/log/export + retain/org/reconcile/undo, for SDKs/apps that embed dig without shelling out (loopback only) | planned |
 | `dig export` | Emit a reproducible, manifest-pinned dataset (JSONL etc.) for ML training | planned |
 | `dig org` | Apply organization policy (move / rename / label). `--dry-run` previews | planned |
 | `dig run <workflow>` | Execute a named workflow; commits its steps as one reversible changeset | planned |

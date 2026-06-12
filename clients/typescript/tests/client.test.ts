@@ -96,6 +96,20 @@ test("log and drift return data", async () => {
   assert.ok(await client().drift({ kb }));
 });
 
+test("retain captures a session and recall loads it back", async () => {
+  const fact = "Decision: adopt the new ledger in Q3; Dana owns the migration.";
+  const retained = await client().retain(fact, { kb, as: "memory/sdk.md" });
+  assert.match(retained.output, /Retained memory\/sdk\.md/);
+
+  const pack = await client().recall("ledger migration Dana", { kb, budget: 400 });
+  assert.equal(pack.budgetTokens, 400);
+  assert.ok(pack.manifest);
+  assert.ok(
+    pack.items.some((item) => item.content.includes("new ledger in Q3")),
+    "recall should surface the retained fact",
+  );
+});
+
 test("a bad request surfaces a DigError", async () => {
   await assert.rejects(
     () => client().find("anything", { kb: "/no/such/kb" }),
