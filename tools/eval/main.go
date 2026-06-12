@@ -73,6 +73,8 @@ func main() {
 		corpus, err = loadLoCoMo(*data)
 	case "longmemeval":
 		corpus, err = loadLongMemEval(*data)
+	case "beam":
+		corpus, err = loadBEAM(*data)
 	default:
 		log.Fatalf("unknown bench %q", *bench)
 	}
@@ -511,6 +513,64 @@ func loadLoCoMo(file string) (*Corpus, error) {
 				Gold:  gold,
 				Scope: scope,
 				Type:  fmt.Sprint(q.Category),
+			})
+		}
+	}
+	return c, nil
+}
+
+// --- BEAM adapter ---
+// Input is the JSON emitted by beam_convert.py from a BEAM parquet split:
+// conversations of turns (global turn ids) plus probing questions whose
+// source_chat_ids name the evidence turns. One KB file per turn; each
+// question is scoped to its own conversation; gold = its evidence turns.
+// Abstention questions are excluded upstream (no retrievable evidence).
+
+func loadBEAM(file string) (*Corpus, error) {
+	raw, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+	var convs []struct {
+		ConversationID string `json:"conversation_id"`
+		Turns          []struct {
+			ID      int    `json:"id"`
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		} `json:"turns"`
+		Questions []struct {
+			QID         string `json:"qid"`
+			Type        string `json:"type"`
+			Question    string `json:"question"`
+			EvidenceIDs []int  `json:"evidence_ids"`
+		} `json:"questions"`
+	}
+	if err := json.Unmarshal(raw, &convs); err != nil {
+		return nil, err
+	}
+	c := &Corpus{Files: map[string]string{}}
+	for _, conv := range convs {
+		scope := map[string]bool{}
+		pathFor := func(turn int) string {
+			return fmt.Sprintf("c%s/t%05d.txt", conv.ConversationID, turn)
+		}
+		for _, t := range conv.Turns {
+			p := pathFor(t.ID)
+			c.Files[p] = t.Role + ": " + t.Content
+			scope[p] = true
+		}
+		for _, q := range conv.Questions {
+			gold := map[string]bool{}
+			for _, id := range q.EvidenceIDs {
+				if p := pathFor(id); scope[p] {
+					gold[p] = true
+				}
+			}
+			if len(gold) == 0 {
+				continue
+			}
+			c.Queries = append(c.Queries, Query{
+				ID: q.QID, Text: q.Question, Gold: gold, Scope: scope, Type: q.Type,
 			})
 		}
 	}
