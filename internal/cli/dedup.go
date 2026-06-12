@@ -65,7 +65,7 @@ func newDedupCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := rebuildIndex(k.Dig(), st, m); err != nil {
+			if err := rebuildIndex(k.Dig(), st, m, cmd.ErrOrStderr()); err != nil {
 				return err
 			}
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Removed %d duplicate(s) → manifest %s (undo with 'dig undo')\n", plan.Removals(), m.ID)

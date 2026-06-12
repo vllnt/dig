@@ -20,13 +20,20 @@ import (
 	"github.com/vllnt/dig/internal/kb"
 	"github.com/vllnt/dig/internal/policy"
 	"github.com/vllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/vector"
 )
 
 // Options configures the loop.
 type Options struct {
-	Interval time.Duration                       // poll cadence (default 2s)
-	OnPass   func(*drift.Summary, []*store.View) // called after every non-empty pass (and the first)
+	Interval  time.Duration                       // poll cadence (default 2s)
+	OnPass    func(*drift.Summary, []*store.View) // called after every non-empty pass (and the first)
+	Retrieval policy.RetrievalPolicy              // when enabled, watch drains the semantic-index backlog each tick
+	Warn      io.Writer                           // soft-error sink (embedding failures); nil = discard
 }
+
+// embedBudgetPerTick bounds background embedding work per watch tick so the
+// reconcile loop never starves — the backlog drains steadily between passes.
+const embedBudgetPerTick = 32
 
 // Run loops until ctx is done. Each tick reconciles in watch mode, rebuilds
 // the index when the head moved, and reports the escalation queue (ESCALATED
@@ -40,6 +47,17 @@ func Run(ctx context.Context, k kb.KB, st *store.Store, rules []policy.CompiledR
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
+	warn := opts.Warn
+	if warn == nil {
+		warn = io.Discard
+	}
+	var embedClient *vector.Client
+	if opts.Retrieval.Enabled() {
+		embedClient = vector.NewClient(opts.Retrieval.BaseURL, opts.Retrieval.Model,
+			opts.Retrieval.APIKeyEnv, opts.Retrieval.DocPrefix, opts.Retrieval.QueryPrefix)
+	}
+	lastEmbedErr := ""
+
 	lastHead := ""
 	surfaced := map[string]bool{} // standing items already shown — only deltas re-render
 	for {
@@ -48,7 +66,8 @@ func Run(ctx context.Context, k kb.KB, st *store.Store, rules []policy.CompiledR
 			return fmt.Errorf("watch pass: %w", err)
 		}
 		dedupeStanding(sum, surfaced)
-		if sum.Head != "" && sum.Head != lastHead {
+		headMoved := sum.Head != "" && sum.Head != lastHead
+		if headMoved {
 			head, err := st.Head()
 			if err != nil {
 				return err
@@ -63,6 +82,19 @@ func Run(ctx context.Context, k kb.KB, st *store.Store, rules []policy.CompiledR
 				return rebuildErr
 			}
 			lastHead = sum.Head
+		}
+		// Background semantic indexing: sync the docs view when the head moved,
+		// then drain a bounded slice of the embed backlog. Endpoint failures are
+		// soft — the deterministic loop never depends on an endpoint being up.
+		if embedClient != nil {
+			if err := drainEmbedBacklog(k, st, embedClient, headMoved); err != nil {
+				if err.Error() != lastEmbedErr {
+					lastEmbedErr = err.Error()
+					_, _ = fmt.Fprintf(warn, "watch: semantic index stalled (%v) — will keep retrying\n", err)
+				}
+			} else {
+				lastEmbedErr = ""
+			}
 		}
 		if opts.OnPass != nil && !sum.Empty() {
 			views, _ := st.ListViews()
@@ -82,6 +114,28 @@ func Run(ctx context.Context, k kb.KB, st *store.Store, rules []policy.CompiledR
 		case <-ticker.C:
 		}
 	}
+}
+
+// drainEmbedBacklog advances the background semantic index by one bounded
+// step: re-sync the docs view when the head moved, then embed up to
+// embedBudgetPerTick pending blobs.
+func drainEmbedBacklog(k kb.KB, st *store.Store, c *vector.Client, headMoved bool) error {
+	vx, err := vector.Open(k.Dig())
+	if err != nil {
+		return err
+	}
+	defer func() { _ = vx.Close() }()
+	if headMoved {
+		head, err := st.Head()
+		if err != nil {
+			return err
+		}
+		if _, err := vx.SyncDocs(head, c); err != nil {
+			return err
+		}
+	}
+	_, _, err = vx.DrainPending(index.BlobContent(st.Blobs()), c, embedBudgetPerTick)
+	return err
 }
 
 // dedupeStanding filters standing items (proposals, pins, pending dups) that

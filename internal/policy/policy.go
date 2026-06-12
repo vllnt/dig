@@ -29,8 +29,9 @@ const PinnedLabel = "dig:pinned"
 
 // Policy is the parsed, validated policy document.
 type Policy struct {
-	Rules []Rule      `toml:"rule"`
-	Dedup DedupPolicy `toml:"dedup"`
+	Rules     []Rule          `toml:"rule"`
+	Dedup     DedupPolicy     `toml:"dedup"`
+	Retrieval RetrievalPolicy `toml:"retrieval"`
 }
 
 // Rule maps matching files to a target folder, name, and labels.
@@ -61,6 +62,24 @@ type Match struct {
 type DedupPolicy struct {
 	Strategy   string `toml:"strategy"`    // keep-oldest | keep-newest
 	OnConflict string `toml:"on_conflict"` // escalate (default) — never silently delete
+}
+
+// RetrievalPolicy configures opt-in semantic retrieval (architecture.md §5).
+// Off by default — find stays deterministic FTS unless mode turns vectors on.
+// The endpoint is any OpenAI-compatible runtime or gateway; the API key is
+// named by env var, never stored in the policy file.
+type RetrievalPolicy struct {
+	Mode        string `toml:"mode"`         // "" | "off" (default) | "hybrid" | "vector"
+	BaseURL     string `toml:"base_url"`     // e.g. http://127.0.0.1:8092/v1
+	Model       string `toml:"model"`        // embedding model name
+	APIKeyEnv   string `toml:"api_key_env"`  // env var holding the bearer token (optional)
+	DocPrefix   string `toml:"doc_prefix"`   // model task prefix for documents (optional)
+	QueryPrefix string `toml:"query_prefix"` // model task prefix for queries (optional)
+}
+
+// Enabled reports whether semantic retrieval is turned on.
+func (r RetrievalPolicy) Enabled() bool {
+	return r.Mode == "hybrid" || r.Mode == "vector"
 }
 
 // Load reads and validates the policy at path. Unknown keys are errors —
@@ -106,7 +125,15 @@ var knownVars = map[string]bool{
 // Validate enforces structural rules. BLOCKING errors — a policy that fails
 // validation is never applied.
 func (p *Policy) Validate() error {
-	if len(p.Rules) == 0 {
+	switch p.Retrieval.Mode {
+	case "", "off", "hybrid", "vector":
+	default:
+		return fmt.Errorf("retrieval.mode %q: must be off, hybrid, or vector", p.Retrieval.Mode)
+	}
+	if p.Retrieval.Enabled() && (p.Retrieval.BaseURL == "" || p.Retrieval.Model == "") {
+		return fmt.Errorf("retrieval.mode %q requires base_url and model", p.Retrieval.Mode)
+	}
+	if len(p.Rules) == 0 && !p.Retrieval.Enabled() {
 		return fmt.Errorf("policy has no rules")
 	}
 	seen := map[string]bool{}
