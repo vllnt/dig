@@ -147,7 +147,7 @@
 - [~] site-launch.3 Install strategy — installer script shipped at site root `/install.sh` (OS/arch detect, latest-release fetch, checksum verify); `go install` documented; remaining: install page + homepage install CTA + Homebrew tap (distribution.5). All fed by GoReleaser artifacts (public-release.3 ✓)
 - [ ] site-launch.4 User docs — quickstart, policy/rules/workflows reference, command reference, synced from README + docs/
 - [x] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption (served at site root, 2026-06-12)
-- [ ] site-launch.6 Leaderboard page — benchmark scores (LongMemEval, LoCoMo, BEAM + cost pairs) rendered from eval-harness's docs/evals.md scoreboard, alongside published baselines (sourced in docs/landscape.md)
+- [x] site-launch.6 Leaderboard page — /leaderboard renders LongMemEval/LoCoMo/BEAM scoreboards from docs/evals.md (hybrid hit@5 98.0% headline) + published baselines + method; nav-linked, server-rendered, Playwright E2E + 3-viewport visual verified (2026-06-12)
 - [x] site-launch.7 Crawlability — robots.txt (declares sitemap) + sitemap.xml both resolve at site root (web app routes, verified in build 2026-06-12)
 
 ## eval-harness [PLANNED]

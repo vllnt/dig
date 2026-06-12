@@ -40,6 +40,12 @@ export default function MarketingLayout({
             >
               {t("faq")}
             </a>
+            <Link
+              className="transition-colors hover:text-foreground"
+              href="/leaderboard"
+            >
+              {t("benchmarks")}
+            </Link>
             <a
               className="font-medium text-foreground transition-colors hover:text-foreground/80"
               href={GITHUB_URL}
