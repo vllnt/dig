@@ -1,0 +1,22 @@
+---
+description: Drive a dig knowledge base (search, organize, reconcile, export) from Cursor — local, reversible.
+globs:
+alwaysApply: false
+---
+
+# dig
+
+To drive a dig knowledge base, follow the canonical instruction set — the
+portable dig skill: `skills/dig/SKILL.md` in the dig repo
+(https://github.com/vllnt/dig/blob/main/skills/dig/SKILL.md), and the
+integration contract `docs/integration.md`.
+
+In short: `dig --version` to detect (install from https://dig.vllnt.com); a KB
+is a directory with a `.dig/` folder (`dig init`, `--kb <path>`). Read with
+`dig find "<q>" --json` (`--mode hybrid` for semantic), `dig drift --json`,
+`dig log --json`, `dig export --json`. Mutate via `dig org --dry-run` → `dig
+org`, `dig reconcile`, `dig undo` — preview first; everything is reversible.
+Parse `--json`; never scrape human output.
+
+Or register the MCP server (`dig mcp`) in Cursor's MCP settings and call the
+`dig_*` tools directly.
