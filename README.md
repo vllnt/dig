@@ -120,6 +120,7 @@ dig log
 | `dig find <query>` | Search the library, ranked results. FTS by default; opt-in semantic + hybrid (`--mode`, `[retrieval]` policy) | planned |
 | `dig embed` | Drain the semantic-index backlog in the background (resumable; `watch` also drains it per tick) | planned |
 | `dig mcp` | Run dig as an MCP server (stdio) — exposes find/drift/log/export + org/reconcile/undo as tools for any agent harness | planned |
+| `dig serve` | Run a localhost HTTP+JSON daemon over the CLI — for SDKs/apps that embed dig without shelling out (loopback only) | planned |
 | `dig export` | Emit a reproducible, manifest-pinned dataset (JSONL etc.) for ML training | planned |
 | `dig org` | Apply organization policy (move / rename / label). `--dry-run` previews | planned |
 | `dig run <workflow>` | Execute a named workflow; commits its steps as one reversible changeset | planned |
