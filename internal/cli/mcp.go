@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -20,9 +21,9 @@ func newMcpCmd() *cobra.Command {
 		Use:   "mcp",
 		Short: "Run dig as an MCP server (stdio) for agent harnesses",
 		Long: "Speaks the Model Context Protocol over stdio. Register it with any MCP\n" +
-			"client to give an agent dig's surface: find, drift, log, export (read-only)\n" +
-			"and org / reconcile (preview by default; pass apply=true to commit — every\n" +
-			"change is reversible with the undo tool).",
+			"client to give an agent dig's surface: find, recall, drift, log, export\n" +
+			"(read-only), retain (capture into memory), and org / reconcile (preview by\n" +
+			"default; pass apply=true to commit — every change is reversible with undo).",
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			srv := mcp.NewServer("dig", Version.Version)
@@ -40,6 +41,19 @@ func digJSON(args ...string) (string, error) {
 	var buf bytes.Buffer
 	root.SetOut(&buf)
 	root.SetErr(&buf)
+	root.SetArgs(args)
+	err := root.Execute()
+	return buf.String(), err
+}
+
+// digJSONStdin runs the dig CLI in-process with content on stdin — for capture
+// tools (dig_retain) whose CLI form reads the body from stdin.
+func digJSONStdin(stdin string, args ...string) (string, error) {
+	root := NewRoot()
+	var buf bytes.Buffer
+	root.SetOut(&buf)
+	root.SetErr(&buf)
+	root.SetIn(strings.NewReader(stdin))
 	root.SetArgs(args)
 	err := root.Execute()
 	return buf.String(), err
@@ -80,6 +94,58 @@ func registerDigTools(srv *mcp.Server) {
 			}
 			if a.Limit > 0 {
 				args = append(args, "--limit", fmt.Sprint(a.Limit))
+			}
+			return digJSON(kbArgs(a.KB, args...)...)
+		},
+	})
+
+	srv.Register(mcp.Tool{
+		Name:        "dig_retain",
+		Description: "Capture content (an agent session, a note, a document) into a dig KB and index it — the agent-memory capture primitive. Writes to a dated memory/ path by default; pass 'as' to choose the path. Reversible with dig_undo.",
+		InputSchema: schema(`{"type":"object","properties":{"kb":{"type":"string"},"content":{"type":"string","description":"the text to capture into memory"},"as":{"type":"string","description":"target path in the KB; default a dated memory/ path"}},"required":["content"]}`),
+		Handler: func(raw json.RawMessage) (string, error) {
+			var a struct {
+				KB      string `json:"kb"`
+				Content string `json:"content"`
+				As      string `json:"as"`
+			}
+			if err := json.Unmarshal(raw, &a); err != nil {
+				return "", err
+			}
+			if a.Content == "" {
+				return "", fmt.Errorf("content is required")
+			}
+			args := []string{"retain"}
+			if a.As != "" {
+				args = append(args, "--as", a.As)
+			}
+			return digJSONStdin(a.Content, kbArgs(a.KB, args...)...)
+		},
+	})
+
+	srv.Register(mcp.Tool{
+		Name:        "dig_recall",
+		Description: "Load a token-budgeted, provenance-tagged context pack from a dig KB for a query — the agent-memory recall primitive. mode is fts (default), vector, or hybrid; budget caps the pack in tokens. Returns JSON.",
+		InputSchema: schema(`{"type":"object","properties":{"kb":{"type":"string"},"query":{"type":"string"},"mode":{"type":"string","enum":["fts","vector","hybrid"]},"budget":{"type":"integer","description":"token budget for the pack"}},"required":["query"]}`),
+		Handler: func(raw json.RawMessage) (string, error) {
+			var a struct {
+				KB     string `json:"kb"`
+				Query  string `json:"query"`
+				Mode   string `json:"mode"`
+				Budget int    `json:"budget"`
+			}
+			if err := json.Unmarshal(raw, &a); err != nil {
+				return "", err
+			}
+			if a.Query == "" {
+				return "", fmt.Errorf("query is required")
+			}
+			args := []string{"recall", a.Query, "--json"}
+			if a.Mode != "" {
+				args = append(args, "--mode", a.Mode)
+			}
+			if a.Budget > 0 {
+				args = append(args, "--budget", fmt.Sprint(a.Budget))
 			}
 			return digJSON(kbArgs(a.KB, args...)...)
 		},

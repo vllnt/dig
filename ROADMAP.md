@@ -2,7 +2,7 @@
 
 > The open, local, reversible **data + retrieval + memory primitive for AI agents** — organize a knowledge base to *your* mental model, retrieve it fast, remember across sessions, and plug it into any agent or framework (MCP first, then native SDKs). Configurable and extensible at every stage, bring-your-own model (PARA, GTD, Memory Palace, or your own). Your own system end-to-end — and the data layer others build on.
 
-**Now:** integration surface shipped (MCP · daemon · TS/Python SDKs · AI-SDK tools · Claude plugin) + agent-memory capture↔recall loop live (`dig retain` → `dig recall`). DONE: semantic-retrieval, public-release, site-launch, eval-harness, harness-plugins core, public-extensibility core, integrations core.
+**Now:** integration surface shipped (MCP · daemon · TS/Python SDKs · AI-SDK tools · Claude plugin) + agent-memory capture↔recall loop live (`dig retain` → `dig recall`, also as `dig_retain`/`dig_recall` MCP tools). DONE: semantic-retrieval, public-release, site-launch, eval-harness, harness-plugins core, public-extensibility core, integrations core.
 **Last updated:** 2026-06-13
 
 ## vision-docs [DONE 2026-05]
@@ -175,7 +175,7 @@
 - [x] harness-plugins.4 codex shim — codex reads the canonical AGENTS.md (#13), which points at the portable skill + integration contract (2026-06-12)
 - [ ] harness-plugins.5 openclaw shim — thin pointer to the portable skill (format TBC)
 - [ ] harness-plugins.6 hermes shim — thin pointer to the portable skill (format TBC)
-- [~] harness-plugins.7 dig MCP server (`dig mcp`) — stdio JSON-RPC server live: exposes find/drift/log/export (read) + org/reconcile (preview-by-default, apply-gated) + undo as MCP tools, executing the CLI in-process so there's no logic drift; protocol-tested (handshake → tools/list → tools/call) against a real KB. Remaining: HTTP/SSE transport + retain/recall (agent-memory) tools (2026-06-12)
+- [~] harness-plugins.7 dig MCP server (`dig mcp`) — stdio JSON-RPC server live: exposes find/recall/drift/log/export (read) + retain (capture) + org/reconcile (preview-by-default, apply-gated) + undo as MCP tools, executing the CLI in-process so there's no logic drift; protocol-tested (handshake → tools/list → tools/call, incl. the retain→recall→undo memory loop) against a real KB. Remaining: HTTP/SSE transport (2026-06-13)
 - [x] harness-plugins.10 Agent entry docs — AGENTS.md (cross-harness standard, #13) + GEMINI.md beside the existing CLAUDE.md, each pointing at AGENTS.md + the portable skill (2026-06-12)
 - [x] harness-plugins.11 gemini-cli shim — gemini-cli reads GEMINI.md (#20), which points at AGENTS.md + the portable skill (2026-06-12)
 - [ ] harness-plugins.12 antigravity shim — thin pointer to the portable skill
@@ -253,7 +253,7 @@
 - [ ] agent-memory.2 Transcript split — segment captured sessions into turn/round units at index time so recall lands on the exact exchange (feeds composable-pipeline chunking)
 - [x] agent-memory.3 Recall context-pack — `dig recall <query>` (internal/recall): ranks the KB (mode from policy/flag), pulls blob snippets, and assembles a token-budgeted (`--budget`), provenance-tagged (head manifest) pack; deterministic; text + `--json`. Built on the shipped retrieval; tested incl. budget-cap + empty-pack (2026-06-12). A model reranker/reader can refine it later (composable-pipeline)
 - [ ] agent-memory.4 Multi-device sync — the KB syncs across devices via a remote StorageBackend (gocloud/SFTP from remote-reach) + the changeset merge spine; same memory everywhere
-- [ ] agent-memory.5 MCP memory tools — expose retain + recall as MCP tools so any harness uses dig as its memory layer (extends harness-plugins.7)
+- [x] agent-memory.5 MCP memory tools — `dig_retain` (capture, content via the tool, dated `memory/` path or `as`) + `dig_recall` (budgeted, provenance-tagged pack; `mode`/`budget`) registered in the `dig mcp` server, executing the real CLI in-process so any MCP harness uses dig as its memory layer with no logic drift; protocol-tested end-to-end (retain → recall → undo over JSON-RPC) (2026-06-13)
 - [ ] agent-memory.6 Memory extraction + consolidation — opt-in: an LLM distills salient facts from retained sessions into labeled memory entries; updates ADD/UPDATE/MERGE with conflict → escalate (never silent), all as reversible changesets; raw sessions stay the source of truth — extraction is an additive index, not a replacement (THE architectural fork — closes the memory-extraction/consolidation gap)
 - [ ] agent-memory.7 Tiered + agent-writable memory — memory tiers (hot/recall/archive) + an agent-writable surface (via MCP) where every edit is a reversible changeset, not free-form mutation (closes the self-editing/tiered-memory gap, dig-native)
 - [ ] agent-memory.8 Memory namespacing — scope memory per agent/user/session within a KB (on the work-views isolation), so multiple agents share one dig without bleeding context (closes the multi-tenant memory gap)
