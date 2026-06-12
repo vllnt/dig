@@ -1,0 +1,18 @@
+{
+  "name": "dig",
+  "owner": {
+    "name": "vllnt",
+    "url": "https://github.com/vllnt"
+  },
+  "description": "dig — the open, local, reversible data/retrieval/memory primitive for AI agents.",
+  "plugins": [
+    {
+      "name": "dig",
+      "source": "./",
+      "description": "Drive a dig knowledge base from Claude: the dig skill + the dig mcp server (find/org/drift/reconcile/export/undo). Requires the dig CLI on PATH — https://dig.vllnt.com.",
+      "homepage": "https://dig.vllnt.com",
+      "license": "MIT",
+      "keywords": ["knowledge-base", "retrieval", "memory", "mcp"]
+    }
+  ]
+}
