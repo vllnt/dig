@@ -31,6 +31,35 @@ export default [
             'Use @vllnt/logger instead of console.*. Import createBackendLogger (server) or createLogger (client).',
         },
       ],
+      // Mirror the @vllnt preset's prevent-abbreviations options, allowing the
+      // deliberate "docs" concept (the /docs user-docs route, nav, and data
+      // module). Re-declared because ESLint rule options replace, not merge.
+      'unicorn/prevent-abbreviations': [
+        'error',
+        {
+          extendDefaultReplacements: true,
+          replacements: {
+            ctx: false,
+            db: false,
+            docs: false,
+            e: false,
+            fn: false,
+            props: false,
+            ref: false,
+            utils: false,
+          },
+          ignore: [
+            'e2e',
+            'a11y',
+            'i18n',
+            'getInitialProps',
+            'generateStaticParams',
+            'dynamicParams',
+            '.*Ctx$',
+            '.*Ref$',
+          ],
+        },
+      ],
     },
   },
   {
