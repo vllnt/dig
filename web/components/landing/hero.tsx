@@ -1,6 +1,7 @@
 import { Badge, Button, Terminal } from "@vllnt/ui";
 import { useTranslations } from "next-intl";
 
+import { Link } from "@/i18n/routing";
 import { ARCHITECTURE_URL, GITHUB_URL } from "@/lib/site";
 
 const QUICK_START = [
@@ -31,6 +32,9 @@ export function Hero() {
       </p>
       <div className="flex flex-wrap justify-center gap-3">
         <Button asChild size="lg">
+          <Link href="/install">{t("cta_install")}</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline">
           <a href={GITHUB_URL} rel="noreferrer" target="_blank">
             {t("cta_github")}
           </a>
