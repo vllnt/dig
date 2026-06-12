@@ -73,6 +73,21 @@ The thing that makes destructive file management trustworthy is **reversibility*
 
 ---
 
+## Install
+
+```bash
+# with Go (any platform)
+go install github.com/vllnt/dig/cmd/dig@latest
+
+# or grab a prebuilt binary from a release
+#   https://github.com/vllnt/dig/releases  (linux/macOS/windows × amd64/arm64)
+# verify checksums.txt, extract, put `dig` on your PATH
+```
+
+Releases are cross-compiled and checksummed by [GoReleaser](.goreleaser.yaml); a
+tag `vX.Y.Z` builds and publishes them. A `curl | sh` installer served from
+[dig.vllnt.com](https://dig.vllnt.com) lands with the site (roadmap `site-launch.3`).
+
 ## Quick start
 
 ```bash
