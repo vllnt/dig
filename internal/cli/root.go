@@ -25,6 +25,7 @@ func NewRoot() *cobra.Command {
 		newInitCmd(),
 		newScanCmd(),
 		newFindCmd(),
+		newEmbedCmd(),
 		newExportCmd(),
 		newOrgCmd(),
 		newDedupCmd(),

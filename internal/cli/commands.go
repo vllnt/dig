@@ -7,9 +7,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/vllnt/dig/internal/index"
 	"github.com/vllnt/dig/internal/kb"
 	"github.com/vllnt/dig/internal/organize"
+	"github.com/vllnt/dig/internal/retrieval"
 	"github.com/vllnt/dig/internal/scan"
 	"github.com/vllnt/dig/internal/store"
 )
@@ -63,7 +63,7 @@ func newScanCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := rebuildIndex(dig, st, m); err != nil {
+			if err := rebuildIndex(dig, st, m, cmd.ErrOrStderr()); err != nil {
 				return err
 			}
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Scanned %d file(s) → manifest %s\n", len(entries), m.ID)
@@ -77,26 +77,33 @@ func newScanCmd() *cobra.Command {
 func newFindCmd() *cobra.Command {
 	var asJSON bool
 	var limit int
+	var modeFlag string
 	cmd := &cobra.Command{
 		Use:   "find <query>",
 		Short: "Search the knowledge base, ranked results",
-		Args:  cobra.MinimumNArgs(1),
+		Long: "Searches the KB. Default is deterministic full-text search (FTS).\n" +
+			"With a [retrieval] policy (or --mode), vector and hybrid modes add\n" +
+			"semantic recall via the configured embedding endpoint.",
+		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			k, err := kb.Resolve(kbFlag)
 			if err != nil {
 				return err
 			}
-			idx, err := index.Open(k.Dig())
+			rp := loadRetrieval(k.Dig())
+			if modeFlag == "" && rp.Enabled() {
+				modeFlag = rp.Mode
+			}
+			mode, err := retrieval.ParseMode(modeFlag)
 			if err != nil {
 				return err
 			}
-			defer func() { _ = idx.Close() }()
 
 			q := args[0]
 			for _, a := range args[1:] {
 				q += " " + a
 			}
-			results, err := idx.Query(q, limit)
+			results, err := retrieval.Search(k.Dig(), rp, mode, q, limit)
 			if err != nil {
 				return err
 			}
@@ -120,6 +127,7 @@ func newFindCmd() *cobra.Command {
 	}
 	cmd.Flags().BoolVar(&asJSON, "json", false, "emit JSON for other harnesses")
 	cmd.Flags().IntVar(&limit, "limit", 20, "max results")
+	cmd.Flags().StringVar(&modeFlag, "mode", "", "retrieval mode: fts, vector, hybrid (default: policy [retrieval] mode, else fts)")
 	return cmd
 }
 
@@ -190,7 +198,7 @@ func newUndoCmd() *cobra.Command {
 					return fmt.Errorf("disk revert: %w", err)
 				}
 			}
-			if err := rebuildIndex(dig, st, head); err != nil {
+			if err := rebuildIndex(dig, st, head, cmd.ErrOrStderr()); err != nil {
 				return err
 			}
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Reverted %s → head is now %s\n", undone.ID, head.ID)

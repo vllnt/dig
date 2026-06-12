@@ -123,7 +123,7 @@ func newWorkCmd() *cobra.Command {
 				return err
 			}
 			if m != nil {
-				if err := rebuildIndex(k.Dig(), st, m); err != nil {
+				if err := rebuildIndex(k.Dig(), st, m, cmd.ErrOrStderr()); err != nil {
 					return err
 				}
 				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "resolved %q (%s) → manifest %s\n", v.Name, accept, m.ID)
@@ -161,7 +161,7 @@ func newMergeCmd() *cobra.Command {
 				return err
 			}
 			if m != nil {
-				if err := rebuildIndex(k.Dig(), st, m); err != nil {
+				if err := rebuildIndex(k.Dig(), st, m, cmd.ErrOrStderr()); err != nil {
 					return err
 				}
 			}
