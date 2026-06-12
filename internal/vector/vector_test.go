@@ -25,15 +25,15 @@ func fakeEndpoint(t *testing.T) *vectortest.Server {
 }
 
 func testClient(url string) *Client {
-	return NewClient(url+"/v1", "fake-model", "", "doc: ", "query: ")
+	return NewClient(url+"/v1", "fake-model", "", "doc: ", "query: ", 0, 0)
 }
 
 // --- chunking ---
 
 func TestChunkDeterministicAndBounded(t *testing.T) {
 	text := strings.Repeat("Sentence one is here. Sentence two follows on.\n\n", 200)
-	a := Chunk(text)
-	b := Chunk(text)
+	a := Chunk(text, 0, 0)
+	b := Chunk(text, 0, 0)
 	if len(a) == 0 || len(a) != len(b) {
 		t.Fatalf("chunking not deterministic: %d vs %d", len(a), len(b))
 	}
@@ -41,7 +41,7 @@ func TestChunkDeterministicAndBounded(t *testing.T) {
 		if a[i] != b[i] {
 			t.Fatalf("chunk %d differs between runs", i)
 		}
-		if len(a[i]) > chunkSize {
+		if len(a[i]) > defaultChunkSize {
 			t.Fatalf("chunk %d exceeds size: %d", i, len(a[i]))
 		}
 		if a[i] == "" {
@@ -51,19 +51,19 @@ func TestChunkDeterministicAndBounded(t *testing.T) {
 }
 
 func TestChunkEdgeCases(t *testing.T) {
-	if got := Chunk(""); got != nil {
+	if got := Chunk("", 0, 0); got != nil {
 		t.Fatalf("empty text should yield no chunks, got %v", got)
 	}
-	if got := Chunk("   \n\t  "); got != nil {
+	if got := Chunk("   \n\t  ", 0, 0); got != nil {
 		t.Fatalf("whitespace should yield no chunks, got %v", got)
 	}
 	small := "tiny note"
-	if got := Chunk(small); len(got) != 1 || got[0] != small {
+	if got := Chunk(small, 0, 0); len(got) != 1 || got[0] != small {
 		t.Fatalf("small text should be one chunk, got %v", got)
 	}
 	// Pathological: no separators at all — must still terminate and cover.
-	solid := strings.Repeat("x", 5*chunkSize)
-	chunks := Chunk(solid)
+	solid := strings.Repeat("x", 5*defaultChunkSize)
+	chunks := Chunk(solid, 0, 0)
 	if len(chunks) < 4 {
 		t.Fatalf("solid text should split, got %d chunks", len(chunks))
 	}
@@ -78,7 +78,7 @@ func TestChunkOverlapPreservesContinuity(t *testing.T) {
 	needle := "The critical fact straddles a boundary."
 	text := sb.String() + needle + " " + sb.String()
 	found := false
-	for _, c := range Chunk(text) {
+	for _, c := range Chunk(text, 0, 0) {
 		if strings.Contains(c, needle) {
 			found = true
 			break
@@ -275,7 +275,7 @@ func TestIndexFingerprintInvalidation(t *testing.T) {
 	content := contentMap(map[string]string{"b1": "some text"})
 	m := makeManifest(store.Entry{Path: "a.md", Blob: "b1"})
 
-	c1 := NewClient(srv.URL+"/v1", "model-one", "", "", "")
+	c1 := NewClient(srv.URL+"/v1", "model-one", "", "", "", 0, 0)
 	if err := x.Rebuild(m, content, c1); err != nil {
 		t.Fatal(err)
 	}
@@ -290,12 +290,65 @@ func TestIndexFingerprintInvalidation(t *testing.T) {
 	}
 
 	// Model change: embedding space changed — cache must be dropped.
-	c2 := NewClient(srv.URL+"/v1", "model-two", "", "", "")
+	c2 := NewClient(srv.URL+"/v1", "model-two", "", "", "", 0, 0)
 	if err := x.Rebuild(m, content, c2); err != nil {
 		t.Fatal(err)
 	}
 	if srv.Embedded.Load() == n {
 		t.Fatal("model change must invalidate the cache")
+	}
+}
+
+// TestChunkParamsInvalidateCache proves changing chunk_size/chunk_overlap drops
+// the vector cache — re-chunking changes what gets embedded, so stale vectors
+// from the old chunking must not survive.
+func TestChunkParamsInvalidateCache(t *testing.T) {
+	srv := fakeEndpoint(t)
+	dir := t.TempDir()
+	x, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = x.Close() }()
+
+	content := contentMap(map[string]string{"b1": strings.Repeat("sentence here. ", 200)})
+	m := makeManifest(store.Entry{Path: "a.md", Blob: "b1"})
+
+	c1 := NewClient(srv.URL+"/v1", "m", "", "", "", 1000, 200)
+	if err := x.Rebuild(m, content, c1); err != nil {
+		t.Fatal(err)
+	}
+	n := srv.Embedded.Load()
+
+	// Same chunking: cache holds.
+	if err := x.Rebuild(m, content, c1); err != nil {
+		t.Fatal(err)
+	}
+	if srv.Embedded.Load() != n {
+		t.Fatal("same chunking should hit cache")
+	}
+
+	// Smaller chunks → more chunks → cache must drop and re-embed.
+	c2 := NewClient(srv.URL+"/v1", "m", "", "", "", 300, 50)
+	if err := x.Rebuild(m, content, c2); err != nil {
+		t.Fatal(err)
+	}
+	if srv.Embedded.Load() == n {
+		t.Fatal("chunk-param change must invalidate the cache")
+	}
+}
+
+func TestChunkRespectsConfiguredSize(t *testing.T) {
+	text := strings.Repeat("word ", 1000)
+	big := Chunk(text, 2000, 200)
+	small := Chunk(text, 400, 50)
+	if len(small) <= len(big) {
+		t.Fatalf("smaller chunk_size should yield more chunks: %d vs %d", len(small), len(big))
+	}
+	for i, c := range small {
+		if len(c) > 400 {
+			t.Fatalf("chunk %d exceeds configured size 400: %d", i, len(c))
+		}
 	}
 }
 
@@ -432,7 +485,7 @@ func TestLiveMultilingualRecall(t *testing.T) {
 	if url == "" || model == "" {
 		t.Skip("set DIG_EMBED_URL_MULTI and DIG_EMBED_MODEL_MULTI to run against a live multilingual endpoint")
 	}
-	c := NewClient(url, model, "", "", "")
+	c := NewClient(url, model, "", "", "", 0, 0)
 
 	dir := t.TempDir()
 	x, err := Open(dir)
@@ -485,7 +538,7 @@ func TestLiveParaphraseRecall(t *testing.T) {
 	if url == "" || model == "" {
 		t.Skip("set DIG_EMBED_URL and DIG_EMBED_MODEL to run against a live endpoint")
 	}
-	c := NewClient(url, model, "", "search_document: ", "search_query: ")
+	c := NewClient(url, model, "", "search_document: ", "search_query: ", 0, 0)
 
 	dir := t.TempDir()
 	x, err := Open(dir)

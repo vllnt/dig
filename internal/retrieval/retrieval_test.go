@@ -29,7 +29,7 @@ func TestFuseRRF(t *testing.T) {
 	fts := []vector.Result{r("a"), r("b"), r("c")}
 	vec := []vector.Result{r("b"), r("d"), r("a")}
 
-	out := Fuse(fts, vec, 10)
+	out := Fuse(fts, vec, 10, 0)
 	if len(out) != 4 {
 		t.Fatalf("want 4 fused results, got %d: %+v", len(out), out)
 	}
@@ -52,7 +52,7 @@ func TestFuseRRF(t *testing.T) {
 
 func TestFuseRespectsLimit(t *testing.T) {
 	fts := []vector.Result{r("a"), r("b"), r("c"), r("d")}
-	out := Fuse(fts, nil, 2)
+	out := Fuse(fts, nil, 2, 0)
 	if len(out) != 2 || out[0].Path != "a" {
 		t.Fatalf("limit not respected: %+v", out)
 	}
@@ -60,8 +60,8 @@ func TestFuseRespectsLimit(t *testing.T) {
 
 func TestFuseDeterministicTieBreak(t *testing.T) {
 	// Identical single-list ranks → tie on score → path order decides, stably.
-	a := Fuse([]vector.Result{r("z")}, []vector.Result{r("y")}, 10)
-	b := Fuse([]vector.Result{r("z")}, []vector.Result{r("y")}, 10)
+	a := Fuse([]vector.Result{r("z")}, []vector.Result{r("y")}, 10, 0)
+	b := Fuse([]vector.Result{r("z")}, []vector.Result{r("y")}, 10, 0)
 	if a[0].Path != b[0].Path || a[0].Path != "y" {
 		t.Fatalf("tie break not deterministic: %+v vs %+v", a, b)
 	}

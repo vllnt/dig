@@ -64,7 +64,7 @@ func (x *Index) Close() error { return x.db.Close() }
 // with. Any change (model, prefixes, chunking) invalidates every cached
 // vector — silently mixing embedding spaces would corrupt ranking.
 func fingerprint(c *Client) string {
-	return fmt.Sprintf("%s|%s|%s|%d|%d", c.Model, c.DocPrefix, c.QueryPrefix, chunkSize, chunkOverlap)
+	return fmt.Sprintf("%s|%s|%s|%d|%d", c.Model, c.DocPrefix, c.QueryPrefix, c.ChunkSize, c.ChunkOverlap)
 }
 
 // ensureFingerprint drops the cache when the embedding config changed.
@@ -164,7 +164,7 @@ func (x *Index) embedBlob(blob string, content index.ContentFunc, c *Client) err
 	var chunks []string
 	if content != nil {
 		if text, ok := content(blob); ok {
-			chunks = Chunk(string(text))
+			chunks = Chunk(string(text), c.ChunkSize, c.ChunkOverlap)
 		}
 	}
 	var vecs [][]float32

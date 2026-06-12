@@ -191,7 +191,7 @@
 - [ ] public-extensibility.3 dig ext CLI — manifest, capabilities, install-from-git, enable per KB
 - [ ] public-extensibility.4 T2 gRPC subprocess backend — first out-of-tree StorageBackend
 - [ ] public-extensibility.5 T3 WASM (wazero) + signing — sandboxed untrusted extensions
-- [ ] public-extensibility.6 Configurable primitives — expose the built-in retrieval pipeline knobs (mode, RRF k, chunk size/overlap, top-k, candidate pool, reranker) as `[retrieval]` policy config, so primitives are tuned without recompiling (the configure-without-code half of the seams)
+- [~] public-extensibility.6 Configurable primitives — rrf_k, candidate_factor, chunk_size, chunk_overlap exposed as `[retrieval]` policy config (0 = default; chunk changes re-embed via the cache fingerprint); validated, tested, documented in architecture.md + /docs (2026-06-12). Remaining: pluggable reranker (composable-pipeline.4)
 - [ ] public-extensibility.7 Programmatic API — a stable Go SDK + an optional localhost HTTP daemon over the CLI/--json contract, so apps embed dig without shelling out; local-only, no hosted service (closes the SDK/REST gap without breaking local-first)
 
 ## mental-models [PLANNED]

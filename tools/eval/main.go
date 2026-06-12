@@ -109,7 +109,7 @@ func main() {
 	if *mode == "all" {
 		modes = []string{"fts", "vector", "hybrid"}
 	}
-	client := vector.NewClient(rp.BaseURL, rp.Model, "", rp.DocPrefix, rp.QueryPrefix)
+	client := vector.NewClient(rp.BaseURL, rp.Model, "", rp.DocPrefix, rp.QueryPrefix, rp.ChunkSize, rp.ChunkOverlap)
 	// Embed queries once — every semantic mode shares them.
 	var qvecs [][]float32
 	for _, m := range modes {
@@ -220,7 +220,7 @@ func buildKB(root string, corpus *Corpus, rp policy.RetrievalPolicy) (string, er
 		return "", err
 	}
 	defer func() { _ = vx.Close() }()
-	client := vector.NewClient(rp.BaseURL, rp.Model, "", rp.DocPrefix, rp.QueryPrefix)
+	client := vector.NewClient(rp.BaseURL, rp.Model, "", rp.DocPrefix, rp.QueryPrefix, rp.ChunkSize, rp.ChunkOverlap)
 	start := time.Now()
 	if _, err := vx.SyncDocs(m, client); err != nil {
 		return "", fmt.Errorf("vector sync: %w", err)
@@ -291,7 +291,7 @@ func evaluate(digDir string, corpus *Corpus, mode string, qvecs [][]float32) (ma
 			var f, v []vector.Result
 			if f, err = ftsResults(ftsIdx, q.Text, pool); err == nil {
 				if v, err = matrix.Query(qvecs[i], pool); err == nil {
-					ranked = retrieval.Fuse(inScope(f, q.Scope), inScope(v, q.Scope), pool)
+					ranked = retrieval.Fuse(inScope(f, q.Scope), inScope(v, q.Scope), pool, 0)
 				}
 			}
 		}

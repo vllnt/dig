@@ -35,17 +35,10 @@ func ParseMode(s string) (Mode, error) {
 	return "", fmt.Errorf("unknown retrieval mode %q (fts, vector, hybrid)", s)
 }
 
-// rrfK is the standard Reciprocal Rank Fusion constant: dampens the gap
-// between adjacent top ranks so neither ranker dominates on rank-1 alone.
-const rrfK = 60
-
-// candidateFactor widens each ranker's candidate pool beyond the requested
-// limit so fusion has real overlap to work with.
-const candidateFactor = 4
-
 // Search runs a query in the given mode against a KB's .dig directory.
 // Vector and hybrid modes require a configured [retrieval] policy with a
-// reachable embedding endpoint.
+// reachable embedding endpoint. The RRF constant and candidate-pool factor
+// come from the policy's tuning knobs (defaults reproduce the shipped values).
 func Search(digDir string, rp policy.RetrievalPolicy, mode Mode, q string, limit int) ([]vector.Result, error) {
 	if limit <= 0 {
 		limit = 20
@@ -56,7 +49,8 @@ func Search(digDir string, rp policy.RetrievalPolicy, mode Mode, q string, limit
 	if rp.BaseURL == "" || rp.Model == "" {
 		return nil, fmt.Errorf("retrieval mode %s needs [retrieval] base_url and model in policy.toml", mode)
 	}
-	client := vector.NewClient(rp.BaseURL, rp.Model, rp.APIKeyEnv, rp.DocPrefix, rp.QueryPrefix)
+	rrfK, candidateFactor, chunkSize, chunkOverlap := rp.Tuning()
+	client := vector.NewClient(rp.BaseURL, rp.Model, rp.APIKeyEnv, rp.DocPrefix, rp.QueryPrefix, chunkSize, chunkOverlap)
 	qvec, err := client.EmbedQuery(q)
 	if err != nil {
 		return nil, err
@@ -83,7 +77,7 @@ func Search(digDir string, rp policy.RetrievalPolicy, mode Mode, q string, limit
 	if err != nil {
 		return nil, err
 	}
-	return Fuse(fres, vres, limit), nil
+	return Fuse(fres, vres, limit, rrfK), nil
 }
 
 // ftsOnly runs the deterministic FTS path and adapts results.
@@ -105,8 +99,11 @@ func ftsOnly(digDir string, q string, limit int) ([]vector.Result, error) {
 }
 
 // Fuse merges two rankings with Reciprocal Rank Fusion:
-// score(d) = Σ over rankings of 1/(rrfK + rank(d)).
-func Fuse(fts, vec []vector.Result, limit int) []vector.Result {
+// score(d) = Σ over rankings of 1/(rrfK + rank(d)). rrfK <= 0 uses the default.
+func Fuse(fts, vec []vector.Result, limit, rrfK int) []vector.Result {
+	if rrfK <= 0 {
+		rrfK = policy.DefaultRRFK
+	}
 	type fused struct {
 		r     vector.Result
 		score float64

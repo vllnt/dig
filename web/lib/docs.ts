@@ -200,6 +200,11 @@ export const POLICY_SECTIONS: readonly PolicySection[] = [
           "Env var holding the bearer token — keys never live in the file.",
         key: "api_key_env",
       },
+      {
+        describe:
+          "Tuning knobs (0 = default): rrf_k (60), candidate_factor (4), chunk_size (1000), chunk_overlap (200). Changing chunk size/overlap re-embeds the KB.",
+        key: "rrf_k / chunk_size / …",
+      },
     ],
     summary:
       "Opt-in semantic retrieval. Off by default — find stays deterministic FTS.",
