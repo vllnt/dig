@@ -168,7 +168,7 @@
 **Exit criteria:** The portable skill drives a KB (find/org/reconcile/export) unchanged across every listed harness; each harness shim is a thin pointer to it; one shared integration contract keeps surfaces consistent.
 
 - [ ] harness-plugins.1 Integration contract — one doc: how a harness drives dig (--json surfaces, exit codes, dig detection/install), the base every shim builds on
-- [ ] harness-plugins.8 Portable dig skill — skills/dig/SKILL.md, the canonical instruction set (when to reach for dig, --json surfaces, detect/install); every harness shim points here (codebase-intelligence model)
+- [x] harness-plugins.8 Portable dig skill — skills/dig/SKILL.md: the canonical instruction set (when to reach for dig, --json surfaces, detect/install, MCP usage, rules); every harness shim points here (2026-06-12)
 - [ ] harness-plugins.2 claude-code plugin — official `.claude-plugin/plugin.json` bundling `commands/` (dig-find/org/drift/export over the existing CLI) + `skills/dig` (hp.8) + the retention hook (agent-memory.1, SessionEnd → KB) + the MCP server (hp.7); v1 ships over the working CLI today, MCP/retention gated on those tasks. Paths via `${CLAUDE_PLUGIN_ROOT}`, component dirs at root
 - [ ] harness-plugins.9 cursor shim — `.cursor/rules/dig.mdc` rule, thin auto-generated pointer (between markers) to the portable skill
 - [ ] harness-plugins.3 pi shim — pi.dev package, thin pointer to the portable skill
@@ -176,7 +176,7 @@
 - [ ] harness-plugins.5 openclaw shim — thin pointer to the portable skill
 - [ ] harness-plugins.6 hermes shim — thin pointer to the portable skill
 - [~] harness-plugins.7 dig MCP server (`dig mcp`) — stdio JSON-RPC server live: exposes find/drift/log/export (read) + org/reconcile (preview-by-default, apply-gated) + undo as MCP tools, executing the CLI in-process so there's no logic drift; protocol-tested (handshake → tools/list → tools/call) against a real KB. Remaining: HTTP/SSE transport + retain/recall (agent-memory) tools (2026-06-12)
-- [ ] harness-plugins.10 Agent entry docs — AGENTS.md (cross-harness standard) + GEMINI.md beside the existing CLAUDE.md, each pointing at the portable skill
+- [x] harness-plugins.10 Agent entry docs — AGENTS.md (cross-harness standard, #13) + GEMINI.md beside the existing CLAUDE.md, each pointing at AGENTS.md + the portable skill (2026-06-12)
 - [ ] harness-plugins.11 gemini-cli shim — thin pointer to the portable skill
 - [ ] harness-plugins.12 antigravity shim — thin pointer to the portable skill
 - [ ] harness-plugins.13 Plugin marketplace — `.claude-plugin/marketplace.json` in the repo so `/plugin marketplace add vllnt/dig` → `/plugin install dig@dig`; semver bump per release for updates (per the official Claude Code plugin spec)

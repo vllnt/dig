@@ -29,6 +29,7 @@ jobs:
             'CONTRIBUTING.md'
             'SECURITY.md'
             'AGENTS.md'
+            'GEMINI.md'
             'CHANGELOG.md'
             'CODE_OF_CONDUCT.md'
             'ROADMAP.md'
