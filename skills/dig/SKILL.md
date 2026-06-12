@@ -33,6 +33,8 @@ or run inside it (dig walks up to find `.dig/`). Create one with `dig init <dir>
 |------|---------|
 | Index a directory | `dig init <dir>` then `dig --kb <dir> scan` |
 | Search (ranked) | `dig --kb <dir> find "<query>" --json` — add `--mode hybrid` for semantic recall |
+| Recall budgeted memory | `dig --kb <dir> recall "<query>" --json` — token-budgeted (`--budget`), provenance-tagged context pack |
+| Capture into memory | `dig --kb <dir> retain [file]` (or stdin, or `--transcript <session.jsonl>`) → dated `memory/` path (`--as`) |
 | See divergence from policy | `dig --kb <dir> drift --json` |
 | Reorganize by policy | `dig --kb <dir> org --dry-run` (preview) → `dig --kb <dir> org` (apply) |
 | Collapse duplicates | `dig --kb <dir> dedup --dry-run` → `dig --kb <dir> dedup` |
@@ -53,10 +55,19 @@ rename/label; `[dedup]`; opt-in `[retrieval]` for semantic search). Validate wit
 
 ## Via MCP (preferred for agents)
 
-`dig mcp` runs an MCP server over stdio exposing `dig_find`, `dig_drift`,
-`dig_log`, `dig_export` (read), `dig_org`, `dig_reconcile` (preview by default;
-`apply: true` commits), and `dig_undo`. Register it with the harness's MCP
-config and call the tools directly.
+`dig mcp` runs an MCP server over stdio exposing `dig_find`, `dig_recall`,
+`dig_drift`, `dig_log`, `dig_export` (read), `dig_retain` (capture into memory),
+`dig_org`, `dig_reconcile` (preview by default; `apply: true` commits), and
+`dig_undo`. Register it with the harness's MCP config and call the tools
+directly. `dig_retain` + `dig_recall` make dig the agent's memory layer.
+
+## Remember sessions (opt-in)
+
+When installed as the Claude Code plugin, a `SessionEnd` hook renders each
+finished session and `dig retain`s it into `memory/sessions/`. It is **double
+opt-in** and fail-open: it captures only when `DIG_RETAIN_SESSIONS=1` is set
+**and** the session's directory is inside a `.dig` KB, and it never blocks a
+session. Recall a past session with `dig recall "<topic>"`.
 
 ## Rules
 

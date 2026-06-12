@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"os"
 	"strings"
 	"testing"
 
@@ -85,6 +86,41 @@ func TestChainRetainDefaultPath(t *testing.T) {
 	if pathOf(out) != pathOf(out2) {
 		t.Fatalf("same content+date should be reproducible: %q vs %q", pathOf(out), pathOf(out2))
 	}
+}
+
+// TestChainRetainTranscript proves --transcript renders an agent session
+// (JSONL) to readable markdown and retains that, so recall surfaces the
+// conversation — not raw JSON.
+func TestChainRetainTranscript(t *testing.T) {
+	root := t.TempDir()
+	run(t, "init", root)
+
+	session := root + "/session.jsonl"
+	if err := os.WriteFile(session, []byte(
+		`{"type":"user","message":{"role":"user","content":"What did we decide about the ledger migration?"}}`+"\n"+
+			`{"type":"assistant","message":{"role":"assistant","content":[{"type":"thinking","thinking":"internal"},{"type":"text","text":"We migrate billing to the new ledger in Q3; Dana owns it."}]}}`+"\n",
+	), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	out := run(t, "--kb", root, "retain", "--transcript", session, "--as", "memory/sessions/s.md")
+	if !strings.Contains(out, "Retained memory/sessions/s.md") {
+		t.Fatalf("transcript retain output: %s", out)
+	}
+	md := diskState(t, root)["memory/sessions/s.md"]
+	if !strings.Contains(md, "## User") || !strings.Contains(md, "## Assistant") {
+		t.Fatalf("transcript not rendered to turns:\n%s", md)
+	}
+	if strings.Contains(md, "internal") || strings.Contains(md, `"type"`) {
+		t.Fatalf("raw JSON / thinking leaked into memory:\n%s", md)
+	}
+	// recall surfaces the captured decision.
+	if !strings.Contains(run(t, "--kb", root, "recall", "ledger migration Dana Q3"), "new ledger in Q3") {
+		t.Fatal("recall did not surface the captured session decision")
+	}
+
+	// --transcript and a file argument are mutually exclusive.
+	runExpectErr(t, "--kb", root, "retain", "--transcript", session, "somefile.md")
 }
 
 // TestChainRetainGuards proves empty input and path escapes are rejected, and
