@@ -80,6 +80,32 @@ deterministic, zero-dependency default.
 (A stratified 1-in-8 pilot of this run scored hybrid 96.8% hit@5 — within
 sampling error of the full result.)
 
+## BEAM (128K tier: 20 conversations, 5,732 turns, 355 scoreable questions)
+
+Embedding model: `all-MiniLM-L6-v2` (Q8, llama.cpp, CPU). 2026-06-12.
+BEAM (ICLR 2026) probes ten memory abilities inside single very-long
+conversations; evidence is annotated at TURN granularity (`source_chat_ids`),
+so the adapter indexes one file per turn and scores retrieval of the exact
+evidence turns — a far stricter target than session-level benchmarks, and
+near-duplicate turns inside one conversation make it the unsaturated frontier.
+Abstention questions (no retrievable evidence) are excluded.
+
+| metric | fts | vector | hybrid |
+|---|---|---|---|
+| recall@5 | 31.3% | **36.0%** | 34.8% |
+| recall@10 | 39.4% | **46.1%** | 43.4% |
+| hit@1 | 23.4% | **29.9%** | 29.6% |
+| hit@5 | 49.0% | **54.6%** | 51.8% |
+| hit@10 | 58.3% | **64.8%** | 62.3% |
+| ndcg@10 | 29.9% | **35.4%** | 34.4% |
+| mrr | 35.0% | **41.2%** | 40.9% |
+
+Semantic retrieval beats FTS on every metric (+6.5pts hit@10, +6.2 mrr) —
+but here **vector-only edges hybrid**: when the lexical ranking is weak,
+RRF fusion dilutes rather than helps. The published BEAM bests (64.1/48.6)
+are end-to-end LLM-judged QA scores from full memory pipelines — a different
+measurement; these are raw retrieval numbers for the evidence turns.
+
 ## Published numbers from alternatives (for context)
 
 | System | Benchmark | Metric | Score | Note |
@@ -101,3 +127,4 @@ retrieval/management layer — answering belongs to the agent driving it.
 | 2026-06-11 | LoCoMo full (nomic): hybrid beats FTS on every metric from rank 3 (recall@5 85.3 vs 80.4) | hybrid > fts confirmed |
 | 2026-06-11 | LongMemEval subset (MiniLM-q8): hybrid hit@5 96.8% — at MemPalace's 96.6% bar | bar reached (subset) |
 | 2026-06-12 | LongMemEval FULL 500q (MiniLM-q8): hybrid hit@5 98.0% vs bar 96.6% | **bar beaten** |
+| 2026-06-12 | BEAM 128K tier (MiniLM-q8): vector hit@10 64.8% vs FTS 58.3%; vector edges hybrid on turn-level evidence | frontier mapped |
