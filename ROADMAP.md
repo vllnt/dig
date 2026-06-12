@@ -192,7 +192,7 @@
 - [ ] public-extensibility.4 T2 gRPC subprocess backend — first out-of-tree StorageBackend
 - [ ] public-extensibility.5 T3 WASM (wazero) + signing — sandboxed untrusted extensions
 - [~] public-extensibility.6 Configurable primitives — rrf_k, candidate_factor, chunk_size, chunk_overlap exposed as `[retrieval]` policy config (0 = default; chunk changes re-embed via the cache fingerprint); validated, tested, documented in architecture.md + /docs (2026-06-12). Remaining: pluggable reranker (composable-pipeline.4)
-- [ ] public-extensibility.7 Programmatic API — a stable Go SDK + an optional localhost HTTP daemon over the CLI/--json contract, so apps embed dig without shelling out; local-only, no hosted service (closes the SDK/REST gap without breaking local-first)
+- [~] public-extensibility.7 Programmatic API — `dig serve` localhost HTTP+JSON daemon over the CLI contract shipped: GET /find /drift /log /export + POST /org /reconcile /undo (apply-gated), loopback-only bind enforced, in-process CLI reuse; httptest + real-binary tested (2026-06-12). Remaining: a stable importable Go SDK package (internal/ is currently unexported)
 
 ## mental-models [PLANNED]
 

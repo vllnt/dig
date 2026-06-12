@@ -23,6 +23,9 @@ All notable changes to dig are documented here. The format is based on
 - **`dig mcp`** — run dig as a Model Context Protocol server over stdio, exposing
   the CLI surface (find, drift, log, export read-only; org/reconcile preview-by-
   default with an apply flag; undo) as tools any MCP client can drive.
+- **`dig serve`** — localhost HTTP+JSON daemon over the CLI contract (GET
+  /find /drift /log /export, POST /org /reconcile /undo, apply-gated), so apps
+  and SDKs embed dig without shelling out. Binds loopback only — never public.
 - **Configurable retrieval primitives** — `[retrieval]` policy gains `rrf_k`,
   `candidate_factor`, `chunk_size`, `chunk_overlap` tuning knobs (0 = default,
   reproducing shipped behavior); changing chunk size/overlap re-embeds the KB.
