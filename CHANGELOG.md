@@ -26,6 +26,9 @@ All notable changes to dig are documented here. The format is based on
 - **`dig serve`** — localhost HTTP+JSON daemon over the CLI contract (GET
   /find /drift /log /export, POST /org /reconcile /undo, apply-gated), so apps
   and SDKs embed dig without shelling out. Binds loopback only — never public.
+- **`@vllnt/dig` TypeScript SDK** (`clients/typescript`) — dependency-free typed
+  client over the daemon; CI builds + tests it against a real `dig serve`, and an
+  npm-publish workflow ships it on release (gated on `NPM_TOKEN`).
 - **Configurable retrieval primitives** — `[retrieval]` policy gains `rrf_k`,
   `candidate_factor`, `chunk_size`, `chunk_overlap` tuning knobs (0 = default,
   reproducing shipped behavior); changing chunk size/overlap re-embeds the KB.

@@ -1,0 +1,51 @@
+name: SDK
+
+# Builds + tests the TypeScript client against a real `dig serve` daemon.
+# Runs when the SDK or the dig source it drives changes.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "clients/typescript/**"
+      - "cmd/**"
+      - "internal/**"
+      - "go.mod"
+  pull_request:
+    paths:
+      - "clients/typescript/**"
+      - "cmd/**"
+      - "internal/**"
+      - "go.mod"
+
+permissions:
+  contents: read
+
+jobs:
+  typescript:
+    name: typescript client
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients/typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Build dig
+        run: go build -o "$RUNNER_TEMP/dig" ./cmd/dig
+        working-directory: .
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm typecheck
+      - run: pnpm build
+      - name: Test against a real dig serve
+        run: pnpm test
+        env:
+          DIG_BIN: ${{ runner.temp }}/dig
