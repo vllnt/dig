@@ -1,10 +1,10 @@
 # dig
 
-> An agent harness that keeps a knowledge base in order. You set the policy — folder structure, naming, labels, no duplicates; `dig`'s agents enforce it, **detect drift, fix it, and version every change** so nothing is ever lost. Humans keep editing with their own tools — `dig` reconciles around them instead of locking them out. Built to run many agents in parallel without colliding. **Open source, runs fully on your machine, and works with any OpenAI-compatible model — including a small local one.**
+> The open, local, reversible **data layer for AI agents** — it keeps a knowledge base in order *and* serves as your agent's memory. You set the policy (folder structure, naming, labels, no duplicates); `dig`'s agents enforce it, **detect drift, fix it, and version every change** so nothing is ever lost. It **retrieves fast** (hybrid full-text + semantic), **remembers across sessions**, and plugs into any agent or framework via **MCP + native SDKs**. Humans keep editing with their own tools — `dig` reconciles around them instead of locking them out, and runs many agents in parallel without colliding. **Open source, runs fully on your machine, works with any OpenAI-compatible model — including a small local one.**
 
 A company's or a person's knowledge base rots: files land in the wrong place, names drift from convention, duplicates pile up, structure erodes. Keeping it tidy is real, recurring work most people would rather **delegate**. `dig` is that delegate — an agent harness that does the librarian's whole job (**find, organize, dedupe, label, version, reconcile**) over one content-addressed core, safely, even while humans and other agents touch the same library.
 
-Most tools do one slice: `rclone` moves bytes, `organize` applies rules, `Vale` lints prose, `Glean` answers questions about your docs, `restic` versions. None *manage the structure of a living knowledge base* and keep it converged on your policy.
+Most tools do one slice: some move bytes, some apply naming rules, some lint prose, some answer questions about your docs, some version. None *manage the structure of a living knowledge base* and keep it converged on your policy.
 
 `dig` aims to be **the pi.dev of KB management** — a small, sharp core with a rich extension ecosystem. Need to store blobs in your own object store, back up on every change, parse a proprietary format, or add a command? That's an extension, not a fork.
 
@@ -34,7 +34,7 @@ Most tools do one slice: `rclone` moves bytes, `organize` applies rules, `Vale` 
 - **No duplicates.** Identical content is detected by construction (same hash) and collapsed per policy.
 - **Version everything.** Every change is recorded; history is browsable; any change is reversible (`dig undo`).
 - **Detect & fix drift.** Policy is a *desired state*. `dig` continuously compares it to the actual KB, reports what has drifted (misfiled, misnamed, duplicated, unlabeled), and reconciles — automatically where safe, by proposal where not.
-- **Coexist with humans.** People keep using Obsidian, Finder, Drive, their editor. `dig` observes those direct edits, folds them into history, and reconciles them against policy — it never demands you go "through" it, and never silently overrides a deliberate human change (it escalates instead).
+- **Coexist with humans.** People keep using their notes app, Finder, Drive, their editor. `dig` observes those direct edits, folds them into history, and reconciles them against policy — it never demands you go "through" it, and never silently overrides a deliberate human change (it escalates instead).
 - **Parallel-safe.** Multiple agents operate in isolated views, merge back automatically when they don't overlap, and **escalate to a human** only when a real conflict can't be resolved by policy.
 
 Why these aren't separate features: a single content-addressed store gives dedupe, versioning, cheap isolation, and mergeable changesets *for free*. See [docs/architecture.md](docs/architecture.md).
@@ -42,7 +42,7 @@ Why these aren't separate features: a single content-addressed store gives dedup
 ### Scope
 
 - **Manages knowledge bases** — document/asset libraries: PDFs, media, notes, datasets, research, downloads. Files that are safe to move, rename, and relabel.
-- **Manages structure, does not answer questions.** `dig` governs *where things live and what they're called*. It is **not** a RAG / Q&A assistant — that's Glean / Dust / Onyx territory. Retrieval in `dig` serves *management* (find the files a rule applies to), not end-user search. Keeping this lane is deliberate; a tool that both restructures files and answers questions does neither well.
+- **Manages structure, does not answer questions.** `dig` governs *where things live and what they're called*. It is **not** a RAG / Q&A assistant — that's a different product category. Retrieval in `dig` serves *management* (find the files a rule applies to), not end-user search. Keeping this lane is deliberate; a tool that both restructures files and answers questions does neither well.
 - **Feeds model training, does not train.** A clean, deduped, labeled, versioned KB *is* a training dataset — so `dig export` emits one reproducibly (see [Datasets](#datasets-for-ml-training)). Actually fine-tuning a model (GPU / CUDA / PyTorch) is an explicit non-goal: it would break the cgo-free single-binary + small-model architecture. dig is the data layer at the start of the pipeline and the model *consumer* at the end — never the trainer in the middle.
 - **Restructures fully, never ad hoc.** Within a library `dig` reshapes hierarchies, moves, renames, dedupes — but only as policy / rules / workflows direct, always reversibly.
 - **Not a code refactoring tool (for now).** Restructuring *source* trees breaks imports/builds and needs language-aware analysis — a future import-aware workflow, not the initial scope. Point `dig` at a repo's *assets*, not its source.
@@ -60,10 +60,10 @@ Why these aren't separate features: a single content-addressed store gives dedup
 ```
         Without dig                          With dig
   ┌──────────────────────┐           ┌──────────────────────┐
-  │ organize (rules)      │           │                       │
-  │ fdupes / fclones      │           │   one policy file      │
+  │ renaming by rule      │           │                       │
+  │ deduping by hash      │           │   one policy file      │
   │ manual renaming       │   ───▶    │   dig org              │
-  │ git/restic for history│           │   dig undo / log       │
+  │ manual version control│           │   dig undo / log       │
   │ "don't run two at once"│          │   dig work (parallel)  │
   └──────────────────────┘           └──────────────────────┘
    N tools, no safety net              1 tool, fully reversible
@@ -191,7 +191,7 @@ metadata/regex → PDF text layer → OCR (scanned PDFs / images) → LLM judgme
 
 ## Architecture
 
-`dig` is a thin command layer over a **content-addressed store** (blobs keyed by content hash + versioned tree manifests — git/restic's model) and a **policy engine** that proposes changesets the store applies atomically and reversibly.
+`dig` is a thin command layer over a **content-addressed store** (blobs keyed by content hash + versioned tree manifests — a git-style model) and a **policy engine** that proposes changesets the store applies atomically and reversibly.
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -259,7 +259,7 @@ The two classic company needs map to **one interface each**, no bespoke plugin:
 [[event_sink]]
 name = "offsite-backup"
 on   = "changeset.committed"
-exec = "restic backup {changed_paths}"
+exec = "backup-tool backup {changed_paths}"
 
 # store blobs in a company object store — a StorageBackend extension
 [[storage]]
@@ -338,12 +338,12 @@ Semantic search and content-based naming are **opt-in drivers**, not core — th
 
 Six camps surround the problem; none cover it whole:
 
-- **File movers** (rclone, restic) — transfer/version, but can't *search* or *organize by rules*.
-- **Rule organizers** (organize, Hazel, File Juggler) — apply naming/foldering rules, but single-threaded, no index, no versioned undo, no merge.
-- **AI organizers** (NameQuick, Sortio, Riffo) — read content to name/sort, but GUI, no concurrency, no versioning.
-- **Search/dedupe** (fd, ripgrep, fclones) — one capability each, local only.
-- **KB assistants** (Glean, Dust, Onyx) — connect to docs and *answer questions*; govern access/sensitivity — but never restructure the files.
-- **Doc linters / governance agents** (Vale; 2026 governance-aware agents) — enforce *prose style* or *data compliance* and flag drift — read-only, no structural fix, no versioning.
+- **File movers** — transfer/version bytes, but can't *search* or *organize by rules*.
+- **Rule organizers** — apply naming/foldering rules, but single-threaded, no index, no versioned undo, no merge.
+- **AI organizers** — read content to name/sort, but GUI, no concurrency, no versioning.
+- **Search/dedupe** — one capability each, local only.
+- **KB assistants** — connect to docs and *answer questions*; govern access/sensitivity — but never restructure the files.
+- **Doc linters / governance agents** — enforce *prose style* or *data compliance* and flag drift — read-only, no structural fix, no versioning.
 
 dig's unfilled gap: **policy-driven structure + drift detection + reconcile + full versioning + safe parallel operation that coexists with human edits — on an open, local, extensible core.** Everyone else answers, flags, or moves; nobody *manages the structure of a living KB and keeps it converged.* The extensibility model borrows from Terraform providers (gRPC plugins), Helm/Extism (WASM), git (PATH subcommands), and pi.dev (tiny core + package ecosystem). Full breakdown — strategy, pros/cons, stack per tool — in [docs/landscape.md](docs/landscape.md).
 
