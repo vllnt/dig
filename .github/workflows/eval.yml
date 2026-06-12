@@ -1,0 +1,55 @@
+name: Eval
+
+# The eval loop: deterministic lifecycle regression over generated corpora.
+# Runs nightly and on demand. The vector / benchmark scoreboard (LongMemEval,
+# LoCoMo, BEAM) needs a local embedding endpoint and is run on-demand locally
+# via `tools/eval` — see docs/evals.md; it is intentionally NOT in CI.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      size:
+        description: "Corpus size for the CLI smoke"
+        type: choice
+        options: [small, medium, large]
+        default: large
+
+permissions:
+  contents: read
+
+jobs:
+  lifecycle:
+    name: lifecycle regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Corpus + lifecycle invariants (-race)
+        run: go test -race ./internal/corpus/... ./internal/cli/... -run 'Corpus|Lifecycle|Generate|Spec|Seed|Size'
+
+      - name: End-to-end CLI journey on a generated corpus
+        run: |
+          set -euo pipefail
+          SIZE="${{ github.event.inputs.size || 'large' }}"
+          KB="$(mktemp -d)"
+          go build -o /tmp/dig ./cmd/dig
+          go run ./tools/corpusgen --seed 20260612 --size "$SIZE" --out "$KB"
+          /tmp/dig init "$KB"
+          printf '[[rule]]\nname = "sort-md"\nmatch = { ext = ["md"] }\ninto = "sorted/md"\n\n[dedup]\nstrategy = "keep-oldest"\n' > "$KB/.dig/policy.toml"
+          /tmp/dig --kb "$KB" policy validate
+          /tmp/dig --kb "$KB" scan
+          /tmp/dig --kb "$KB" find "report" --limit 5
+          /tmp/dig --kb "$KB" org --dry-run
+          /tmp/dig --kb "$KB" org
+          /tmp/dig --kb "$KB" dedup
+          /tmp/dig --kb "$KB" drift --json > /dev/null
+          /tmp/dig --kb "$KB" reconcile
+          /tmp/dig --kb "$KB" export > /dev/null
+          /tmp/dig --kb "$KB" undo
+          /tmp/dig --kb "$KB" log
+          echo "journey completed on a $SIZE corpus"
