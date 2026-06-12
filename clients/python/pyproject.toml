@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vllnt-dig"
+version = "0.1.0"
+description = "Python client for a local dig daemon — search, organize, reconcile, and export a knowledge base over HTTP."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+keywords = ["dig", "knowledge-base", "retrieval", "memory", "ai-agents", "rag"]
+authors = [{ name = "vllnt" }]
+dependencies = []
+
+[project.urls]
+Homepage = "https://dig.vllnt.com"
+Repository = "https://github.com/vllnt/dig"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dig_client"]
