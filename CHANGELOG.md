@@ -9,10 +9,17 @@ All notable changes to dig are documented here. The format is based on
 ### Added
 
 - **`dig retain [file]`** — the agent-memory capture primitive: writes content (a
-  file argument, or stdin) into the KB at a dated, content-addressed `memory/` path
-  (`--as` to override, `--date` for reproducible captures), then scans + indexes it
-  as a reversible changeset, so `dig find`/`dig recall` surface it. Path-escape
-  guarded; the ingestion entry point a harness hook pipes a session transcript into.
+  file argument, stdin, or a rendered session via `--transcript`) into the KB at a
+  dated, content-addressed `memory/` path (`--as` to override, `--date` for
+  reproducible captures), then scans + indexes it as a reversible changeset, so
+  `dig find`/`dig recall` surface it. Path-escape guarded.
+- **Session retention** — `dig retain --transcript <session.jsonl>` renders a Claude
+  Code transcript to readable markdown (user + assistant turns, tool calls
+  summarized; thinking, tool output, system reminders, and injected skill bodies
+  dropped). A **SessionEnd plugin hook** (`hooks/retain-session.sh`) auto-captures
+  finished sessions into `memory/sessions/` — double opt-in (`DIG_RETAIN_SESSIONS=1`
+  **and** a `.dig` KB at the session's directory) and fail-open, so it can never
+  block or break a session.
 - **`dig recall <query>`** — the agent-memory recall primitive: a token-budgeted
   (`--budget`), provenance-tagged context pack ranked from the KB (text or
   `--json`), so an agent loads relevant memory without overflowing its context.

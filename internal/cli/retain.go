@@ -15,6 +15,7 @@ import (
 	"github.com/vllnt/dig/internal/kb"
 	"github.com/vllnt/dig/internal/scan"
 	"github.com/vllnt/dig/internal/store"
+	"github.com/vllnt/dig/internal/transcript"
 )
 
 // newRetainCmd captures content (an agent session, a note, a document) into the
@@ -24,19 +25,21 @@ import (
 func newRetainCmd() *cobra.Command {
 	var asPath string
 	var now string
+	var transcriptPath string
 	cmd := &cobra.Command{
 		Use:   "retain [file]",
 		Short: "Capture content (session, note, document) into the KB and index it",
-		Long: "Writes content (a file argument, or stdin) into the KB and scans it in.\n" +
-			"Defaults to a dated memory/ path; override with --as. The capture entry\n" +
-			"point for agent-memory: pipe a session transcript to `dig retain`.",
+		Long: "Writes content (a file argument, stdin, or a rendered agent transcript via\n" +
+			"--transcript) into the KB and scans it in. Defaults to a dated memory/ path;\n" +
+			"override with --as. The capture entry point for agent-memory: a retention\n" +
+			"hook renders a finished session with --transcript and pipes it to `dig retain`.",
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			k, err := kb.Resolve(kbFlag)
 			if err != nil {
 				return err
 			}
-			data, err := readRetainInput(cmd, args)
+			data, err := retainInput(cmd, args, transcriptPath)
 			if err != nil {
 				return err
 			}
@@ -86,11 +89,28 @@ func newRetainCmd() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&asPath, "as", "", "target path in the KB (default: memory/<date>/<hash>.md)")
 	cmd.Flags().StringVar(&now, "date", "", "date for the default path as YYYY-MM-DD (default: today) — for reproducible captures")
+	cmd.Flags().StringVar(&transcriptPath, "transcript", "", "render an agent session transcript (JSONL) to markdown and retain that")
 	return cmd
 }
 
-// readRetainInput reads content from a file argument or stdin.
-func readRetainInput(cmd *cobra.Command, args []string) ([]byte, error) {
+// retainInput resolves the content to capture: a rendered transcript when
+// --transcript is set, else a file argument, else stdin.
+func retainInput(cmd *cobra.Command, args []string, transcriptPath string) ([]byte, error) {
+	if transcriptPath != "" {
+		if len(args) == 1 {
+			return nil, fmt.Errorf("--transcript and a file argument are mutually exclusive")
+		}
+		f, err := os.Open(transcriptPath)
+		if err != nil {
+			return nil, err
+		}
+		defer func() { _ = f.Close() }()
+		md, err := transcript.Render(f)
+		if err != nil {
+			return nil, err
+		}
+		return []byte(md), nil
+	}
 	if len(args) == 1 {
 		return os.ReadFile(args[0])
 	}
