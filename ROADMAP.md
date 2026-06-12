@@ -264,7 +264,7 @@
 **Exit criteria:** an agent built on the Vercel AI SDK, Mastra, and LangChain (Python) each uses dig as its memory/retriever — via MCP or a native adapter — with no dig-specific glue beyond install, all against the same KB.
 
 - [ ] integrations.1 MCP-first reach — land `dig mcp` (harness-plugins.7) as the universal entry; verify it drives a KB from Claude + the Vercel AI SDK unchanged
-- [ ] integrations.2 TypeScript/JS SDK — thin client over the localhost daemon (public-extensibility.7) + AI SDK `tool()` helpers; Node/Bun/Deno
+- [~] integrations.2 TypeScript/JS SDK — `@vllnt/dig` (clients/typescript): dependency-free typed client over the `dig serve` daemon (find/drift/log/export/org/reconcile/undo, apply-gated); built + tested in CI against a real spawned daemon (no mocks) (2026-06-12). Remaining: AI SDK `tool()` helpers
 - [ ] integrations.3 Python SDK — thin client over the daemon; the ML/agent default (LangChain/LlamaIndex/CrewAI build on it)
 - [ ] integrations.4 Vercel AI SDK adapter — MCP wiring + memory middleware (recall-before / retain-after), published example
 - [ ] integrations.5 Mastra adapter — dig as Memory + RAG store (MCP-native)
@@ -279,7 +279,7 @@
 **Goal:** dig is discoverable and one-command installable in every channel devs and agents already browse — package registries, the MCP registry, and framework directories — each listing pointing at the published 98% proof (site-launch.6). Passive reach: the ecosystem finds dig without us pushing. (Binary install lives in site-launch.3 / public-release.3; this phase is the agentic + SDK channels on top.)
 **Exit criteria:** `npm i @dig/client`, `pip install dig`, and `brew install dig` all resolve; `dig mcp` is in the public MCP registry; dig appears in the LangChain / LlamaIndex / Vercel AI SDK directories; every entry links the benchmark leaderboard.
 
-- [ ] distribution.1 SDK registries — publish the TS SDK (`@dig/client`, npm) + Python SDK (`dig`, PyPI) from the integrations phase, semver + CI-published; the front door for agent devs (npm/pip is how the agentic world installs, not curl|sh)
+- [~] distribution.1 SDK registries — npm-publish CI wired (.github/workflows/npm-publish.yml: builds dig, tests the SDK against a real daemon, publishes `@vllnt/dig` on a GitHub release; gated on the NPM_TOKEN secret). Remaining: add NPM_TOKEN + first publish; Python SDK (`dig`, PyPI) (2026-06-12)
 - [ ] distribution.2 MCP registry listing — submit `dig mcp` (harness-plugins.7) to the public MCP server registry → passive discovery by every MCP client, one listing reaches the ecosystem
 - [ ] distribution.3 Framework directories — list dig in LangChain integrations · LlamaHub · Vercel AI SDK providers · Mastra registry (riding the integrations adapters), where devs browse for a memory/retriever backend
 - [ ] distribution.4 Catalogs + awesome-lists — submit to awesome-mcp · awesome-ai-agents · awesome-ai-memory · awesome-selfhosted; each entry links the leaderboard (the trust hook that earns the click)
