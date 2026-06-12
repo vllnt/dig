@@ -7,16 +7,18 @@ on:
   push:
     branches: [main]
     paths:
-      - "clients/typescript/**"
+      - "clients/**"
       - "cmd/**"
       - "internal/**"
       - "go.mod"
+      - ".github/workflows/sdk.yml"
   pull_request:
     paths:
-      - "clients/typescript/**"
+      - "clients/**"
       - "cmd/**"
       - "internal/**"
       - "go.mod"
+      - ".github/workflows/sdk.yml"
 
 permissions:
   contents: read
