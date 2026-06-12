@@ -2,7 +2,7 @@
 
 > The open, local, reversible **data + retrieval + memory primitive for AI agents** — organize a knowledge base to *your* mental model, retrieve it fast, remember across sessions, and plug it into any agent or framework (MCP first, then native SDKs). Configurable and extensible at every stage, bring-your-own model (PARA, GTD, Memory Palace, or your own). Your own system end-to-end — and the data layer others build on.
 
-**Now:** site-launch (install page · user docs · leaderboard). public-release DONE; semantic-retrieval shipped (BEAM larger-tier scores backfilling in background).
+**Now:** eval-harness (CI eval loop · corpus generator). semantic-retrieval + public-release + site-launch DONE; BEAM larger-tier scores backfilling in background.
 **Last updated:** 2026-06-12
 
 ## vision-docs [DONE 2026-05]
@@ -137,7 +137,7 @@
 - [x] public-release.3 GoReleaser — cross-compiled checksummed binaries (linux/darwin/windows × amd64/arm64), release.yml on tag, `dig --version`, install docs; snapshot verified (#12, 2026-06-12)
 - [x] public-release.4 oss-readiness audit — CONTRIBUTING/SECURITY/CODE_OF_CONDUCT/CHANGELOG/AGENTS, llms.txt + llms-full.txt, issue+PR templates; all BLOCKING+WARN gaps closed (#13, 2026-06-12)
 
-## site-launch [PLANNED]
+## site-launch [DONE 2026-06-12]
 
 **Goal:** dig.vllnt.com is live — the web app ships, users can install dig through a clear strategy, and user docs are published.
 **Exit criteria:** Site resolves at dig.vllnt.com; a newcomer installs dig from it in under a minute via a documented channel; quickstart + policy reference + command docs published and synced with the CLI.
@@ -145,7 +145,7 @@
 - [x] site-launch.1 Land the web app — merge worktree `dig-landing` (web/ Next.js), builds green (7b6600e, 22fbf92)
 - [x] site-launch.2 Deploy to dig.vllnt.com — onboarded to ntk (prod + previews, 50659e6); site verified live (landing renders, full content) 2026-06-12
 - [x] site-launch.3 Install strategy — installer at site root `/install.sh` (OS/arch detect, latest-release fetch, checksum verify); `/install` page with copyable curl + `go install` + binaries; homepage primary "Install dig" CTA; stale "early scaffold" copy refreshed. Homebrew tap tracked in distribution.5. Fed by GoReleaser artifacts (public-release.3 ✓) (2026-06-12)
-- [ ] site-launch.4 User docs — quickstart, policy/rules/workflows reference, command reference, synced from README + docs/
+- [x] site-launch.4 User docs — /docs page: quickstart, full command reference (15 commands), policy reference ([[rule]]/[dedup]/[retrieval]), synced from README + internal/cli + internal/policy; nav-linked, Playwright E2E + 3-viewport visual verified (2026-06-12)
 - [x] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption (served at site root, 2026-06-12)
 - [x] site-launch.6 Leaderboard page — /leaderboard renders LongMemEval/LoCoMo/BEAM scoreboards from docs/evals.md (hybrid hit@5 98.0% headline) + published baselines + method; nav-linked, server-rendered, Playwright E2E + 3-viewport visual verified (2026-06-12)
 - [x] site-launch.7 Crawlability — robots.txt (declares sitemap) + sitemap.xml both resolve at site root (web app routes, verified in build 2026-06-12)

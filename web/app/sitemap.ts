@@ -10,6 +10,7 @@ import { buildCanonicalUrl } from "@/lib/site";
  */
 export const ROUTES: readonly { path: string; priority: number }[] = [
   { path: "/", priority: 1 },
+  { path: "/docs", priority: 0.9 },
   { path: "/leaderboard", priority: 0.8 },
   { path: "/install", priority: 0.8 },
 ];
