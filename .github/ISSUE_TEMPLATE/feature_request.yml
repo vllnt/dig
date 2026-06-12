@@ -1,0 +1,38 @@
+name: Feature request
+description: Propose a capability or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What can't you do today, or what's painful? Focus on the need, not the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like dig to do? How would it fit the CLI / policy / reversibility model?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - retrieval / search
+        - organize / policy
+        - reconcile / drift / watch
+        - storage / extensions
+        - agent memory / integrations
+        - CLI / DX
+        - other
+    validations:
+      required: false

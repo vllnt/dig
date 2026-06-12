@@ -1,0 +1,176 @@
+# dig — full reference for LLMs
+
+> Open, local, reversible data + retrieval + memory primitive for AI agents. This file is a
+> self-contained briefing: what dig is, how it's built, its CLI surface, its policy model,
+> its retrieval system, and its measured results. For canonical detail, read the linked
+> source docs — this summarizes them.
+
+## 1. What dig is
+
+A company's or a person's knowledge base rots: files land in the wrong place, names drift,
+duplicates pile up, structure erodes. dig is the delegate that does the librarian's whole
+job — **find, organize, dedupe, label, version, reconcile** — over one content-addressed
+core, safely, even while humans and other agents touch the same library concurrently.
+
+Beyond file management, dig is positioned as the **data/retrieval/memory layer for AI
+agents**: organize a KB to *your* mental model, retrieve it fast, remember across sessions,
+and plug it into any agent or framework (MCP first, then native SDKs). Bring-your-own
+organization model (PARA, GTD, Memory Palace, Zettelkasten, or your own). Your own system
+end-to-end — and the data layer others build on.
+
+Design pillars:
+- **Open source, runs fully locally.** No cloud account, no telemetry, no required network.
+  The store, index, policy engine, dedupe, and merge are all on-device.
+- **No LLM required.** The deterministic core does the whole job alone. AI is an *optional*
+  layer for fuzzy judgment, off by default.
+- **The harness carries the intelligence, not the model.** dig exposes strong deterministic
+  CLI tools; a model only makes small bounded judgments — so a small local model suffices.
+- **Reversibility is the spine.** Every mutation is journaled and `undo`-able, including
+  AI- and auto-applied ones.
+
+## 2. Architecture
+
+**Content-addressed store.** Files hash (BLAKE3) to blobs, stored once. A `manifest` is a
+versioned tree mapping paths → blobs. Manifests + a journal live in a per-KB `.dig/`
+directory. Identical content → identical blob → dedupe and free "moves" fall out of the
+model: a renamed/moved file re-uses its blob and re-indexes/re-embeds nothing.
+
+**Seams (interfaces).** `StorageBackend` (where blobs live), `IndexBackend` (where the
+searchable index lives). First-party impls: local filesystem blobs; SQLite FTS5 (pure-Go,
+no cgo) for search; an opt-in vector index. Indexes are **derived views** — always rebuilt
+from a manifest, never a source of truth.
+
+**Policy → changeset.** Declarative TOML rules compile to `file → {path, name, labels}`.
+Running policy over the head manifest produces a **changeset** (a draft manifest + an op
+list), never a direct disk mutation. Disk is touched only at commit, atomically, after the
+journal entry is written.
+
+**Reconcile loop.** Policy is the desired state; disk is the actual state; drift is the
+diff. dig is a reconciler (the Kubernetes-controller pattern for files): `dig drift` reports
+misfiled/misnamed/duplicated/unsorted + external human edits; `dig reconcile` converges
+one-shot. Human moves are detected via blob identity and treated as intent (pinned), never
+overwritten — they escalate instead.
+
+**Concurrency.** Multiple workers operate on isolated work views ({base manifest, draft}).
+A changeset state machine (DRAFT→PROPOSED→STAGED→MERGED/CONFLICT/ESCALATED/ABORTED) governs
+merges. Commit is a CAS + disjointness check in one serialized transaction; overlapping
+changes conflict and the head is left untouched. Compatible ops union; policy precedence
+resolves deterministically; unresolved conflicts lock only their subtree while the rest
+merges. Race-tested with concurrent workers.
+
+**Watch.** `dig watch` runs continuously — observe edits, reconcile per tick, surface an
+escalation queue. Autonomy is earned rule-by-rule: only rules marked `autonomy = "auto"`
+apply unattended; everything else proposes.
+
+**AI layer (optional, local, small-model-first).** One OpenAI-compatible client
+(`base_url` + `model`) — a local runtime (Ollama / llama.cpp / LM Studio / vLLM) or a
+gateway (LiteLLM / OpenRouter). It never touches files directly; it proposes through the
+same changeset → state-machine path. Modes: `tools` → `json` → `off`. With `off` or a
+localhost endpoint, dig makes zero external network calls.
+
+## 3. Semantic retrieval (shipped)
+
+`dig find` is deterministic FTS by default. A `[retrieval]` policy turns on a **vector
+index**: file text is chunked, embedded through the OpenAI-compatible endpoint contract,
+and stored in `.dig/vectors.db` as a derived view rebuilt from manifests.
+
+- **Modes:** `dig find --mode fts|vector|hybrid`. Hybrid fuses FTS ∪ vector candidates with
+  Reciprocal Rank Fusion (k=60).
+- **Blob-keyed embeddings:** moves/renames re-embed nothing; only new content costs.
+- **Explicit cache invalidation:** model / prefix / chunking change drops the vector cache
+  wholesale (mixing embedding spaces would corrupt ranking).
+- **Background indexing:** scans sync the docs view instantly and queue unseen blobs; only a
+  small budget embeds inline. `dig embed` drains the backlog with per-file commits
+  (interruptible, resumable); `dig watch` drains it per tick. An unreachable endpoint warns
+  and never blocks the deterministic spine.
+- **Model selection is pure config.** Validated on llama.cpp/CPU: `nomic-embed-text-v1.5`
+  (English, with `search_document:`/`search_query:` prefixes), `all-MiniLM-L6-v2` (English,
+  light), `bge-m3` (multilingual + cross-lingual — a German query finds an English note).
+
+## 4. CLI surface
+
+```
+dig init <root>            create a KB at a directory
+dig scan                   index files into the content-addressed store (+ FTS, + queue vectors)
+dig find <query>           search; --mode fts|vector|hybrid, --json, --limit
+dig embed                  drain the semantic-index backlog (resumable)
+dig export                 emit a reproducible, manifest-pinned dataset (JSONL); --at, --filter
+dig org [--dry-run]        apply organization policy (move/rename/label)
+dig dedup [--dry-run]      collapse duplicates per policy
+dig drift [--json]         report divergence from policy + external edits
+dig reconcile              converge to policy (auto where safe, propose/escalate otherwise)
+dig watch [--interval]     run continuously: observe, reconcile, surface escalations
+dig work <create|list|abort> / dig merge <name>    isolated work views + merge
+dig policy validate        lint the policy, explain rule matches
+dig log                    browse change history
+dig undo                   revert the last changeset (disk reversed for mutations)
+dig --version              build metadata
+```
+
+Read commands (`find`, `export`, `drift`, `log`) support `--json` for other harnesses.
+
+## 5. Policy (`.dig/policy.toml`)
+
+```toml
+[[rule]]
+name  = "invoices"
+match = { ext = ["pdf"], content_matches = "invoice" }
+into  = "finance/invoices/{year}"
+label = ["finance"]
+autonomy = "auto"            # "" | "auto" | "propose"
+
+[dedup]
+strategy   = "keep-oldest"   # keep-oldest | keep-newest
+on_conflict = "escalate"     # never silently delete
+
+[retrieval]
+mode     = "hybrid"          # off (default) | hybrid | vector
+base_url = "http://127.0.0.1:8092/v1"
+model    = "nomic-embed-text-v1.5"
+doc_prefix   = "search_document: "
+query_prefix = "search_query: "
+api_key_env  = "DIG_EMBED_API_KEY"   # env var name; keys never stored in the file
+```
+
+Matchers: `ext`, `mime`, `path` glob, `content_matches` regex, size/date. Templates:
+`{year} {month} {day} {name} {ext}`. Validation is strict — unknown keys and path-escapes
+are rejected loudly. Template targets must stay inside the KB root.
+
+## 6. Measured results (docs/evals.md)
+
+All numbers are retrieval recall through dig's real scan → store → index pipeline, fully
+local on CPU with small open embedding models — no reranker, no LLM in the loop.
+
+- **LongMemEval-S, full official 500 questions, 19,829 sessions** (`all-MiniLM-L6-v2`):
+  hybrid hit@5 **98.0%**, vector 97.8%, FTS 66.8%. The published bar (MemPalace,
+  `recall_any@5`) is 96.6% — **beaten**; their architecture-enabled scores (89.4% rooms /
+  84.2% compressed) are further back.
+- **LoCoMo, 1,536 questions** (`nomic-embed-text-v1.5`): hybrid recall@5 85.3% vs FTS 80.4%;
+  hybrid beats FTS on every metric from rank 3 up.
+- **BEAM 128K tier, 355 questions** (`all-MiniLM-L6-v2`): vector hit@10 64.8% vs FTS 58.3%;
+  semantic beats FTS on every metric. (On this turn-level-evidence benchmark vector edges
+  hybrid — weak lexical rankings dilute RRF.) Larger tiers in progress.
+
+Honesty note: retrieval recall and LLM-judged QA accuracy are different metrics; recall is
+structurally higher. dig reports retrieval metrics because dig is the retrieval/memory
+layer — answering belongs to the agent driving it.
+
+## 7. Extensibility
+
+Eight typed seams across four transport tiers (T0 declarative → T1 PATH subcommands → T2
+gRPC subprocess → T3 sandboxed WASM): StorageBackend, IndexBackend, event sinks, extractors,
+matchers, commands, workflow steps, the model endpoint. The core spine (store semantics,
+changeset state machine, undo) is **not** extensible — extensions plug into the edges, never
+the spine. See `docs/extensions.md`.
+
+## 8. Project facts
+
+- License: MIT. Module: `github.com/vllnt/dig`. Status: pre-1.0, private, active.
+- Build/test gate: `go build ./...` · `go vet ./...` · `go test -race ./...` ·
+  `golangci-lint run ./...` · `gofmt -l`. CI enforces all on every PR; `main` is protected.
+- Releases: GoReleaser cross-compiles checksummed binaries (linux/darwin/windows ×
+  amd64/arm64) on a `vX.Y.Z` tag. Install: `go install github.com/vllnt/dig/cmd/dig@latest`.
+- Roadmap (ROADMAP.md): shipped — the reversible file-management lifecycle + semantic
+  retrieval. Planned — public release, site launch, eval-harness CI, harness plugins (MCP
+  server, portable skill), extensibility, mental-model presets, remote storage, entity
+  graph, composable pipeline, agent memory, framework integrations, distribution.
