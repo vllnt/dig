@@ -16,9 +16,7 @@ test("landing page loads with zero console errors and the hero sells dig", async
   await expect(
     page.getByRole("heading", { level: 1, name: /knowledge base in order/i }),
   ).toBeVisible();
-  await expect(
-    page.getByText("Open source · MIT · early scaffold"),
-  ).toBeVisible();
+  await expect(page.getByText("Open source · MIT · local-first")).toBeVisible();
 
   expect(errors, "no console errors on load").toEqual([]);
 });

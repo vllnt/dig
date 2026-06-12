@@ -27,11 +27,11 @@ test("every published benchmark and its winning score is shown", async ({
 }) => {
   await page.goto("/leaderboard");
 
-  for (const name of ["LongMemEval-S", "LoCoMo", "BEAM (128K tier)"]) {
-    await expect(
-      page.getByRole("heading", { name, exact: true }),
-    ).toBeVisible();
-  }
+  await Promise.all(
+    ["LongMemEval-S", "LoCoMo", "BEAM (128K tier)"].map((name) =>
+      expect(page.getByRole("heading", { exact: true, name })).toBeVisible(),
+    ),
+  );
 
   await expect(
     page.getByText("Published numbers from other systems"),

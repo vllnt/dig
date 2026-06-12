@@ -144,7 +144,7 @@
 
 - [x] site-launch.1 Land the web app — merge worktree `dig-landing` (web/ Next.js), builds green (7b6600e, 22fbf92)
 - [x] site-launch.2 Deploy to dig.vllnt.com — onboarded to ntk (prod + previews, 50659e6); site verified live (landing renders, full content) 2026-06-12
-- [~] site-launch.3 Install strategy — installer script shipped at site root `/install.sh` (OS/arch detect, latest-release fetch, checksum verify); `go install` documented; remaining: install page + homepage install CTA + Homebrew tap (distribution.5). All fed by GoReleaser artifacts (public-release.3 ✓)
+- [x] site-launch.3 Install strategy — installer at site root `/install.sh` (OS/arch detect, latest-release fetch, checksum verify); `/install` page with copyable curl + `go install` + binaries; homepage primary "Install dig" CTA; stale "early scaffold" copy refreshed. Homebrew tap tracked in distribution.5. Fed by GoReleaser artifacts (public-release.3 ✓) (2026-06-12)
 - [ ] site-launch.4 User docs — quickstart, policy/rules/workflows reference, command reference, synced from README + docs/
 - [x] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption (served at site root, 2026-06-12)
 - [x] site-launch.6 Leaderboard page — /leaderboard renders LongMemEval/LoCoMo/BEAM scoreboards from docs/evals.md (hybrid hit@5 98.0% headline) + published baselines + method; nav-linked, server-rendered, Playwright E2E + 3-viewport visual verified (2026-06-12)

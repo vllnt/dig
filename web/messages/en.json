@@ -8,7 +8,23 @@
     "features": "Features",
     "faq": "FAQ",
     "benchmarks": "Benchmarks",
+    "install": "Install",
     "github": "GitHub"
+  },
+  "install": {
+    "meta_title": "Install dig",
+    "meta_description": "Install dig in one line — curl the installer, go install, or download a prebuilt binary. Local-first, checksum-verified, no account required.",
+    "title": "Install dig",
+    "subtitle": "One line, no account, no cloud. The installer detects your OS and architecture, verifies the checksum, and drops dig on your PATH.",
+    "primary_title": "Quick install",
+    "primary_note": "Downloads the latest release for your platform from GitHub and verifies its SHA256 checksum. Set DIG_VERSION to pin a version, DIG_INSTALL_DIR to choose where it lands.",
+    "go_title": "With Go",
+    "go_note": "Builds from source — handy if you already have a Go toolchain.",
+    "binary_title": "Prebuilt binaries",
+    "binary_note": "Grab a checksummed archive for linux, macOS, or Windows (amd64 / arm64) from the releases page and put dig on your PATH.",
+    "binary_cta": "View releases",
+    "next_title": "First run",
+    "next_note": "Point dig at a directory, scan it, and search — every change is journaled and reversible."
   },
   "leaderboard": {
     "meta_title": "Benchmarks — dig retrieval scoreboard",
@@ -23,9 +39,10 @@
     "method_body": "Each benchmark is mapped onto a real dig knowledge base (one file per session or turn), indexed with the production FTS + vector pipeline, and scored per question against its evidence with standard IR metrics (recall@k, hit@k, NDCG@10, MRR). FTS is the deterministic default; vector and hybrid (Reciprocal Rank Fusion) opt in via a [retrieval] policy. Full methodology and reproduction commands live in docs/evals.md."
   },
   "hero": {
-    "badge": "Open source · MIT · early scaffold",
+    "badge": "Open source · MIT · local-first",
     "title": "Agents that keep your knowledge base in order",
     "subtitle": "You set the policy — folder structure, naming, labels, no duplicates. dig detects drift, fixes it, and versions every change so nothing is ever lost. Runs fully on your machine.",
+    "cta_install": "Install dig",
     "cta_github": "Star on GitHub",
     "cta_docs": "Read the architecture",
     "terminal_title": "quick start"
@@ -85,7 +102,7 @@
     "q3": "Will it overwrite my edits?",
     "a3": "Never silently. dig observes direct edits, folds them into history, and reconciles them against policy. A deliberate human change is escalated, not overridden.",
     "q4": "Can I use it today?",
-    "a4": "dig is an early scaffold: the design is public and the README describes intended behavior, but most commands are still being built. Star the repo to follow the build.",
+    "a4": "Yes. The CLI ships the full lifecycle — scan, find, organize, dedupe, drift, reconcile, watch, export, undo — plus opt-in semantic search that beats the published memory benchmarks (98.0% hit@5 on LongMemEval, fully local). It's pre-1.0 and moving fast; install it and follow what lands next.",
     "q5": "What is the license?",
     "a5": "MIT. Open source, no strings."
   },
