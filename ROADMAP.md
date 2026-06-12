@@ -2,8 +2,8 @@
 
 > The open, local, reversible **data + retrieval + memory primitive for AI agents** — organize a knowledge base to *your* mental model, retrieve it fast, remember across sessions, and plug it into any agent or framework (MCP first, then native SDKs). Configurable and extensible at every stage, bring-your-own model (PARA, GTD, Memory Palace, or your own). Your own system end-to-end — and the data layer others build on.
 
-**Now:** eval-harness (CI eval loop · corpus generator). semantic-retrieval + public-release + site-launch DONE; BEAM larger-tier scores backfilling in background.
-**Last updated:** 2026-06-12
+**Now:** integration surface shipped (MCP · daemon · TS/Python SDKs · AI-SDK tools · Claude plugin) + agent-memory started (`dig recall`). DONE: semantic-retrieval, public-release, site-launch, eval-harness, harness-plugins core, public-extensibility core, integrations core.
+**Last updated:** 2026-06-13
 
 ## vision-docs [DONE 2026-05]
 
@@ -251,7 +251,7 @@
 
 - [ ] agent-memory.1 Session retention — opt-in hooks capture agent conversations + tool traces into the KB as dated files (Claude Code first, then Codex/Cursor/Gemini); the user's sessions become their own searchable memory (session-capture hooks)
 - [ ] agent-memory.2 Transcript split — segment captured sessions into turn/round units at index time so recall lands on the exact exchange (feeds composable-pipeline chunking)
-- [ ] agent-memory.3 Recall context-pack — `dig recall <query>` emits a token-budgeted, importance-ranked L0/L1 context bundle, deterministic + provenance-tagged — the budgeted-recall primitive, built on the composable-pipeline reading stage
+- [x] agent-memory.3 Recall context-pack — `dig recall <query>` (internal/recall): ranks the KB (mode from policy/flag), pulls blob snippets, and assembles a token-budgeted (`--budget`), provenance-tagged (head manifest) pack; deterministic; text + `--json`. Built on the shipped retrieval; tested incl. budget-cap + empty-pack (2026-06-12). A model reranker/reader can refine it later (composable-pipeline)
 - [ ] agent-memory.4 Multi-device sync — the KB syncs across devices via a remote StorageBackend (gocloud/SFTP from remote-reach) + the changeset merge spine; same memory everywhere
 - [ ] agent-memory.5 MCP memory tools — expose retain + recall as MCP tools so any harness uses dig as its memory layer (extends harness-plugins.7)
 - [ ] agent-memory.6 Memory extraction + consolidation — opt-in: an LLM distills salient facts from retained sessions into labeled memory entries; updates ADD/UPDATE/MERGE with conflict → escalate (never silent), all as reversible changesets; raw sessions stay the source of truth — extraction is an additive index, not a replacement (THE architectural fork — closes the memory-extraction/consolidation gap)
