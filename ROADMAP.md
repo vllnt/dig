@@ -150,17 +150,17 @@
 - [x] site-launch.6 Leaderboard page — /leaderboard renders LongMemEval/LoCoMo/BEAM scoreboards from docs/evals.md (hybrid hit@5 98.0% headline) + published baselines + method; nav-linked, server-rendered, Playwright E2E + 3-viewport visual verified (2026-06-12)
 - [x] site-launch.7 Crawlability — robots.txt (declares sitemap) + sitemap.xml both resolve at site root (web app routes, verified in build 2026-06-12)
 
-## eval-harness [PLANNED]
+## eval-harness [ACTIVE]
 
 **Goal:** dig measures itself — one repeatable loop that dogfoods the full lifecycle on generated corpora and scores retrieval against the standard memory/IR benchmarks, continuously.
 **Exit criteria:** One command runs the full loop (generate KB → lifecycle regression → benchmark scores → scoreboard diff); scores + cost pairs tracked in-repo; a score regression fails CI.
 
-- [ ] eval-harness.1 Corpus generator — deterministic synthetic messy KBs (S/M/L; dupes, binaries, renames, nested chaos), seeded for reproducibility
-- [ ] eval-harness.2 Lifecycle loop — automated full-journey regression (scan→find→org→dedup→drift→reconcile→watch→export→undo) over generated corpora, asserting the core invariants (byte-identical undo, idempotency, no lost ops)
-- [~] eval-harness.3 Retrieval metrics core — recall@k, NDCG@10, MRR over labeled query sets; pairs reporting (score + latency + footprint) per the field standard (built in tools/eval, uncommitted — pulled forward to score semantic-retrieval)
-- [~] eval-harness.4 Benchmark adapters — LongMemEval, LoCoMo, BEAM, MemoryAgentBench, MemBench ingestion (sessions → KB files) + official scoring (LongMemEval + LoCoMo done in tools/eval; BEAM + the two cognitive benchmarks pending — they uniquely test selective-forgetting, contradiction, test-time-learning, and capacity-under-growth, mapping to entity-graph + agent-memory)
-- [~] eval-harness.5 FTS baseline scoreboard — pre-vector scores on every adapter, published in docs/evals.md (the bar semantic-retrieval must beat) (FTS/vector/hybrid scoreboard in docs/evals.md, uncommitted)
-- [ ] eval-harness.6 CI eval loop — nightly + on-demand workflow; scoreboard diff posted; regression gates block
+- [x] eval-harness.1 Corpus generator — internal/corpus + tools/corpusgen: deterministic seeded messy KBs (S/M/L; dupes, binaries, nested chaos), byte-identical per seed, Spec-described; determinism tests (2026-06-12)
+- [x] eval-harness.2 Lifecycle loop — full-journey regression (scan→find→org→dedup→drift→reconcile→export→undo) over generated corpora asserting byte-identical undo, idempotency, no lost content, dedup-never-last-copy; runs in CI via go test -race (2026-06-12)
+- [x] eval-harness.3 Retrieval metrics core — recall@k, NDCG@10, MRR, hit@k over labeled query sets, scoped per question (tools/eval, shipped #8)
+- [~] eval-harness.4 Benchmark adapters — LongMemEval + LoCoMo + BEAM done in tools/eval (#8/#10); MemoryAgentBench + MemBench pending (selective-forgetting, contradiction, test-time-learning, capacity-under-growth — map to entity-graph + agent-memory)
+- [x] eval-harness.5 FTS baseline scoreboard — FTS/vector/hybrid scoreboard published in docs/evals.md (the bar semantic-retrieval beat) (#8)
+- [x] eval-harness.6 CI eval loop — .github/workflows/eval.yml: nightly + on-demand lifecycle regression + Large-corpus CLI journey; benchmark scoring stays local/on-demand (needs an embedding endpoint, documented in evals.md) (2026-06-12)
 
 ## harness-plugins [PLANNED]
 

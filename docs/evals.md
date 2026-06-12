@@ -10,6 +10,24 @@ embedding models, zero cloud calls — the configuration any dig user gets on a
 laptop with `mode = "hybrid"` in their policy. No reranker model, no LLM in the
 loop.
 
+## The eval harness
+
+dig measures itself two ways:
+
+- **Lifecycle regression (deterministic, in CI).** `internal/corpus` generates a
+  seeded "messy" KB — nested dirs, duplicate-content files, binaries, unsorted
+  clutter — byte-identical per seed (`go run ./tools/corpusgen --seed N --size
+  small|medium|large --out DIR`). The lifecycle test drives the full journey
+  (scan → org → dedup → drift → reconcile → export → undo) over it and asserts
+  the spine's invariants: byte-identical undo, idempotent re-runs, no lost
+  content, dedup never deletes a last copy. It runs on every PR via
+  `go test -race`, and nightly + on-demand over a Large corpus via
+  `.github/workflows/eval.yml`.
+- **Benchmark scoring (local / on-demand).** `tools/eval` maps a benchmark onto
+  a real KB and scores retrieval (the tables above). It needs a local embedding
+  endpoint, so it runs on-demand locally — not in CI — and the scores are
+  committed here.
+
 ## Method
 
 - **Corpus**: one KB file per conversation session (`speaker: text` lines, DATE
