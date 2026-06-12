@@ -422,6 +422,63 @@ func TestDrainPendingEndpointDownKeepsQueue(t *testing.T) {
 // Run with DIG_EMBED_URL=http://127.0.0.1:8092/v1 DIG_EMBED_MODEL=... against
 // a real local endpoint; skipped otherwise so CI stays hermetic.
 
+// TestLiveMultilingualRecall validates cross-lingual recall: queries in one
+// language retrieve documents written in another (zero shared terms by
+// construction). Run with DIG_EMBED_URL_MULTI + DIG_EMBED_MODEL_MULTI against
+// a multilingual embedder (e.g. bge-m3 — no task prefixes); skipped otherwise.
+func TestLiveMultilingualRecall(t *testing.T) {
+	url := os.Getenv("DIG_EMBED_URL_MULTI")
+	model := os.Getenv("DIG_EMBED_MODEL_MULTI")
+	if url == "" || model == "" {
+		t.Skip("set DIG_EMBED_URL_MULTI and DIG_EMBED_MODEL_MULTI to run against a live multilingual endpoint")
+	}
+	c := NewClient(url, model, "", "", "")
+
+	dir := t.TempDir()
+	x, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = x.Close() }()
+
+	content := contentMap(map[string]string{
+		"car":    "Changed the oil in the Honda today, rotated the tires and replaced the cabin air filter. Next service due at 60k miles.",
+		"meet":   "Quarterly planning session: we agreed to prioritize the billing migration and defer the dashboard redesign to Q3.",
+		"rezept": "Lammschulter sechs Stunden geschmort, mit Rosmarin und Knoblauch, dazu Ofenkartoffeln serviert.",
+		"factu":  "Facture du fournisseur ACME pour la maintenance du serveur, montant 1200 euros, échéance fin du mois.",
+	})
+	m := makeManifest(
+		store.Entry{Path: "notes/car.md", Blob: "car"},
+		store.Entry{Path: "notes/meeting.md", Blob: "meet"},
+		store.Entry{Path: "notes/rezept.md", Blob: "rezept"},
+		store.Entry{Path: "notes/facture.md", Blob: "factu"},
+	)
+	if err := x.Rebuild(m, content, c); err != nil {
+		t.Fatal(err)
+	}
+
+	// Query language ≠ document language in every case.
+	for query, want := range map[string]string{
+		"Fahrzeugwartung":              "notes/car.md",     // DE → EN
+		"decisiones sobre facturación": "notes/meeting.md", // ES → EN
+		"slow cooked lamb dinner":      "notes/rezept.md",  // EN → DE
+		"supplier invoice payment due": "notes/facture.md", // EN → FR
+		"entretien de la voiture":      "notes/car.md",     // FR → EN
+	} {
+		qv, err := c.EmbedQuery(query)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res, err := x.Query(qv, 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(res) == 0 || res[0].Path != want {
+			t.Errorf("query %q: want %s first, got %+v", query, want, res)
+		}
+	}
+}
+
 func TestLiveParaphraseRecall(t *testing.T) {
 	url := os.Getenv("DIG_EMBED_URL")
 	model := os.Getenv("DIG_EMBED_MODEL")

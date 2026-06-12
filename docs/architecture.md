@@ -233,6 +233,14 @@ api_key_env  = "DIG_EMBED_API_KEY"      # only for remote/gateway endpoints
 - **Graceful degradation.** An unreachable endpoint never blocks the deterministic
   spine: `scan` warns and continues (FTS stays fresh), `find --mode fts` always works,
   and semantic modes fail loudly with the endpoint error.
+- **Model selection is pure config** — `[retrieval] model` + prefixes, no code. Validated
+  on llama.cpp (CPU): `nomic-embed-text-v1.5` (English, prefixes `search_document: `/
+  `search_query: `), `all-MiniLM-L6-v2` (English, light, no prefixes), `bge-m3`
+  (multilingual + cross-lingual — a German query finds an English note — no prefixes).
+  Changing the model drops the vector cache (fingerprint) and re-embeds on the same
+  background path. Beware third-party GGUF conversions of XLM-R-based embedders:
+  broken pooling/tokenizer conversions produce uniform ~0.9 cosines; validate ranking
+  on a handful of known pairs before trusting one (gpustack's bge-m3 GGUF is sound).
 - Scores against the standard memory benchmarks live in [evals.md](evals.md).
 
 ### Extraction pipeline (feeds the AI layer)
