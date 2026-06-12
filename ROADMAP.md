@@ -186,7 +186,7 @@
 **Goal:** Third parties extend dig without forking via the 8 typed seams, and every built-in primitive is user-configurable without code — backup and store-elsewhere land first.
 **Exit criteria:** A T0 event_sink backup fires on commit; dig-<name> PATH subcommands resolve; dig ext installs a manifest-described extension from git.
 
-- [ ] public-extensibility.1 T0 declarative event sinks — exec/webhook on changeset.committed
+- [x] public-extensibility.1 T0 declarative event sinks — `[[event_sink]]` (webhook / exec) fire on changeset.committed at the commit chokepoint; webhook POSTs the event JSON, exec runs a policy command (gated behind DIG_ALLOW_EXEC_SINKS for code-exec safety); sinks observe — failures warn, never roll back; validated + E2E-tested + SECURITY-documented (2026-06-12)
 - [ ] public-extensibility.2 T1 PATH subcommands — dig-<name> resolution + changeset-proposal contract
 - [ ] public-extensibility.3 dig ext CLI — manifest, capabilities, install-from-git, enable per KB
 - [ ] public-extensibility.4 T2 gRPC subprocess backend — first out-of-tree StorageBackend

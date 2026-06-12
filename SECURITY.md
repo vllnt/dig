@@ -24,6 +24,12 @@ policy, dedupe, merge, undo) makes zero network calls. The most security-relevan
 - **The opt-in AI layer** — embeddings/extraction call a user-configured OpenAI-compatible
   endpoint. With `mode = off` or a localhost endpoint, no data leaves the machine. API keys
   are referenced by environment-variable name and never stored in the policy file.
+- **Event sinks** — a KB's `policy.toml` may declare `[[event_sink]]` entries that
+  fire on commit. **Webhook** sinks POST JSON to a URL (configured by you).
+  **Exec** sinks run a shell command from the policy file and are therefore
+  **off by default** — they run only when `DIG_ALLOW_EXEC_SINKS=1` is set, since a
+  policy file travels with its KB and an untrusted KB could otherwise execute code
+  on `dig scan`. Only enable exec sinks for KBs whose policy you trust.
 - **Extensions** (planned) — out-of-tree backends/sinks run with declared capabilities;
   untrusted extensions are sandboxed (WASM) and signed.
 
