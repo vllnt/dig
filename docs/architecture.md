@@ -253,6 +253,42 @@ chunk_overlap    = 200                  # overlap between chunks (chars); changi
   on a handful of known pairs before trusting one (gpustack's bge-m3 GGUF is sound).
 - Scores against the standard memory benchmarks live in [evals.md](evals.md).
 
+### Agent memory (shipped — capture + recall)
+
+The same store + retrieval that organize files make dig an agent's memory layer.
+Two primitives, both built on the deterministic spine — no new storage model:
+
+```
+  capture                                   recall
+  retain ─┬─ file / stdin                   recall "<q>" ──▶ rank (FTS/vector/hybrid)
+          └─ --transcript <session.jsonl>                       │
+                  │ render to markdown                          ▼
+                  ▼ (user+assistant turns,                  best-window snippet per hit
+            memory/<date>/<hash>.md            ◀──────────  (lands on the matching
+                  │ scan + commit (reversible)               passage, not the head)
+                  ▼                                            │
+            FTS (+ vector) index  ───────────────────────────▶ token-budgeted,
+                                                               provenance-tagged pack
+```
+
+- **`retain` is the one capture entry**, harness-agnostic: it writes content to a
+  dated `memory/` path and commits it as a reversible *observe* changeset, so
+  `dig undo` rewinds the index but never deletes the file (the same guarantee that
+  makes undoing a `scan` safe). `--transcript` is an input adapter that renders a
+  Claude Code session JSONL to readable markdown (turns kept; thinking, tool
+  output, system reminders, and injected skill bodies dropped) — keeping the
+  Claude-specific parsing out of the generic command.
+- **`recall` is `find` plus budgeting**: it ranks the KB, then returns the
+  query-relevant *window* of each hit (shared chunker + term-coverage scoring)
+  capped to a token budget, pinned to the head manifest so a pack is reproducible.
+- **Dogfooding is a `SessionEnd` hook** (the Claude Code plugin): it renders the
+  finished session and `dig retain`s it, double opt-in (`DIG_RETAIN_SESSIONS=1`
+  and a `.dig` KB at the session directory) and fail-open so it can never block a
+  session. Sessions become their own searchable memory.
+- **One surface, every path:** capture/recall are reachable as CLI commands, MCP
+  tools (`dig_retain`/`dig_recall`), daemon endpoints (`POST /retain`, `GET
+  /recall`), SDK methods, and AI SDK tools — all the in-process CLI, so none drift.
+
 ### Extraction pipeline (feeds the AI layer)
 
 Content-based decisions need text. Extraction runs cheapest-first, so the model — and any network — are last resorts:
