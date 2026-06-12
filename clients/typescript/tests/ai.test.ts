@@ -65,9 +65,27 @@ test("digTools exposes the dig surface", () => {
     "dig_find",
     "dig_log",
     "dig_org",
+    "dig_recall",
     "dig_reconcile",
+    "dig_retain",
     "dig_undo",
   ]);
+});
+
+test("dig_retain then dig_recall round-trips memory through the tools", async () => {
+  const t = tools();
+  const fact = "Decision: adopt the new ledger in Q3; Dana owns the migration.";
+  const retained = (await t.dig_retain.execute!(
+    { content: fact, kb, as: "memory/ai.md" },
+    opts,
+  )) as { output: string };
+  assert.match(retained.output, /Retained memory\/ai\.md/);
+
+  const pack = (await t.dig_recall.execute!(
+    { query: "ledger migration Dana", kb, budget: 400 },
+    opts,
+  )) as { items: Array<{ content: string }> };
+  assert.ok(pack.items.some((item) => item.content.includes("new ledger in Q3")));
 });
 
 test("dig_find tool drives a real daemon", async () => {

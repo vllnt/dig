@@ -58,7 +58,9 @@ All notable changes to dig are documented here. The format is based on
   then `/plugin install dig@dig` bundles the dig skill + the `dig mcp` server.
 - **AI SDK tools** (`@vllnt/dig/ai`) — `digTools(client)` returns Vercel AI SDK
   `tool()` definitions for the dig surface, so an agent can search/organize a KB
-  (mutations apply-gated, reversible). `ai` + `zod` are optional peer deps.
+  and use it as memory via `dig_recall` + `dig_retain` (write a decision, recall
+  a budgeted pack later — mutations apply-gated, reversible). `ai` + `zod` are
+  optional peer deps.
 - **Configurable retrieval primitives** — `[retrieval]` policy gains `rrf_k`,
   `candidate_factor`, `chunk_size`, `chunk_overlap` tuning knobs (0 = default,
   reproducing shipped behavior); changing chunk size/overlap re-embeds the KB.
