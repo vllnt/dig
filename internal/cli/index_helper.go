@@ -7,6 +7,7 @@ import (
 
 	"github.com/vllnt/dig/internal/index"
 	"github.com/vllnt/dig/internal/policy"
+	"github.com/vllnt/dig/internal/sink"
 	"github.com/vllnt/dig/internal/store"
 	"github.com/vllnt/dig/internal/vector"
 )
@@ -24,6 +25,9 @@ const inlineEmbedBudget = 64
 // failing the command (graceful degradation, architecture.md §5): the
 // deterministic path never depends on an endpoint being up.
 func rebuildIndex(digDir string, st *store.Store, m *store.Manifest, warn io.Writer) error {
+	if warn == nil {
+		warn = io.Discard
+	}
 	idx, err := index.Open(digDir)
 	if err != nil {
 		return err
@@ -33,13 +37,21 @@ func rebuildIndex(digDir string, st *store.Store, m *store.Manifest, warn io.Wri
 		return err
 	}
 
-	rp := loadRetrieval(digDir)
-	if !rp.Enabled() {
-		return nil
+	p := loadPolicy(digDir)
+	if p != nil && p.Retrieval.Enabled() {
+		if err := rebuildVectors(digDir, st, m, p.Retrieval, warn); err != nil {
+			return err
+		}
 	}
-	if warn == nil {
-		warn = io.Discard
+	if p != nil && len(p.EventSinks) > 0 {
+		fireSinks(digDir, m, p.EventSinks, warn)
 	}
+	return nil
+}
+
+// rebuildVectors syncs the vector docs view and drains a small inline embedding
+// budget; embedding failures warn (graceful degradation) rather than fail.
+func rebuildVectors(digDir string, st *store.Store, m *store.Manifest, rp policy.RetrievalPolicy, warn io.Writer) error {
 	vx, err := vector.Open(digDir)
 	if err != nil {
 		return err
@@ -61,13 +73,37 @@ func rebuildIndex(digDir string, st *store.Store, m *store.Manifest, warn io.Wri
 	return nil
 }
 
-// loadRetrieval reads the [retrieval] section of the KB's policy, if any.
-// A missing or invalid policy file means retrieval stays off — policy errors
-// surface loudly on the policy/org paths, never silently break find or scan.
-func loadRetrieval(digDir string) policy.RetrievalPolicy {
+// fireSinks runs the KB's event sinks for a committed manifest. Sinks observe —
+// failures warn but never affect the changeset (it is already committed).
+func fireSinks(digDir string, m *store.Manifest, sinks []policy.EventSink, warn io.Writer) {
+	ev := sink.Event{
+		Event:     policy.EventCommitted,
+		KB:        filepath.Dir(digDir),
+		Manifest:  m.ID,
+		Kind:      m.Kind,
+		CreatedBy: m.CreatedBy,
+		Entries:   len(m.Entries),
+	}
+	for _, err := range sink.Fire(sinks, ev) {
+		_, _ = fmt.Fprintf(warn, "warning: %v\n", err)
+	}
+}
+
+// loadPolicy reads the KB's policy, returning nil when absent or invalid —
+// policy errors surface loudly on the policy/org paths, never silently break
+// find or scan.
+func loadPolicy(digDir string) *policy.Policy {
 	p, err := policy.Load(filepath.Join(digDir, policy.File))
 	if err != nil {
-		return policy.RetrievalPolicy{}
+		return nil
 	}
-	return p.Retrieval
+	return p
+}
+
+// loadRetrieval reads the [retrieval] section of the KB's policy, if any.
+func loadRetrieval(digDir string) policy.RetrievalPolicy {
+	if p := loadPolicy(digDir); p != nil {
+		return p.Retrieval
+	}
+	return policy.RetrievalPolicy{}
 }

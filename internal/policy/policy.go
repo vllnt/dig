@@ -29,9 +29,20 @@ const PinnedLabel = "dig:pinned"
 
 // Policy is the parsed, validated policy document.
 type Policy struct {
-	Rules     []Rule          `toml:"rule"`
-	Dedup     DedupPolicy     `toml:"dedup"`
-	Retrieval RetrievalPolicy `toml:"retrieval"`
+	Rules      []Rule          `toml:"rule"`
+	Dedup      DedupPolicy     `toml:"dedup"`
+	Retrieval  RetrievalPolicy `toml:"retrieval"`
+	EventSinks []EventSink     `toml:"event_sink"`
+}
+
+// EventSink fires on a changeset event (T0 extensibility — declarative, in
+// process). exec sinks run a shell command; webhook sinks POST JSON. Sinks
+// observe a committed changeset; they never alter it.
+type EventSink struct {
+	On      string `toml:"on"`      // "" | "changeset.committed" (default/only for T0)
+	Type    string `toml:"type"`    // "exec" | "webhook"
+	Command string `toml:"command"` // exec: shell command (run via sh -c)
+	URL     string `toml:"url"`     // webhook: POST target
 }
 
 // Rule maps matching files to a target folder, name, and labels.
@@ -95,6 +106,31 @@ const (
 // Enabled reports whether semantic retrieval is turned on.
 func (r RetrievalPolicy) Enabled() bool {
 	return r.Mode == "hybrid" || r.Mode == "vector"
+}
+
+// EventCommitted is the only event T0 sinks fire on.
+const EventCommitted = "changeset.committed"
+
+// validate checks a sink's shape. BLOCKING — a malformed sink never loads.
+func (s EventSink) validate(i int) error {
+	switch s.On {
+	case "", EventCommitted:
+	default:
+		return fmt.Errorf("event_sink %d: on %q must be %q", i+1, s.On, EventCommitted)
+	}
+	switch s.Type {
+	case "exec":
+		if s.Command == "" {
+			return fmt.Errorf("event_sink %d: exec sink needs a command", i+1)
+		}
+	case "webhook":
+		if s.URL == "" {
+			return fmt.Errorf("event_sink %d: webhook sink needs a url", i+1)
+		}
+	default:
+		return fmt.Errorf("event_sink %d: type %q must be exec or webhook", i+1, s.Type)
+	}
+	return nil
 }
 
 // validateTuning rejects out-of-range knobs (negatives, and an overlap that
@@ -191,6 +227,11 @@ func (p *Policy) Validate() error {
 	}
 	if err := p.Retrieval.validateTuning(); err != nil {
 		return err
+	}
+	for i := range p.EventSinks {
+		if err := p.EventSinks[i].validate(i); err != nil {
+			return err
+		}
 	}
 	if len(p.Rules) == 0 && !p.Retrieval.Enabled() {
 		return fmt.Errorf("policy has no rules")

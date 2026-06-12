@@ -26,6 +26,10 @@ All notable changes to dig are documented here. The format is based on
 - **Configurable retrieval primitives** — `[retrieval]` policy gains `rrf_k`,
   `candidate_factor`, `chunk_size`, `chunk_overlap` tuning knobs (0 = default,
   reproducing shipped behavior); changing chunk size/overlap re-embeds the KB.
+- **Event sinks** — `[[event_sink]]` policy entries fire on every committed
+  changeset: `webhook` POSTs the event JSON; `exec` runs a command (off unless
+  `DIG_ALLOW_EXEC_SINKS=1`). Sinks observe — a sink failure warns, never rolls
+  back the commit.
 - **`dig --version`** — build metadata (version, commit, date).
 - **Release tooling** — GoReleaser cross-compiles checksummed binaries for
   linux/darwin/windows × amd64/arm64; a `vX.Y.Z` tag publishes a GitHub release.
