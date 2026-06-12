@@ -29,8 +29,10 @@ All notable changes to dig are documented here. The format is based on
   retrieval through the real pipeline (recall@k, hit@k, NDCG@10, MRR). Full LongMemEval-S:
   hybrid hit@5 **98.0%** vs the published 96.6% bar. Scoreboard in `docs/evals.md`.
 - **`dig mcp`** — run dig as a Model Context Protocol server over stdio, exposing
-  the CLI surface (find, drift, log, export read-only; org/reconcile preview-by-
-  default with an apply flag; undo) as tools any MCP client can drive.
+  the CLI surface (find, recall, drift, log, export read-only; retain to capture
+  into memory; org/reconcile preview-by-default with an apply flag; undo) as tools
+  any MCP client can drive. `dig_retain` + `dig_recall` make dig an agent's memory
+  layer over MCP — capture a session, load a budgeted pack back, all reversible.
 - **`dig serve`** — localhost HTTP+JSON daemon over the CLI contract (GET
   /find /drift /log /export, POST /org /reconcile /undo, apply-gated), so apps
   and SDKs embed dig without shelling out. Binds loopback only — never public.

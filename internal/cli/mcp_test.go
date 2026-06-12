@@ -130,7 +130,7 @@ func TestMCPHandshakeAndTools(t *testing.T) {
 			t.Fatalf("tool %v missing inputSchema", tl["name"])
 		}
 	}
-	for _, want := range []string{"dig_find", "dig_drift", "dig_log", "dig_export", "dig_org", "dig_reconcile", "dig_undo"} {
+	for _, want := range []string{"dig_find", "dig_retain", "dig_recall", "dig_drift", "dig_log", "dig_export", "dig_org", "dig_reconcile", "dig_undo"} {
 		if !names[want] {
 			t.Fatalf("tool %s not advertised", want)
 		}
@@ -180,6 +180,78 @@ func TestMCPHandshakeAndTools(t *testing.T) {
 	res = c.call(t, 7, "tools/call", map[string]any{"name": "dig_nope", "arguments": map[string]any{}})
 	if _, isErr = callToolText(t, res); !isErr {
 		t.Fatal("unknown tool should be an isError result")
+	}
+}
+
+// TestMCPMemoryRoundTrip drives the agent-memory loop entirely over MCP: a
+// harness captures content with dig_retain, then loads it back with dig_recall,
+// then dig_undo rewinds the capture out of recall — proving any MCP client can
+// use dig as its memory layer with no CLI shell-out.
+func TestMCPMemoryRoundTrip(t *testing.T) {
+	root := t.TempDir()
+	run(t, "init", root)
+	run(t, "--kb", root, "scan") // baseline manifest so undo has a parent
+
+	c := startMCP(t)
+
+	// retain: a harness pipes a session fact into memory.
+	fact := "Decision: migrate billing to the new ledger in Q3; owner is Dana."
+	res := c.call(t, 1, "tools/call", map[string]any{
+		"name": "dig_retain",
+		"arguments": map[string]any{
+			"kb": root, "content": fact, "as": "memory/decision.md",
+		},
+	})
+	text, isErr := callToolText(t, res)
+	if isErr || !strings.Contains(text, "Retained memory/decision.md") {
+		t.Fatalf("dig_retain: err=%v %s", isErr, text)
+	}
+
+	// recall: the same harness loads it back as a budgeted pack.
+	res = c.call(t, 2, "tools/call", map[string]any{
+		"name": "dig_recall",
+		"arguments": map[string]any{
+			"kb": root, "query": "billing ledger migration owner", "budget": 500,
+		},
+	})
+	text, isErr = callToolText(t, res)
+	if isErr {
+		t.Fatalf("dig_recall errored: %s", text)
+	}
+	var pack struct {
+		BudgetTokens int `json:"budgetTokens"`
+		Items        []struct {
+			Path    string `json:"path"`
+			Content string `json:"content"`
+		} `json:"items"`
+	}
+	if err := json.Unmarshal([]byte(text), &pack); err != nil {
+		t.Fatalf("dig_recall not JSON: %v\n%s", err, text)
+	}
+	if pack.BudgetTokens != 500 || len(pack.Items) == 0 || !strings.Contains(pack.Items[0].Content, "ledger") {
+		t.Fatalf("recall did not surface the retained fact: %+v", pack)
+	}
+
+	// undo: rewind the capture; recall no longer surfaces it.
+	c.call(t, 3, "tools/call", map[string]any{"name": "dig_undo", "arguments": map[string]any{"kb": root}})
+	res = c.call(t, 4, "tools/call", map[string]any{
+		"name": "dig_recall", "arguments": map[string]any{"kb": root, "query": "billing ledger migration owner"},
+	})
+	text, _ = callToolText(t, res)
+	pack.Items = nil
+	if err := json.Unmarshal([]byte(text), &pack); err != nil {
+		t.Fatalf("dig_recall not JSON: %v\n%s", err, text)
+	}
+	if len(pack.Items) != 0 {
+		t.Fatalf("after undo, recall should be empty: %+v", pack.Items)
+	}
+
+	// retain requires content.
+	res = c.call(t, 5, "tools/call", map[string]any{
+		"name": "dig_retain", "arguments": map[string]any{"kb": root},
+	})
+	if _, isErr = callToolText(t, res); !isErr {
+		t.Fatal("dig_retain without content should be an isError result")
 	}
 }
 
