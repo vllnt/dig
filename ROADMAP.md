@@ -2,7 +2,7 @@
 
 > Open, local, CLI-only agent harness that keeps knowledge bases organized to your policy — reversible, parallel-safe, extensible.
 
-**Now:** public-release
+**Now:** semantic-retrieval (pulled ahead of queue — user decision 2026-06-11); public-release next
 **Last updated:** 2026-06-11
 
 ## vision-docs [DONE 2026-05]
@@ -188,16 +188,16 @@
 - [ ] remote-reach.4 Extraction pipeline — PDF text layer (pure-Go) + tesseract OCR shell-out
 - [ ] remote-reach.5 Opt-in extractor/classifier drivers wired into rules ({vendor} fields)
 
-## semantic-retrieval [PLANNED]
+## semantic-retrieval [ACTIVE]
 
 **Goal:** Opt-in semantic search closes the one gap MemPalace kept — paraphrase recall with zero shared terms — without touching the deterministic FTS default.
 **Exit criteria:** Vector IndexBackend driver works against a local embedding endpoint; hybrid FTS+vector with reranking beats FTS-only on the eval set; dig scores published on LongMemEval and BEAM.
 
-- [ ] semantic-retrieval.1 Vector IndexBackend driver — opt-in, embeddings via the OpenAI-compatible endpoint, FTS stays default
-- [ ] semantic-retrieval.2 Hybrid retrieval + reranking — FTS ∪ vector candidates, rerank (RRF first, model reranker optional)
-- [ ] semantic-retrieval.3 Published LongMemEval score via eval-harness (MemPalace's benchmark — 96.6% R@5 is the bar)
+- [x] semantic-retrieval.1 Vector IndexBackend driver — opt-in `[retrieval]` policy, embeddings via the OpenAI-compatible endpoint, blob-keyed cache in .dig/vectors.db, FTS stays default (2026-06-11)
+- [x] semantic-retrieval.2 Hybrid retrieval + reranking — FTS ∪ vector, RRF fusion, `dig find --mode fts|vector|hybrid`; hybrid beats FTS on LoCoMo (recall@5 85.3 vs 80.4) — model reranker stays optional/future (2026-06-11)
+- [x] semantic-retrieval.3 Published LongMemEval score via eval-harness — full 500-question set: hybrid hit@5 98.0% BEATS MemPalace's 96.6% bar (+31.2pts over FTS baseline); scoreboard in docs/evals.md (2026-06-12)
 - [ ] semantic-retrieval.4 Published BEAM score via eval-harness (unsaturated frontier — 64.1/48.6 are today's best)
-- [ ] semantic-retrieval.5 Published LoCoMo score via eval-harness (third leg of every memory leaderboard)
+- [x] semantic-retrieval.5 Published LoCoMo score via eval-harness — scoreboard in docs/evals.md (2026-06-11)
 
 ## entity-graph [PLANNED]
 
