@@ -2,7 +2,7 @@
 
 > The open, local, reversible **data + retrieval + memory primitive for AI agents** — organize a knowledge base to *your* mental model, retrieve it fast, remember across sessions, and plug it into any agent or framework (MCP first, then native SDKs). Configurable and extensible at every stage, bring-your-own model (PARA, GTD, Memory Palace, or your own). Your own system end-to-end — and the data layer others build on.
 
-**Now:** semantic-retrieval (pulled ahead of queue — user decision 2026-06-11); public-release next
+**Now:** site-launch (install page · user docs · leaderboard). public-release DONE; semantic-retrieval shipped (BEAM larger-tier scores backfilling in background).
 **Last updated:** 2026-06-12
 
 ## vision-docs [DONE 2026-05]
@@ -127,15 +127,15 @@
 - [x] semantic-retrieval.5 Published LoCoMo score via eval-harness — scoreboard in docs/evals.md (2026-06-11)
 - [x] semantic-retrieval.6 Multilingual recall — bge-m3 validated via config only: 5/5 cross-lingual queries (DE/ES/FR/EN, query lang ≠ doc lang) hit rank-1 through the real pipeline; gated live test (TestLiveMultilingualRecall) + model-selection guidance in architecture.md (2026-06-12)
 
-## public-release [PLANNED]
+## public-release [DONE 2026-06-12]
 
 **Goal:** The repo goes public hardened, licensed, and installable.
 **Exit criteria:** License committed, main protection hardened per #2, binaries published, oss-readiness gate passes.
 
 - [x] public-release.1 LICENSE committed — MIT (user decision 2026-06)
-- [ ] public-release.2 Harden main — enforce_admins on, CI required checks, remove guard exemption (#2)
-- [ ] public-release.3 GoReleaser — cross-compiled binaries, checksums, install docs
-- [ ] public-release.4 oss-readiness audit — llms.txt, contributing, release notes
+- [x] public-release.2 Harden main — enforce_admins on, required CI checks (docs/go/lint), 0 approvals (solo, CI-gated); dig never in guard exempt; closed #2 (2026-06-12)
+- [x] public-release.3 GoReleaser — cross-compiled checksummed binaries (linux/darwin/windows × amd64/arm64), release.yml on tag, `dig --version`, install docs; snapshot verified (#12, 2026-06-12)
+- [x] public-release.4 oss-readiness audit — CONTRIBUTING/SECURITY/CODE_OF_CONDUCT/CHANGELOG/AGENTS, llms.txt + llms-full.txt, issue+PR templates; all BLOCKING+WARN gaps closed (#13, 2026-06-12)
 
 ## site-launch [PLANNED]
 
@@ -143,12 +143,12 @@
 **Exit criteria:** Site resolves at dig.vllnt.com; a newcomer installs dig from it in under a minute via a documented channel; quickstart + policy reference + command docs published and synced with the CLI.
 
 - [x] site-launch.1 Land the web app — merge worktree `dig-landing` (web/ Next.js), builds green (7b6600e, 22fbf92)
-- [~] site-launch.2 Deploy to dig.vllnt.com — hosting + DNS + CI deploy on main (onboarded to ntk — prod + previews, 50659e6; liveness unverified)
-- [ ] site-launch.3 Install strategy — primary: `curl -fsSL https://dig.vllnt.com/install.sh | sh` (installer served at site root `/install.sh`); secondary: Homebrew tap + `go install`; all fed by GoReleaser artifacts (needs public-release.3); install page + homepage install CTA on the site
+- [x] site-launch.2 Deploy to dig.vllnt.com — onboarded to ntk (prod + previews, 50659e6); site verified live (landing renders, full content) 2026-06-12
+- [~] site-launch.3 Install strategy — installer script shipped at site root `/install.sh` (OS/arch detect, latest-release fetch, checksum verify); `go install` documented; remaining: install page + homepage install CTA + Homebrew tap (distribution.5). All fed by GoReleaser artifacts (public-release.3 ✓)
 - [ ] site-launch.4 User docs — quickstart, policy/rules/workflows reference, command reference, synced from README + docs/
-- [ ] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption
+- [x] site-launch.5 llms.txt + llms-full.txt published on the site for agent consumption (served at site root, 2026-06-12)
 - [ ] site-launch.6 Leaderboard page — benchmark scores (LongMemEval, LoCoMo, BEAM + cost pairs) rendered from eval-harness's docs/evals.md scoreboard, alongside published baselines (sourced in docs/landscape.md)
-- [ ] site-launch.7 Crawlability — robots.txt + sitemap.xml (sitemap URL declared in robots.txt); both resolve at site root
+- [x] site-launch.7 Crawlability — robots.txt (declares sitemap) + sitemap.xml both resolve at site root (web app routes, verified in build 2026-06-12)
 
 ## eval-harness [PLANNED]
 
