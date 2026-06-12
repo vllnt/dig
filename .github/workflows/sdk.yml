@@ -7,16 +7,18 @@ on:
   push:
     branches: [main]
     paths:
-      - "clients/typescript/**"
+      - "clients/**"
       - "cmd/**"
       - "internal/**"
       - "go.mod"
+      - ".github/workflows/sdk.yml"
   pull_request:
     paths:
-      - "clients/typescript/**"
+      - "clients/**"
       - "cmd/**"
       - "internal/**"
       - "go.mod"
+      - ".github/workflows/sdk.yml"
 
 permissions:
   contents: read
@@ -47,5 +49,27 @@ jobs:
       - run: pnpm build
       - name: Test against a real dig serve
         run: pnpm test
+        env:
+          DIG_BIN: ${{ runner.temp }}/dig
+
+  python:
+    name: python client
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Build dig
+        run: go build -o "$RUNNER_TEMP/dig" ./cmd/dig
+        working-directory: .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test against a real dig serve
+        run: python -m unittest discover -s tests -v
         env:
           DIG_BIN: ${{ runner.temp }}/dig

@@ -1,0 +1,51 @@
+name: PyPI publish
+
+# Publishes vllnt-dig to PyPI when a GitHub release is published. Requires a
+# PYPI_TOKEN repo secret; without it the publish step is skipped (the build +
+# test still run, so the workflow stays green and ready).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: build, test, publish
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Build dig
+        run: go build -o "$RUNNER_TEMP/dig" ./cmd/dig
+        working-directory: .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test against a real dig serve
+        run: python -m unittest discover -s tests -v
+        env:
+          DIG_BIN: ${{ runner.temp }}/dig
+      - name: Build distributions
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: Publish to PyPI (skipped without PYPI_TOKEN)
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          if [ -z "${TWINE_PASSWORD}" ]; then
+            echo "PYPI_TOKEN not set — skipping publish (build + test passed)."
+            exit 0
+          fi
+          python -m pip install --upgrade twine
+          python -m twine upload dist/*

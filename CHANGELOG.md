@@ -29,6 +29,9 @@ All notable changes to dig are documented here. The format is based on
 - **`@vllnt/dig` TypeScript SDK** (`clients/typescript`) — dependency-free typed
   client over the daemon; CI builds + tests it against a real `dig serve`, and an
   npm-publish workflow ships it on release (gated on `NPM_TOKEN`).
+- **`vllnt-dig` Python SDK** (`clients/python`) — stdlib-only client over the
+  daemon, same surface; CI-tested against a real `dig serve`; a PyPI-publish
+  workflow ships it on release (gated on `PYPI_TOKEN`).
 - **Configurable retrieval primitives** — `[retrieval]` policy gains `rrf_k`,
   `candidate_factor`, `chunk_size`, `chunk_overlap` tuning knobs (0 = default,
   reproducing shipped behavior); changing chunk size/overlap re-embeds the KB.
