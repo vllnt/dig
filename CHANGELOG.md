@@ -32,6 +32,8 @@ All notable changes to dig are documented here. The format is based on
 - **`vllnt-dig` Python SDK** (`clients/python`) — stdlib-only client over the
   daemon, same surface; CI-tested against a real `dig serve`; a PyPI-publish
   workflow ships it on release (gated on `PYPI_TOKEN`).
+- **Claude Code plugin** (`.claude-plugin/`) — `/plugin marketplace add vllnt/dig`
+  then `/plugin install dig@dig` bundles the dig skill + the `dig mcp` server.
 - **Configurable retrieval primitives** — `[retrieval]` policy gains `rrf_k`,
   `candidate_factor`, `chunk_size`, `chunk_overlap` tuning knobs (0 = default,
   reproducing shipped behavior); changing chunk size/overlap re-embeds the KB.

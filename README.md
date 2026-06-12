@@ -88,6 +88,16 @@ Releases are cross-compiled and checksummed by [GoReleaser](.goreleaser.yaml); a
 tag `vX.Y.Z` builds and publishes them. A `curl | sh` installer served from
 [dig.vllnt.com](https://dig.vllnt.com) lands with the site (roadmap `site-launch.3`).
 
+### Drive dig from your agent
+
+- **Claude Code plugin** (bundles the dig skill + the `dig mcp` server):
+  ```
+  /plugin marketplace add vllnt/dig
+  /plugin install dig@dig
+  ```
+- **MCP (any client)**: register `dig mcp` (stdio) — see `.claude-plugin/`.
+- **SDKs over `dig serve`**: `npm i @vllnt/dig` · `pip install vllnt-dig`.
+
 ## Quick start
 
 ```bash

@@ -169,7 +169,7 @@
 
 - [ ] harness-plugins.1 Integration contract — one doc: how a harness drives dig (--json surfaces, exit codes, dig detection/install), the base every shim builds on
 - [x] harness-plugins.8 Portable dig skill — skills/dig/SKILL.md: the canonical instruction set (when to reach for dig, --json surfaces, detect/install, MCP usage, rules); every harness shim points here (2026-06-12)
-- [ ] harness-plugins.2 claude-code plugin — official `.claude-plugin/plugin.json` bundling `commands/` (dig-find/org/drift/export over the existing CLI) + `skills/dig` (hp.8) + the retention hook (agent-memory.1, SessionEnd → KB) + the MCP server (hp.7); v1 ships over the working CLI today, MCP/retention gated on those tasks. Paths via `${CLAUDE_PLUGIN_ROOT}`, component dirs at root
+- [~] harness-plugins.2 claude-code plugin — `.claude-plugin/plugin.json` ships the dig skill (hp.8, auto-discovered) + the `dig mcp` server (inline mcpServers, so it doesn't auto-load in dig's own repo sessions); `/plugin install dig@dig`. Remaining: slash commands + the retention hook (agent-memory.1) (2026-06-12)
 - [ ] harness-plugins.9 cursor shim — `.cursor/rules/dig.mdc` rule, thin auto-generated pointer (between markers) to the portable skill
 - [ ] harness-plugins.3 pi shim — pi.dev package, thin pointer to the portable skill
 - [ ] harness-plugins.4 codex shim — thin pointer to the portable skill
@@ -179,7 +179,7 @@
 - [x] harness-plugins.10 Agent entry docs — AGENTS.md (cross-harness standard, #13) + GEMINI.md beside the existing CLAUDE.md, each pointing at AGENTS.md + the portable skill (2026-06-12)
 - [ ] harness-plugins.11 gemini-cli shim — thin pointer to the portable skill
 - [ ] harness-plugins.12 antigravity shim — thin pointer to the portable skill
-- [ ] harness-plugins.13 Plugin marketplace — `.claude-plugin/marketplace.json` in the repo so `/plugin marketplace add vllnt/dig` → `/plugin install dig@dig`; semver bump per release for updates (per the official Claude Code plugin spec)
+- [x] harness-plugins.13 Plugin marketplace — `.claude-plugin/marketplace.json` (marketplace "dig", plugin source "./") so `/plugin marketplace add vllnt/dig` → `/plugin install dig@dig`; schema-verified (2026-06-12)
 
 ## public-extensibility [PLANNED]
 
