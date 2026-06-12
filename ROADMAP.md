@@ -125,7 +125,7 @@
 - [x] semantic-retrieval.3 Published LongMemEval score via eval-harness — full official 500-question set: hybrid hit@5 98.0% vs the published 96.6% bar (**beaten**), fully local; well clear of the prior art's structured/compressed scores too (docs/evals.md, 2026-06-12)
 - [~] semantic-retrieval.4 Published BEAM score via eval-harness — **the keystone target**: unsaturated (64.1/48.6 best, LLM-judged QA), 1M–10M tokens where context-stuffing is impossible; the contested public frontier, where the agent-memory pivot (contradiction/temporal/reading) is proven. 128K-tier retrieval published (vector hit@10 64.8% vs FTS 58.3%, docs/evals.md, 2026-06-12); 500K tier running; 1M/10M + QA pipeline open
 - [x] semantic-retrieval.5 Published LoCoMo score via eval-harness — scoreboard in docs/evals.md (2026-06-11)
-- [ ] semantic-retrieval.6 Multilingual recall — validate a multilingual embedder (model choice via `[retrieval] model`, no code) on a non-English query set; document supported models
+- [x] semantic-retrieval.6 Multilingual recall — bge-m3 validated via config only: 5/5 cross-lingual queries (DE/ES/FR/EN, query lang ≠ doc lang) hit rank-1 through the real pipeline; gated live test (TestLiveMultilingualRecall) + model-selection guidance in architecture.md (2026-06-12)
 
 ## public-release [PLANNED]
 
