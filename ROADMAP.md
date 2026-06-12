@@ -2,7 +2,7 @@
 
 > The open, local, reversible **data + retrieval + memory primitive for AI agents** — organize a knowledge base to *your* mental model, retrieve it fast, remember across sessions, and plug it into any agent or framework (MCP first, then native SDKs). Configurable and extensible at every stage, bring-your-own model (PARA, GTD, Memory Palace, or your own). Your own system end-to-end — and the data layer others build on.
 
-**Now:** integration surface shipped (MCP · daemon · TS/Python SDKs · AI-SDK tools · Claude plugin) + agent-memory started (`dig recall`). DONE: semantic-retrieval, public-release, site-launch, eval-harness, harness-plugins core, public-extensibility core, integrations core.
+**Now:** integration surface shipped (MCP · daemon · TS/Python SDKs · AI-SDK tools · Claude plugin) + agent-memory capture↔recall loop live (`dig retain` → `dig recall`). DONE: semantic-retrieval, public-release, site-launch, eval-harness, harness-plugins core, public-extensibility core, integrations core.
 **Last updated:** 2026-06-13
 
 ## vision-docs [DONE 2026-05]
@@ -249,7 +249,7 @@
 **Goal:** dig is the user's own agent memory — it captures their agent sessions, serves token-budgeted recall to any harness, and syncs across devices, so they never reach for an external memory tool (the sovereignty bet — see the reversed non-goal in docs/landscape.md). Tasks ordered by dogfood value: capture + recall first.
 **Exit criteria:** an opt-in hook retains Claude Code sessions into a KB; `dig recall <q>` returns a token-budgeted, provenance-tagged context bundle; the same memory is reachable from a second device and through MCP; dig's own daily agent work runs on it.
 
-- [ ] agent-memory.1 Session retention — opt-in hooks capture agent conversations + tool traces into the KB as dated files (Claude Code first, then Codex/Cursor/Gemini); the user's sessions become their own searchable memory (session-capture hooks)
+- [~] agent-memory.1 Session retention — `dig retain [file]` is the capture primitive: reads a file or stdin, writes it to a dated `memory/<YYYY>/<MM>/<DD>/<hash>.md` path (or `--as`), then scans + indexes it as a reversible changeset, so `dig find`/`dig recall` surface it; content-addressed (reproducible with `--date`), path-escape-guarded, undo-safe (CLI E2E: capture → recall → undo). Remaining: the opt-in harness hooks that pipe a live session + tool trace into it (Claude Code first, then Codex/Cursor/Gemini) — harness-plugins.2's retention hook (2026-06-13)
 - [ ] agent-memory.2 Transcript split — segment captured sessions into turn/round units at index time so recall lands on the exact exchange (feeds composable-pipeline chunking)
 - [x] agent-memory.3 Recall context-pack — `dig recall <query>` (internal/recall): ranks the KB (mode from policy/flag), pulls blob snippets, and assembles a token-budgeted (`--budget`), provenance-tagged (head manifest) pack; deterministic; text + `--json`. Built on the shipped retrieval; tested incl. budget-cap + empty-pack (2026-06-12). A model reranker/reader can refine it later (composable-pipeline)
 - [ ] agent-memory.4 Multi-device sync — the KB syncs across devices via a remote StorageBackend (gocloud/SFTP from remote-reach) + the changeset merge spine; same memory everywhere

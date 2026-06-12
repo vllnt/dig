@@ -8,6 +8,11 @@ All notable changes to dig are documented here. The format is based on
 
 ### Added
 
+- **`dig retain [file]`** — the agent-memory capture primitive: writes content (a
+  file argument, or stdin) into the KB at a dated, content-addressed `memory/` path
+  (`--as` to override, `--date` for reproducible captures), then scans + indexes it
+  as a reversible changeset, so `dig find`/`dig recall` surface it. Path-escape
+  guarded; the ingestion entry point a harness hook pipes a session transcript into.
 - **`dig recall <query>`** — the agent-memory recall primitive: a token-budgeted
   (`--budget`), provenance-tagged context pack ranked from the KB (text or
   `--json`), so an agent loads relevant memory without overflowing its context.
