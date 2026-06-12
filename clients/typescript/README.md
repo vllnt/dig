@@ -76,8 +76,17 @@ const dig = new DigClient();
 await generateText({
   model,
   prompt: "What invoices are in my KB? Organize them if needed.",
-  tools: digTools(dig), // dig_find, dig_drift, dig_log, dig_export, dig_org, dig_reconcile, dig_undo
+  // dig_find, dig_recall, dig_retain, dig_drift, dig_log, dig_export, dig_org, dig_reconcile, dig_undo
+  tools: digTools(dig),
 });
+```
+
+`dig_recall` + `dig_retain` give the agent memory: it can write a decision to
+the KB and load a token-budgeted pack back on a later turn.
+
+```ts
+await generateText({ model, prompt, tools: digTools(dig) });
+// the agent calls dig_retain to remember, dig_recall to recall — reversibly
 ```
 
 Mutating tools (`dig_org`, `dig_reconcile`) preview by default; the agent passes

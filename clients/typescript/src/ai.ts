@@ -45,6 +45,27 @@ export function digTools(client: DigClient): Record<string, Tool> {
       }),
       execute: async ({ query, ...rest }) => client.find(query, rest),
     }),
+    dig_recall: tool({
+      description:
+        "Load a token-budgeted, provenance-tagged context pack from a dig KB for a query — dig as agent memory. mode is fts (default), vector, or hybrid; budget caps the pack in tokens.",
+      parameters: z.object({
+        kb,
+        query: z.string().describe("what to recall"),
+        mode: z.enum(["fts", "vector", "hybrid"]).optional(),
+        budget: z.number().int().positive().optional().describe("token budget"),
+      }),
+      execute: async ({ query, ...rest }) => client.recall(query, rest),
+    }),
+    dig_retain: tool({
+      description:
+        "Capture content (a decision, a fact, a session) into a dig KB and index it — write to agent memory. Defaults to a dated memory/ path; pass as to choose it. Reversible with dig_undo.",
+      parameters: z.object({
+        kb,
+        content: z.string().describe("the text to remember"),
+        as: z.string().optional().describe("target path in the KB"),
+      }),
+      execute: async ({ content, ...rest }) => client.retain(content, rest),
+    }),
     dig_drift: tool({
       description:
         "Report how a dig KB diverges from its policy (misfiled, misnamed, duplicated, unsorted). Read-only.",
