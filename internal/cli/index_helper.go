@@ -45,7 +45,8 @@ func rebuildIndex(digDir string, st *store.Store, m *store.Manifest, warn io.Wri
 		return err
 	}
 	defer func() { _ = vx.Close() }()
-	client := vector.NewClient(rp.BaseURL, rp.Model, rp.APIKeyEnv, rp.DocPrefix, rp.QueryPrefix)
+	_, _, chunkSize, chunkOverlap := rp.Tuning()
+	client := vector.NewClient(rp.BaseURL, rp.Model, rp.APIKeyEnv, rp.DocPrefix, rp.QueryPrefix, chunkSize, chunkOverlap)
 	if _, err := vx.SyncDocs(m, client); err != nil {
 		return err
 	}

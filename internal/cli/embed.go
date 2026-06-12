@@ -43,7 +43,8 @@ func newEmbedCmd() *cobra.Command {
 			}
 			defer func() { _ = vx.Close() }()
 
-			client := vector.NewClient(rp.BaseURL, rp.Model, rp.APIKeyEnv, rp.DocPrefix, rp.QueryPrefix)
+			_, _, chunkSize, chunkOverlap := rp.Tuning()
+			client := vector.NewClient(rp.BaseURL, rp.Model, rp.APIKeyEnv, rp.DocPrefix, rp.QueryPrefix, chunkSize, chunkOverlap)
 			head, err := st.Head()
 			if err == nil {
 				if _, err := vx.SyncDocs(head, client); err != nil {

@@ -53,8 +53,9 @@ func Run(ctx context.Context, k kb.KB, st *store.Store, rules []policy.CompiledR
 	}
 	var embedClient *vector.Client
 	if opts.Retrieval.Enabled() {
+		_, _, chunkSize, chunkOverlap := opts.Retrieval.Tuning()
 		embedClient = vector.NewClient(opts.Retrieval.BaseURL, opts.Retrieval.Model,
-			opts.Retrieval.APIKeyEnv, opts.Retrieval.DocPrefix, opts.Retrieval.QueryPrefix)
+			opts.Retrieval.APIKeyEnv, opts.Retrieval.DocPrefix, opts.Retrieval.QueryPrefix, chunkSize, chunkOverlap)
 	}
 	lastEmbedErr := ""
 

@@ -220,8 +220,18 @@ model    = "nomic-embed-text-v1.5"
 doc_prefix   = "search_document: "      # model task prefixes (model-specific, optional)
 query_prefix = "search_query: "
 api_key_env  = "DIG_EMBED_API_KEY"      # only for remote/gateway endpoints
+
+# tuning knobs — 0 / unset = the defaults shown, which reproduce shipped behavior
+rrf_k            = 60                    # hybrid fusion constant
+candidate_factor = 4                    # per-ranker pool = limit × factor
+chunk_size       = 1000                 # document chunk length (chars)
+chunk_overlap    = 200                  # overlap between chunks (chars); changing
+                                        # chunk_size/overlap re-embeds the KB
 ```
 
+- **Primitives are config, not code.** The retrieval pipeline's knobs (fusion
+  constant, candidate pool, chunking) are `[retrieval]` policy fields — tune them
+  without recompiling; unset means the default.
 - **Indexing is background work.** A scan never blocks on the endpoint: it syncs
   the docs view instantly and queues unseen blobs; only a small budget embeds
   inline. `dig embed` drains the backlog explicitly (per-file commits —

@@ -86,6 +86,45 @@ api_key = "placeholder-never-put-real-keys-in-policy"
 	}
 }
 
+func TestRetrievalTuningDefaults(t *testing.T) {
+	rrfK, factor, size, overlap := RetrievalPolicy{}.Tuning()
+	if rrfK != DefaultRRFK || factor != DefaultCandidateFactor ||
+		size != DefaultChunkSize || overlap != DefaultChunkOverlap {
+		t.Fatalf("unset knobs should be defaults, got %d/%d/%d/%d", rrfK, factor, size, overlap)
+	}
+
+	rp := RetrievalPolicy{RRFK: 30, CandidateFactor: 8, ChunkSize: 512, ChunkOverlap: 64}
+	rrfK, factor, size, overlap = rp.Tuning()
+	if rrfK != 30 || factor != 8 || size != 512 || overlap != 64 {
+		t.Fatalf("set knobs should pass through, got %d/%d/%d/%d", rrfK, factor, size, overlap)
+	}
+}
+
+func TestRetrievalTuningValidation(t *testing.T) {
+	base := `
+[retrieval]
+mode = "hybrid"
+base_url = "http://x"
+model = "m"
+`
+	cases := map[string]string{
+		"negative rrf_k":            base + "rrf_k = -1\n",
+		"negative candidate_factor": base + "candidate_factor = -2\n",
+		"overlap exceeds chunk":     base + "chunk_size = 100\nchunk_overlap = 100\n",
+	}
+	for name, toml := range cases {
+		t.Run(name, func(t *testing.T) {
+			if _, err := Parse([]byte(toml)); err == nil {
+				t.Fatal("expected validation error")
+			}
+		})
+	}
+	// Valid custom tuning passes.
+	if _, err := Parse([]byte(base + "rrf_k = 40\nchunk_size = 800\nchunk_overlap = 100\n")); err != nil {
+		t.Fatalf("valid tuning rejected: %v", err)
+	}
+}
+
 func TestRetrievalEnabled(t *testing.T) {
 	for mode, want := range map[string]bool{
 		"": false, "off": false, "hybrid": true, "vector": true,

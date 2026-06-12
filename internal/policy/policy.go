@@ -75,11 +75,67 @@ type RetrievalPolicy struct {
 	APIKeyEnv   string `toml:"api_key_env"`  // env var holding the bearer token (optional)
 	DocPrefix   string `toml:"doc_prefix"`   // model task prefix for documents (optional)
 	QueryPrefix string `toml:"query_prefix"` // model task prefix for queries (optional)
+
+	// Tuning knobs — 0 means "use the default" (the defaults below reproduce
+	// the shipped behavior). Changing chunk_size/chunk_overlap re-embeds the KB.
+	RRFK            int `toml:"rrf_k"`            // hybrid fusion constant (default 60)
+	CandidateFactor int `toml:"candidate_factor"` // pool = limit × factor per ranker (default 4)
+	ChunkSize       int `toml:"chunk_size"`       // document chunk length in chars (default 1000)
+	ChunkOverlap    int `toml:"chunk_overlap"`    // overlap between chunks in chars (default 200)
 }
+
+// Retrieval tuning defaults, applied when a knob is left at 0.
+const (
+	DefaultRRFK            = 60
+	DefaultCandidateFactor = 4
+	DefaultChunkSize       = 1000
+	DefaultChunkOverlap    = 200
+)
 
 // Enabled reports whether semantic retrieval is turned on.
 func (r RetrievalPolicy) Enabled() bool {
 	return r.Mode == "hybrid" || r.Mode == "vector"
+}
+
+// validateTuning rejects out-of-range knobs (negatives, and an overlap that
+// would swallow the whole chunk). Unset (0) knobs are always valid — they mean
+// "default".
+func (r RetrievalPolicy) validateTuning() error {
+	if r.RRFK < 0 {
+		return fmt.Errorf("retrieval.rrf_k must be >= 0 (0 = default %d)", DefaultRRFK)
+	}
+	if r.CandidateFactor < 0 {
+		return fmt.Errorf("retrieval.candidate_factor must be >= 0 (0 = default %d)", DefaultCandidateFactor)
+	}
+	if r.ChunkSize < 0 {
+		return fmt.Errorf("retrieval.chunk_size must be >= 0 (0 = default %d)", DefaultChunkSize)
+	}
+	if r.ChunkOverlap < 0 {
+		return fmt.Errorf("retrieval.chunk_overlap must be >= 0 (0 = default %d)", DefaultChunkOverlap)
+	}
+	if _, _, size, overlap := r.Tuning(); overlap >= size {
+		return fmt.Errorf("retrieval.chunk_overlap (%d) must be smaller than chunk_size (%d)", overlap, size)
+	}
+	return nil
+}
+
+// Tuning returns the effective knob values, substituting defaults for 0.
+func (r RetrievalPolicy) Tuning() (rrfK, candidateFactor, chunkSize, chunkOverlap int) {
+	rrfK, candidateFactor = r.RRFK, r.CandidateFactor
+	chunkSize, chunkOverlap = r.ChunkSize, r.ChunkOverlap
+	if rrfK <= 0 {
+		rrfK = DefaultRRFK
+	}
+	if candidateFactor <= 0 {
+		candidateFactor = DefaultCandidateFactor
+	}
+	if chunkSize <= 0 {
+		chunkSize = DefaultChunkSize
+	}
+	if chunkOverlap <= 0 {
+		chunkOverlap = min(DefaultChunkOverlap, chunkSize/2)
+	}
+	return rrfK, candidateFactor, chunkSize, chunkOverlap
 }
 
 // Load reads and validates the policy at path. Unknown keys are errors —
@@ -132,6 +188,9 @@ func (p *Policy) Validate() error {
 	}
 	if p.Retrieval.Enabled() && (p.Retrieval.BaseURL == "" || p.Retrieval.Model == "") {
 		return fmt.Errorf("retrieval.mode %q requires base_url and model", p.Retrieval.Mode)
+	}
+	if err := p.Retrieval.validateTuning(); err != nil {
+		return err
 	}
 	if len(p.Rules) == 0 && !p.Retrieval.Enabled() {
 		return fmt.Errorf("policy has no rules")

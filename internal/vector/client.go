@@ -26,24 +26,30 @@ type Client struct {
 	DocPrefix   string // prepended to documents (e.g. "search_document: ")
 	QueryPrefix string // prepended to queries (e.g. "search_query: ")
 
+	ChunkSize    int // document chunk length in chars (<=0 = default)
+	ChunkOverlap int // overlap between chunks in chars
+
 	HTTP *http.Client
 }
 
 // NewClient builds a Client from retrieval policy settings. The API key is
 // read from the environment variable named by apiKeyEnv — the key itself
-// never lives in the policy file.
-func NewClient(baseURL, model, apiKeyEnv, docPrefix, queryPrefix string) *Client {
+// never lives in the policy file. chunkSize/chunkOverlap configure document
+// chunking; 0 selects the defaults.
+func NewClient(baseURL, model, apiKeyEnv, docPrefix, queryPrefix string, chunkSize, chunkOverlap int) *Client {
 	key := ""
 	if apiKeyEnv != "" {
 		key = os.Getenv(apiKeyEnv)
 	}
 	return &Client{
-		BaseURL:     strings.TrimRight(baseURL, "/"),
-		Model:       model,
-		APIKey:      key,
-		DocPrefix:   docPrefix,
-		QueryPrefix: queryPrefix,
-		HTTP:        &http.Client{Timeout: 120 * time.Second},
+		BaseURL:      strings.TrimRight(baseURL, "/"),
+		Model:        model,
+		APIKey:       key,
+		DocPrefix:    docPrefix,
+		QueryPrefix:  queryPrefix,
+		ChunkSize:    chunkSize,
+		ChunkOverlap: chunkOverlap,
+		HTTP:         &http.Client{Timeout: 120 * time.Second},
 	}
 }
 
