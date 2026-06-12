@@ -26,6 +26,10 @@ const dig = new DigClient(); // defaults to http://127.0.0.1:3978
 // search — fts (default), vector, or hybrid (semantic)
 const hits = await dig.find("invoice acme 2024", { mode: "hybrid", limit: 5 });
 
+// agent memory — capture, then recall a token-budgeted pack
+await dig.retain(sessionMarkdown, { as: "memory/sessions/today.md" });
+const pack = await dig.recall("billing ledger decision", { budget: 1000 });
+
 // reorganize by policy — preview, then apply (reversible)
 await dig.org({ apply: false }); // preview the plan
 await dig.org({ apply: true }); // commit it
@@ -48,6 +52,8 @@ HTTP status.
 | Method | HTTP | Notes |
 |--------|------|-------|
 | `find(query, opts)` | GET /find | `mode`, `limit` |
+| `recall(query, opts)` | GET /recall | `mode`, `budget`; token-budgeted memory pack |
+| `retain(content, opts)` | POST /retain | `as`; capture into memory (reversible) |
 | `drift(opts)` | GET /drift | read-only |
 | `log(opts)` | GET /log | read-only |
 | `export(opts)` | GET /export | `filter`, `at`; returns JSONL string |

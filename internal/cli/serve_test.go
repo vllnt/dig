@@ -100,6 +100,65 @@ func TestServeDaemonDrivesKB(t *testing.T) {
 	}
 }
 
+// httpPostBody POSTs a raw body (the capture content) and returns status+body.
+func httpPostBody(t *testing.T, base, path string, q url.Values, body string) (int, string) {
+	t.Helper()
+	resp, err := http.Post(base+path+"?"+q.Encode(), "text/plain", strings.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	b, _ := io.ReadAll(resp.Body)
+	return resp.StatusCode, string(b)
+}
+
+// TestServeMemoryEndpoints drives the agent-memory loop over the real daemon: a
+// client POSTs a session to /retain, then GETs /recall and the captured fact
+// comes back in a budgeted pack — the surface a framework adapter consumes.
+func TestServeMemoryEndpoints(t *testing.T) {
+	root := t.TempDir()
+	run(t, "init", root)
+	run(t, "--kb", root, "scan")
+	ts := httptest.NewServer(digRoutes())
+	defer ts.Close()
+
+	// retain a session over HTTP.
+	fact := "Decision: adopt the new ledger in Q3; Dana owns the migration."
+	code, body := httpPostBody(t, ts.URL, "/retain", url.Values{"kb": {root}, "as": {"memory/s.md"}}, fact)
+	if code != 200 || !strings.Contains(body, "Retained memory/s.md") {
+		t.Fatalf("retain over HTTP: %d %s", code, body)
+	}
+	if diskState(t, root)["memory/s.md"] != fact {
+		t.Fatal("retain over HTTP did not persist the content")
+	}
+
+	// recall it back as a budgeted JSON pack.
+	code, body = httpGet(t, ts.URL, "/recall", url.Values{"kb": {root}, "query": {"ledger migration Dana"}, "budget": {"400"}})
+	if code != 200 || !json.Valid([]byte(body)) {
+		t.Fatalf("recall over HTTP: %d %s", code, body)
+	}
+	var pack struct {
+		BudgetTokens int                        `json:"budgetTokens"`
+		Items        []struct{ Content string } `json:"items"`
+	}
+	if err := json.Unmarshal([]byte(body), &pack); err != nil {
+		t.Fatalf("recall body not a pack: %v\n%s", err, body)
+	}
+	if pack.BudgetTokens != 400 || len(pack.Items) == 0 || !strings.Contains(pack.Items[0].Content, "new ledger in Q3") {
+		t.Fatalf("recall did not surface the retained fact: %s", body)
+	}
+
+	// /retain rejects GET (it mutates).
+	resp, err := http.Get(ts.URL + "/retain")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusMethodNotAllowed {
+		t.Fatalf("retain should reject GET, got %d", resp.StatusCode)
+	}
+}
+
 // TestServeMethodGuards proves read endpoints reject POST and mutations reject
 // GET, so a client can't accidentally mutate via a GET.
 func TestServeMethodGuards(t *testing.T) {

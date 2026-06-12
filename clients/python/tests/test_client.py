@@ -96,6 +96,19 @@ class TestDigClient(unittest.TestCase):
         self.assertIsNotNone(self.client().log(kb=self.kb))
         self.assertIsNotNone(self.client().drift(kb=self.kb))
 
+    def test_retain_then_recall(self) -> None:
+        fact = "Decision: adopt the new ledger in Q3; Dana owns the migration."
+        retained = self.client().retain(fact, kb=self.kb, as_="memory/py.md")
+        self.assertIn("Retained memory/py.md", retained["output"])
+
+        pack = self.client().recall("ledger migration Dana", kb=self.kb, budget=400)
+        self.assertEqual(pack["budgetTokens"], 400)
+        self.assertTrue(pack["manifest"])
+        self.assertTrue(
+            any("new ledger in Q3" in item["content"] for item in pack["items"]),
+            "recall should surface the retained fact",
+        )
+
     def test_error_path(self) -> None:
         with self.assertRaises(DigError) as ctx:
             self.client().find("anything", kb="/no/such/kb")

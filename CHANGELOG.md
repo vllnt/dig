@@ -43,14 +43,17 @@ All notable changes to dig are documented here. The format is based on
   any MCP client can drive. `dig_retain` + `dig_recall` make dig an agent's memory
   layer over MCP — capture a session, load a budgeted pack back, all reversible.
 - **`dig serve`** — localhost HTTP+JSON daemon over the CLI contract (GET
-  /find /drift /log /export, POST /org /reconcile /undo, apply-gated), so apps
-  and SDKs embed dig without shelling out. Binds loopback only — never public.
+  /find /recall /drift /log /export, POST /retain /org /reconcile /undo,
+  apply-gated), so apps and SDKs embed dig without shelling out — including dig
+  as a memory layer (`/retain` captures, `/recall` loads a budgeted pack). Binds
+  loopback only — never public.
 - **`@vllnt/dig` TypeScript SDK** (`clients/typescript`) — dependency-free typed
-  client over the daemon; CI builds + tests it against a real `dig serve`, and an
+  client over the daemon, incl. `recall()` / `retain()` memory methods (typed
+  `RecallPack`); CI builds + tests it against a real `dig serve`, and an
   npm-publish workflow ships it on release (gated on `NPM_TOKEN`).
 - **`vllnt-dig` Python SDK** (`clients/python`) — stdlib-only client over the
-  daemon, same surface; CI-tested against a real `dig serve`; a PyPI-publish
-  workflow ships it on release (gated on `PYPI_TOKEN`).
+  daemon, same surface incl. `recall()` / `retain()`; CI-tested against a real
+  `dig serve`; a PyPI-publish workflow ships it on release (gated on `PYPI_TOKEN`).
 - **Claude Code plugin** (`.claude-plugin/`) — `/plugin marketplace add vllnt/dig`
   then `/plugin install dig@dig` bundles the dig skill + the `dig mcp` server.
 - **AI SDK tools** (`@vllnt/dig/ai`) — `digTools(client)` returns Vercel AI SDK

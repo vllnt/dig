@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
@@ -22,9 +23,9 @@ func newServeCmd() *cobra.Command {
 		Use:   "serve",
 		Short: "Run a localhost HTTP+JSON daemon over the dig CLI",
 		Long: "Exposes the dig surface over HTTP on 127.0.0.1 so apps embed dig without\n" +
-			"shelling out: GET /find /drift /log /export (read) and POST /org /reconcile\n" +
-			"/undo (org/reconcile preview unless ?apply=true). Local-first — never binds a\n" +
-			"public interface.",
+			"shelling out: GET /find /recall /drift /log /export (read) and POST /retain\n" +
+			"(capture into memory) /org /reconcile /undo (org/reconcile preview unless\n" +
+			"?apply=true). Local-first — never binds a public interface.",
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			host, _, err := net.SplitHostPort(addr)
@@ -70,6 +71,17 @@ func digRoutes() http.Handler {
 		}
 		return kbArgs(q.get("kb"), args...)
 	}))
+	mux.HandleFunc("/recall", readHandler(http.MethodGet, func(q reqQuery) []string {
+		args := []string{"recall", q.get("query"), "--json"}
+		if m := q.get("mode"); m != "" {
+			args = append(args, "--mode", m)
+		}
+		if b := q.get("budget"); b != "" {
+			args = append(args, "--budget", b)
+		}
+		return kbArgs(q.get("kb"), args...)
+	}))
+	mux.HandleFunc("/retain", retainHTTP)
 	mux.HandleFunc("/drift", readHandler(http.MethodGet, func(q reqQuery) []string {
 		return kbArgs(q.get("kb"), "drift", "--json")
 	}))
@@ -121,6 +133,31 @@ func writeHandler(build func(reqQuery) []string) http.HandlerFunc {
 	}
 }
 
+// maxRetainBytes caps a single capture over the loopback daemon (32 MiB) — a
+// guard against an unbounded body, generous for any real session or document.
+const maxRetainBytes = 32 << 20
+
+// retainHTTP captures the POST body into the KB as memory: body = the content,
+// ?as= the target path (default a dated memory/ path), ?kb= the KB. It is the
+// HTTP form of `dig retain`, so an SDK can write agent memory over the daemon.
+func retainHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeErr(w, http.StatusMethodNotAllowed, "use POST")
+		return
+	}
+	body, err := io.ReadAll(io.LimitReader(r.Body, maxRetainBytes))
+	if err != nil {
+		writeErr(w, http.StatusBadRequest, "read body: "+err.Error())
+		return
+	}
+	q := reqQuery{r}
+	args := []string{"retain"}
+	if as := q.get("as"); as != "" {
+		args = append(args, "--as", as)
+	}
+	runDigStdin(w, string(body), kbArgs(q.get("kb"), args...))
+}
+
 // mutateHTTP serves org/reconcile: a preview unless ?apply=true commits.
 func mutateHTTP(command string) http.HandlerFunc {
 	return writeHandler(func(q reqQuery) []string {
@@ -137,6 +174,18 @@ func mutateHTTP(command string) http.HandlerFunc {
 // commands) is wrapped as {"output": ...}.
 func runDig(w http.ResponseWriter, args []string) {
 	out, err := digJSON(args...)
+	writeDigResult(w, out, err)
+}
+
+// runDigStdin is runDig with a request body fed to the command's stdin (for the
+// capture endpoint, whose CLI form reads content from stdin).
+func runDigStdin(w http.ResponseWriter, stdin string, args []string) {
+	out, err := digJSONStdin(stdin, args...)
+	writeDigResult(w, out, err)
+}
+
+// writeDigResult forwards a command's output as JSON, or its error as a 400.
+func writeDigResult(w http.ResponseWriter, out string, err error) {
 	if err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": out})
 		return
