@@ -18,11 +18,23 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./ai": {
+      "types": "./dist/ai.d.ts",
+      "import": "./dist/ai.js"
     }
   },
   "files": ["dist", "README.md"],
   "engines": {
     "node": ">=18"
+  },
+  "peerDependencies": {
+    "ai": ">=4 <6",
+    "zod": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "ai": { "optional": true },
+    "zod": { "optional": true }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -31,7 +43,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "ai": "^4.3.16",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "zod": "^3.24.1"
   }
 }

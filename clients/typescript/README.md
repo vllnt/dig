@@ -56,5 +56,26 @@ HTTP status.
 | `undo(opts)` | POST /undo | reverts the last changeset |
 | `health()` | GET /health | daemon liveness + version |
 
+## Vercel AI SDK
+
+`@vllnt/dig/ai` turns a client into AI SDK tools an agent can call (`ai` + `zod`
+are optional peer deps):
+
+```ts
+import { generateText } from "ai";
+import { DigClient } from "@vllnt/dig";
+import { digTools } from "@vllnt/dig/ai";
+
+const dig = new DigClient();
+await generateText({
+  model,
+  prompt: "What invoices are in my KB? Organize them if needed.",
+  tools: digTools(dig), // dig_find, dig_drift, dig_log, dig_export, dig_org, dig_reconcile, dig_undo
+});
+```
+
+Mutating tools (`dig_org`, `dig_reconcile`) preview by default; the agent passes
+`apply: true` to commit, and every change is reversible via `dig_undo`.
+
 The client speaks the same contract as `dig serve`, which is a thin adapter over
 the dig CLI — so the SDK never drifts from the tool.

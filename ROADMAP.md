@@ -266,7 +266,7 @@
 - [ ] integrations.1 MCP-first reach — land `dig mcp` (harness-plugins.7) as the universal entry; verify it drives a KB from Claude + the Vercel AI SDK unchanged
 - [~] integrations.2 TypeScript/JS SDK — `@vllnt/dig` (clients/typescript): dependency-free typed client over the `dig serve` daemon (find/drift/log/export/org/reconcile/undo, apply-gated); built + tested in CI against a real spawned daemon (no mocks) (2026-06-12). Remaining: AI SDK `tool()` helpers
 - [~] integrations.3 Python SDK — `vllnt-dig` (clients/python): stdlib-only (urllib) typed client over the `dig serve` daemon, same surface as the TS SDK; CI-tested against a real spawned daemon (no mocks); PyPI-publish CI gated on PYPI_TOKEN (2026-06-12). Remaining: LangChain/LlamaIndex adapters build on it
-- [ ] integrations.4 Vercel AI SDK adapter — MCP wiring + memory middleware (recall-before / retain-after), published example
+- [~] integrations.4 Vercel AI SDK adapter — `@vllnt/dig/ai` exports `digTools(client)` → AI SDK `tool()` defs (zod) for the dig surface, mutations apply-gated; tested via tools' execute() against a real daemon; example in the SDK README (2026-06-12). Remaining: retain-after memory middleware (needs agent-memory)
 - [ ] integrations.5 Mastra adapter — dig as Memory + RAG store (MCP-native)
 - [ ] integrations.6 LangChain / LangGraph adapter (py + js) — Retriever · VectorStore · BaseMemory · Tool
 - [ ] integrations.7 LlamaIndex adapter (py + ts) — BaseRetriever · VectorStore
