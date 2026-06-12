@@ -175,7 +175,7 @@
 - [ ] harness-plugins.4 codex shim — thin pointer to the portable skill
 - [ ] harness-plugins.5 openclaw shim — thin pointer to the portable skill
 - [ ] harness-plugins.6 hermes shim — thin pointer to the portable skill
-- [ ] harness-plugins.7 dig MCP server (`dig mcp`) — THE keystone integration: expose find/org/drift/reconcile/export + retain/recall (agent-memory) as MCP tools over stdio + HTTP/SSE; one server reaches the whole MCP ecosystem (Claude/ChatGPT/Gemini/Cursor/VS Code/JetBrains + AI SDK/Mastra/LangChain). Highest-leverage task — build before per-framework adapters (see integrations phase)
+- [~] harness-plugins.7 dig MCP server (`dig mcp`) — stdio JSON-RPC server live: exposes find/drift/log/export (read) + org/reconcile (preview-by-default, apply-gated) + undo as MCP tools, executing the CLI in-process so there's no logic drift; protocol-tested (handshake → tools/list → tools/call) against a real KB. Remaining: HTTP/SSE transport + retain/recall (agent-memory) tools (2026-06-12)
 - [ ] harness-plugins.10 Agent entry docs — AGENTS.md (cross-harness standard) + GEMINI.md beside the existing CLAUDE.md, each pointing at the portable skill
 - [ ] harness-plugins.11 gemini-cli shim — thin pointer to the portable skill
 - [ ] harness-plugins.12 antigravity shim — thin pointer to the portable skill

@@ -20,6 +20,9 @@ All notable changes to dig are documented here. The format is based on
 - **Benchmark eval harness** (`tools/eval`) — LongMemEval, LoCoMo, and BEAM adapters scoring
   retrieval through the real pipeline (recall@k, hit@k, NDCG@10, MRR). Full LongMemEval-S:
   hybrid hit@5 **98.0%** vs the published 96.6% bar. Scoreboard in `docs/evals.md`.
+- **`dig mcp`** — run dig as a Model Context Protocol server over stdio, exposing
+  the CLI surface (find, drift, log, export read-only; org/reconcile preview-by-
+  default with an apply flag; undo) as tools any MCP client can drive.
 - **`dig --version`** — build metadata (version, commit, date).
 - **Release tooling** — GoReleaser cross-compiles checksummed binaries for
   linux/darwin/windows × amd64/arm64; a `vX.Y.Z` tag publishes a GitHub release.
