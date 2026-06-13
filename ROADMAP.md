@@ -3,7 +3,7 @@
 > The open, local, reversible **data + retrieval + memory primitive for AI agents** — organize a knowledge base to *your* mental model, retrieve it fast, remember across sessions, and plug it into any agent or framework (MCP first, then native SDKs). Configurable and extensible at every stage, bring-your-own model (PARA, GTD, Memory Palace, or your own). Your own system end-to-end — and the data layer others build on.
 
 **Now:** agent-memory loop dogfooding — finished Claude Code sessions auto-capture (SessionEnd hook → `dig retain --transcript`) into a KB that `dig recall` serves back budgeted; capture/recall also exposed as `dig_retain`/`dig_recall` MCP tools. Integration surface shipped (MCP · daemon · TS/Python SDKs · AI-SDK tools · Claude plugin). DONE: semantic-retrieval, public-release, site-launch, eval-harness, harness-plugins core, public-extensibility core, integrations core.
-**Last updated:** 2026-06-13
+**Last updated:** 2026-06-14
 
 ## vision-docs [DONE 2026-05]
 
@@ -285,6 +285,18 @@
 - [ ] distribution.3 Framework directories — list dig in LangChain integrations · LlamaHub · Vercel AI SDK providers · Mastra registry (riding the integrations adapters), where devs browse for a memory/retriever backend
 - [ ] distribution.4 Catalogs + awesome-lists — submit to awesome-mcp · awesome-ai-agents · awesome-ai-memory · awesome-selfhosted; each entry links the leaderboard (the trust hook that earns the click)
 - [ ] distribution.5 Homebrew tap — `brew install vllnt/tap/dig` via a public `vllnt/homebrew-tap`, formula fed by GoReleaser artifacts (public-release.3); the Mac/Linux CLI default alongside the curl installer (site-launch.3). **Blocked until go-public + v1**: brew downloads the release tarballs (need public assets) and the formula pushes on a stable tag (canary-only policy gates it). GoReleaser's `brews` (cross-platform formula) is deprecated → `homebrew_casks` (macOS-only) — pick at v1 per Homebrew's state then. Needs a public tap repo + a `HOMEBREW_TAP_TOKEN` PAT. Runbook: docs/RELEASING.md § Homebrew. The three front doors: `brew install vllnt/tap/dig` · `npm i @vllnt/dig` · `pip install dig-client`
+
+## auto-upgrade [PLANNED]
+
+**Goal:** dig keeps itself current the way Claude Code does — a background check notices a newer build on the user's channel and self-applies it without ceremony — riding the release infra already shipped (GoReleaser checksums in public-release.3, the rolling canary channel in distribution.6, the curl installer in site-launch.3). Self-installed binaries only; package-manager installs defer to their manager.
+**Exit criteria:** a self-installed `dig` on the canary channel detects a newer release, self-replaces with checksum verification, and reports the new version on next run; brew/go-installed binaries are detected and deferred to (never clobbered); the auto-check is non-blocking, cached, rate-limited, opt-out, and CI-safe; every swap is atomic and rolls back to the prior binary on failure.
+
+- [ ] auto-upgrade.1 `dig upgrade` self-update primitive — resolve the latest release for the active channel via the GitHub releases API, download the matching os/arch asset, verify it against `checksums.txt` (public-release.3), atomically swap the running binary (temp-write + rename, restore on failure). The manual command everything else builds on
+- [ ] auto-upgrade.2 Channel + install-method detection — know whether this binary is canary or stable and how it was installed (self/curl vs brew vs `go install` vs distro pkg); self-update only self-managed binaries, otherwise print the package-manager upgrade command and exit. Default channel = canary while pre-1.0 (canary-only policy, .claude/rules/release.md)
+- [ ] auto-upgrade.3 Background version check — on command run, a non-blocking, cached (TTL ~24h), rate-limited check against the releases API, stamped in a state file under the config dir; never slows or blocks a command, fails open offline; surfaces a "newer dig available → run `dig upgrade`" notice
+- [ ] auto-upgrade.4 Auto-apply (the Claude Code behavior) — when a newer build is found on the active channel, self-apply in the background by default: atomic, checksum-verified, rollback-on-failure; the next invocation runs the new binary. Opt-out downgrades to notice-only (auto-upgrade.5)
+- [ ] auto-upgrade.5 Config + opt-out surface — `DIG_NO_UPDATE` env + `[update]` policy (`enabled`, `channel`, `frequency`, `auto` vs `notify`); `dig upgrade --check`; documented precedence (env > config > default); auto-apply suppressed in CI / non-interactive shells
+- [ ] auto-upgrade.6 Tests + docs — E2E against real releases (or a release fixture): checksum mismatch aborts and keeps the old binary; brew/go installs deferred not clobbered; offline check fails open; auto-apply rollback restores the prior binary on a corrupted swap. Document the channel/auto-update model in docs/RELEASING.md + the /docs install page
 
 ## Later
 
