@@ -88,6 +88,11 @@ Releases are cross-compiled and checksummed by [GoReleaser](.goreleaser.yaml); a
 tag `vX.Y.Z` builds and publishes them. A `curl | sh` installer served from
 [dig.vllnt.com](https://dig.vllnt.com) lands with the site (roadmap `site-launch.3`).
 
+**Canary** builds track `main` automatically — a rolling
+[`canary` prerelease](https://github.com/vllnt/dig/releases/tag/canary) of the
+CLI, plus `npm add @vllnt/dig@canary` and `pip install --pre vllnt-dig`. Bleeding
+edge, not for production — see [docs/RELEASING.md](docs/RELEASING.md).
+
 ### Drive dig from your agent
 
 - **Claude Code plugin** (bundles the dig skill + the `dig mcp` server):
