@@ -285,7 +285,7 @@
 - [ ] distribution.2 MCP registry listing — submit `dig mcp` (harness-plugins.7) to the public MCP server registry → passive discovery by every MCP client, one listing reaches the ecosystem
 - [ ] distribution.3 Framework directories — list dig in LangChain integrations · LlamaHub · Vercel AI SDK providers · Mastra registry (riding the integrations adapters), where devs browse for a memory/retriever backend
 - [ ] distribution.4 Catalogs + awesome-lists — submit to awesome-mcp · awesome-ai-agents · awesome-ai-memory · awesome-selfhosted; each entry links the leaderboard (the trust hook that earns the click)
-- [ ] distribution.5 Homebrew tap — `brew install dig` via a `vllnt/homebrew-dig` tap, formula fed by GoReleaser artifacts (public-release.3); the Mac/Linux CLI default alongside the curl installer (site-launch.3). The three front doors: `brew install dig` · `npm i @vllnt/dig` · `pip install dig-client`
+- [ ] distribution.5 Homebrew tap — `brew install vllnt/tap/dig` via a public `vllnt/homebrew-tap`, formula fed by GoReleaser artifacts (public-release.3); the Mac/Linux CLI default alongside the curl installer (site-launch.3). **Blocked until go-public + v1**: brew downloads the release tarballs (need public assets) and the formula pushes on a stable tag (canary-only policy gates it). GoReleaser's `brews` (cross-platform formula) is deprecated → `homebrew_casks` (macOS-only) — pick at v1 per Homebrew's state then. Needs a public tap repo + a `HOMEBREW_TAP_TOKEN` PAT. Runbook: docs/RELEASING.md § Homebrew. The three front doors: `brew install vllnt/tap/dig` · `npm i @vllnt/dig` · `pip install dig-client`
 
 ## auto-upgrade [PLANNED]
 

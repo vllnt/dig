@@ -25,6 +25,11 @@ Agent harness that keeps a knowledge base in order. Go CLI (`cmd/`, `internal/`)
 - Expose (device/cross-machine/preview testing): ALWAYS `tailscale serve` — see @.claude/rules/dev-server.md
 - NEVER `next dev -H 0.0.0.0`, ngrok, or a public tunnel for routine dev.
 
+## Issues
+
+- Issue intake = structured templates only, **blank issues OFF** (BLOCKING): @.claude/rules/issues.md
+- Templates in `.github/ISSUE_TEMPLATE/`; security goes to private advisories, never a public issue.
+
 ## Release
 
 - Release system + **canary-only policy** (BLOCKING): @.claude/rules/release.md
