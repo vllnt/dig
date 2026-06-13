@@ -2,13 +2,14 @@ name: pypi
 
 # Single workflow for the dig-client PyPI package, mirroring npm.yml:
 #
-#   push to main                 -> canary  : dig-client {version}.dev<run>   (pip --pre only)
-#   a published GitHub release   -> release : dig-client {version}
-#   workflow_dispatch            -> release : same, on demand
+#   push to main / workflow_dispatch -> canary  : dig-client {version}.dev<run>   (pip --pre only)
+#   a published GitHub release       -> release : dig-client {version}
 #
-# Both publish via OIDC trusted publishing (no token) — configure ONE trusted
-# publisher (or "pending publisher") for project dig-client pointing at this
-# workflow (pypi.yml). The canary is gated on the CANARY_ENABLED repo variable.
+# Auth is auto-detected per job: if the PYPI_TOKEN secret is set it is used
+# (twine), otherwise OIDC trusted publishing. The token is a temporary bridge
+# while the OIDC pending publisher is unavailable (e.g. waiting on PyPI org
+# validation); prefer OIDC and drop the token once it works. The canary is gated
+# on the CANARY_ENABLED repo variable.
 #
 # attestations: false — PyPI digital attestations (like npm provenance) require a
 # PUBLIC repo; vllnt/dig is private. Flip to true once it goes public.
@@ -60,7 +61,7 @@ jobs:
   canary:
     name: Publish Canary
     needs: quality
-    if: github.event_name == 'push' && vars.CANARY_ENABLED == 'true'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.CANARY_ENABLED == 'true'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -93,7 +94,21 @@ jobs:
         run: |
           python -m pip install --upgrade build
           python -m build
-      - name: Publish canary to PyPI (OIDC)
+      - name: Detect PyPI auth (token bridge, else OIDC)
+        id: auth
+        env:
+          TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then echo "mode=token" >> "$GITHUB_OUTPUT"; else echo "mode=oidc" >> "$GITHUB_OUTPUT"; fi
+      - name: Publish canary (token)
+        if: steps.auth.outputs.mode == 'token'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: clients/python/dist
+          attestations: false
+          password: ${{ secrets.PYPI_TOKEN }}
+      - name: Publish canary (OIDC)
+        if: steps.auth.outputs.mode == 'oidc'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: clients/python/dist
@@ -102,7 +117,7 @@ jobs:
   release:
     name: Publish Release
     needs: quality
-    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -118,7 +133,21 @@ jobs:
         run: |
           python -m pip install --upgrade build
           python -m build
-      - name: Publish release to PyPI (OIDC)
+      - name: Detect PyPI auth (token bridge, else OIDC)
+        id: auth
+        env:
+          TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then echo "mode=token" >> "$GITHUB_OUTPUT"; else echo "mode=oidc" >> "$GITHUB_OUTPUT"; fi
+      - name: Publish release (token)
+        if: steps.auth.outputs.mode == 'token'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: clients/python/dist
+          attestations: false
+          password: ${{ secrets.PYPI_TOKEN }}
+      - name: Publish release (OIDC)
+        if: steps.auth.outputs.mode == 'oidc'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: clients/python/dist
