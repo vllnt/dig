@@ -1,0 +1,27 @@
+{
+  "name": "dig",
+  "version": "0.1.0",
+  "description": "Drive a dig knowledge base from Codex — search (FTS + semantic/hybrid), organize to a policy, reconcile drift, and remember across sessions, locally and reversibly.",
+  "author": {
+    "name": "vllnt",
+    "url": "https://github.com/vllnt"
+  },
+  "homepage": "https://dig.vllnt.com",
+  "repository": "https://github.com/vllnt/dig",
+  "license": "MIT",
+  "keywords": ["knowledge-base", "retrieval", "memory", "ai-agents", "rag", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "dig",
+    "shortDescription": "Local, reversible KB: search, organize, recall across sessions",
+    "developerName": "vllnt",
+    "websiteURL": "https://dig.vllnt.com",
+    "category": "Productivity",
+    "defaultPrompt": [
+      "Use dig to search my knowledge base.",
+      "Use dig to organize these files to my policy.",
+      "Use dig to recall what we decided last session."
+    ]
+  }
+}

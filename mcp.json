@@ -1,0 +1,6 @@
+{
+  "dig": {
+    "command": "dig",
+    "args": ["mcp"]
+  }
+}
