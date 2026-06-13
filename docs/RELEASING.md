@@ -105,6 +105,31 @@ That triggers:
   **`release` job in `pypi.yml`** (OIDC, publishes `dig-client`). Both reuse the
   same trusted publisher as their canary job — no tokens to manage.
 
+## Homebrew (wired at go-public + v1)
+
+Homebrew is **not** active yet — it needs a public repo and a stable release, so
+it is a deliberate go-public step, not a canary channel. When ready:
+
+1. **Create a public tap repo** `vllnt/homebrew-tap` (an empty public repo is
+   enough; GoReleaser fills it).
+2. **Add a `HOMEBREW_TAP_TOKEN` secret** — a fine-grained PAT with *Contents:
+   write* on `vllnt/homebrew-tap` (the release's `GITHUB_TOKEN` can't push to a
+   different repo). Wire it into `release.yml`'s env.
+3. **Add the GoReleaser block** and choose the shape:
+   - **Formula** (`brews:`) — works on macOS **and** Linux `brew`, but GoReleaser
+     has **deprecated** `brews` (Homebrew is moving binary installs to casks).
+   - **Cask** (`homebrew_casks:`) — not deprecated, but **macOS-only**.
+
+   For a cross-platform CLI, a formula in a custom tap is still valid; pick based
+   on Homebrew's deprecation state at v1. Use `skip_upload: auto` so it only
+   pushes on a stable `vX.Y.Z` (never on the canary/snapshot).
+4. Cut the first `vX.Y.Z` → GoReleaser builds the binaries and pushes the formula
+   so `brew install vllnt/tap/dig` resolves.
+
+Blocked until: the repo (or at least its release assets) is **public** — `brew`
+downloads the release tarballs — and a **stable release** exists (canary-only
+policy gates the tag; see `.claude/rules/release.md`).
+
 ## Versioning policy
 
 [SemVer](https://semver.org). A change is **major** only if a shipped public
