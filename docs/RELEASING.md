@@ -64,6 +64,11 @@ variable** and stay dormant until you:
    since `dig-client` isn't published yet) for project `dig-client`: repo
    `vllnt/dig`, workflow **`pypi.yml`**. No PyPI org/scope needed — just an
    account; the project name is claimed on first publish.
+   - **Token bridge (while OIDC is unavailable).** If the pending publisher is
+     blocked (e.g. PyPI org validation pending), set an account-scoped token
+     instead: `gh secret set PYPI_TOKEN`. `pypi.yml` auto-detects it and uses
+     twine; remove the secret once OIDC works. Trigger a canary publish on demand
+     with `gh workflow run pypi.yml`. npm stays OIDC-only.
 3. Set the repo variable: `gh variable set CANARY_ENABLED --body true`.
 
 Until `CANARY_ENABLED` is `true`, the `npm` and `pypi` jobs are skipped (the

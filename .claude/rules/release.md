@@ -15,9 +15,12 @@ dig ships three artifacts — the Go CLI, the `@vllnt/dig` npm SDK, and the
   `CANARY_ENABLED` repo variable) → `release` (on a published GitHub release or
   `workflow_dispatch`). One file, both channels — modeled on `@vllnt/ui`'s
   `publish.yml`.
-- **Auth is OIDC trusted publishing** for npm + PyPI — **no tokens**. One trusted
-  publisher per package points at its workflow (`npm.yml` / `pypi.yml`) and covers
-  both the canary and release jobs. The CLI canary uses `GITHUB_TOKEN` only.
+- **Auth is OIDC trusted publishing** for npm + PyPI — one trusted publisher per
+  package points at its workflow (`npm.yml` / `pypi.yml`) and covers both jobs.
+  The CLI canary uses `GITHUB_TOKEN` only. **Exception:** `pypi.yml` auto-detects
+  a `PYPI_TOKEN` secret and uses it (twine) when present — a *temporary bridge*
+  while the PyPI OIDC pending publisher is unavailable (e.g. org validation
+  pending). Prefer OIDC; remove the token once OIDC works. npm stays OIDC-only.
 - Full runbook: `docs/RELEASING.md`.
 
 ## Canary mode is the default — stable is gated (BLOCKING)
@@ -61,6 +64,7 @@ part that needs public.
 - Cut a `vX.Y.Z` tag, or publish a stable/`latest`/non-dev version, without
   explicit maintainer approval.
 - Add `--provenance` / `attestations: true` while the repo is private.
-- Add an `NPM_TOKEN` / `PYPI_TOKEN` secret for publishing — auth is OIDC.
+- Add an `NPM_TOKEN` secret — npm is OIDC-only. (`PYPI_TOKEN` is allowed as a
+  documented temporary bridge in `pypi.yml`; remove it once PyPI OIDC works.)
 - Force-move or delete a `vX.Y.Z` tag. (The rolling `canary` tag is the only
   moving tag, and only `canary.yml` moves it.)
