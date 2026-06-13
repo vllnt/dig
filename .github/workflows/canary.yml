@@ -1,15 +1,13 @@
 name: Canary
 
-# Canary builds ship automatically on every push to main, the bleeding-edge
-# channel for dig's three artifacts: the Go CLI (a rolling prerelease), the npm
-# SDK (@vllnt/dig@canary), and the Python SDK (a .devN release). Stable releases
-# stay tag-driven (release.yml → GoReleaser → npm-publish.yml / pypi-publish.yml).
+# Canary builds ship automatically on every push to main: the Go CLI (a rolling
+# prerelease) and the Python SDK (a .devN release). The npm canary + release live
+# in their own single workflow (npm.yml); the CLI stable release is release.yml.
 #
-# Auth: the Go CLI canary needs only GITHUB_TOKEN and runs immediately. The npm
-# and PyPI canaries publish via OIDC trusted publishing (no token) and are gated
-# on the CANARY_ENABLED repo variable, so they stay dormant until a trusted
-# publisher is configured for @vllnt/dig (npmjs.org) and dig-client (pypi.org).
-# See docs/RELEASING.md.
+# Auth: the Go CLI canary needs only GITHUB_TOKEN and runs immediately. The PyPI
+# canary publishes via OIDC trusted publishing (no token) and is gated on the
+# CANARY_ENABLED repo variable, so it stays dormant until a trusted publisher is
+# configured for dig-client (pypi.org). See docs/RELEASING.md.
 
 on:
   push:
@@ -79,49 +77,6 @@ jobs:
             --title "Canary (main@${SHORT_SHA})" \
             --notes "Rolling canary built from \`main@${SHORT_SHA}\`. Bleeding edge — **not for production**. For stable installs see the README." \
             dist/dig_*.tar.gz dist/dig_*.zip dist/checksums.txt
-
-  npm:
-    name: Canary npm
-    needs: quality
-    if: vars.CANARY_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    defaults:
-      run:
-        working-directory: clients/typescript
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "stable"
-      - name: Build dig
-        run: go build -o "$RUNNER_TEMP/dig" ./cmd/dig
-        working-directory: .
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          registry-url: "https://registry.npmjs.org"
-      - run: pnpm install --frozen-lockfile=false
-      - run: pnpm typecheck
-      - run: pnpm build
-      - name: Test against a real dig serve
-        run: pnpm test
-        env:
-          DIG_BIN: ${{ runner.temp }}/dig
-      - name: Publish canary to npm (OIDC trusted publishing)
-        run: |
-          # Force OIDC: drop any token auth so npm uses trusted publishing.
-          sed -i '/_authToken/d' "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}" 2>/dev/null || true
-          unset NODE_AUTH_TOKEN
-          BASE_VERSION=$(node -p "require('./package.json').version")
-          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
-          npm version "${BASE_VERSION}-canary.${SHORT_SHA}" --no-git-tag-version
-          npx --yes npm@latest publish --tag canary --provenance --access public
 
   pypi:
     name: Canary PyPI

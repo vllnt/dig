@@ -56,8 +56,9 @@ All notable changes to dig are documented here. The format is based on
   loopback only — never public.
 - **`@vllnt/dig` TypeScript SDK** (`clients/typescript`) — dependency-free typed
   client over the daemon, incl. `recall()` / `retain()` memory methods (typed
-  `RecallPack`); CI builds + tests it against a real `dig serve`, and an
-  npm-publish workflow ships it on release (gated on `NPM_TOKEN`).
+  `RecallPack`); CI builds + tests it against a real `dig serve`. A single
+  `npm.yml` workflow publishes both the canary (push) and the release (tag) via
+  OIDC trusted publishing — no token.
 - **`dig-client` Python SDK** (`clients/python`) — stdlib-only client over the
   daemon, same surface incl. `recall()` / `retain()`; CI-tested against a real
   `dig serve`; a PyPI-publish workflow ships it on release (gated on `PYPI_TOKEN`).
