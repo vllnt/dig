@@ -3,27 +3,31 @@
 dig ships two channels for three artifacts — the **Go CLI**, the **`@vllnt/dig`**
 npm SDK, and the **`dig-client`** PyPI SDK:
 
-| Channel | Trigger | Artifacts | Workflow |
-|---------|---------|-----------|----------|
-| **Canary** | every push to `main` | rolling CLI prerelease · `@vllnt/dig@canary` · `dig-client` `.devN` | `canary.yml` |
-| **Stable** | pushing a `vX.Y.Z` tag | GitHub Release binaries · `@vllnt/dig@latest` · `dig-client` | `release.yml` → `npm-publish.yml` / `pypi-publish.yml` |
+| Artifact | Workflow | Canary (push to `main`) | Stable (`vX.Y.Z` tag) |
+|----------|----------|-------------------------|------------------------|
+| **npm** `@vllnt/dig` | `npm.yml` | `@vllnt/dig@canary` | `@vllnt/dig@latest` (release / dispatch) |
+| **Go CLI** | `canary.yml` + `release.yml` | rolling `canary` prerelease | GoReleaser binaries |
+| **PyPI** `dig-client` | `canary.yml` + `pypi-publish.yml` | `.devN` prerelease | stable on release |
+
+npm canary **and** release live in one file (`npm.yml`), mirroring `@vllnt/ui`'s
+`publish.yml`. The Go CLI and PyPI keep their own workflows.
 
 The canary channel is the bleeding edge — a dress rehearsal of every release,
 built from the exact commit on `main`. **Not for production.**
 
 ## Canary (automatic, on every push to `main`)
 
-`canary.yml` runs a quality gate (`go build` / `vet` / `test`), then fans out:
+Each artifact's workflow runs a quality gate, then publishes a canary:
 
-- **CLI** — GoReleaser builds a snapshot (`release --snapshot --clean`,
-  cross-compiled linux/darwin/windows × amd64/arm64). The artifacts are uploaded
-  to a single **rolling `canary` GitHub prerelease** that is moved to the current
+- **CLI** (`canary.yml`) — GoReleaser builds a snapshot (`release --snapshot
+  --clean`, cross-compiled linux/darwin/windows × amd64/arm64). The artifacts are
+  uploaded to a single **rolling `canary` GitHub prerelease** moved to the current
   commit each push. The binary self-identifies: `dig --version` →
   `X.Y.Z-canary.<short-sha>`.
-- **npm** — publishes `@vllnt/dig@{version}-canary.<short-sha>` under the
-  `canary` dist-tag.
-- **PyPI** — publishes `dig-client` as a PEP 440 dev release
-  (`{version}.dev{run-number}`), which `pip` only installs with `--pre`.
+- **npm** (`npm.yml` → `canary` job) — publishes
+  `@vllnt/dig@{version}-canary.<short-sha>` under the `canary` dist-tag.
+- **PyPI** (`canary.yml` → `pypi` job) — publishes `dig-client` as a PEP 440 dev
+  release (`{version}.dev{run-number}`), which `pip` only installs with `--pre`.
 
 Consume the latest canary:
 
@@ -48,7 +52,8 @@ variable** and stay dormant until you:
    first `@vllnt/dig@…-canary.<sha>` under the `canary` tag. (`dig-client` on
    PyPI works the same — its first upload can also be a manual `twine upload`.)
 1. **npm** — on npmjs.org, add a *Trusted Publisher* for `@vllnt/dig`: GitHub
-   Actions, repo `vllnt/dig`, workflow `canary.yml`.
+   Actions, repo `vllnt/dig`, workflow **`npm.yml`** (covers both the canary and
+   the release jobs).
 2. **PyPI** — on pypi.org, add a *Trusted Publisher* for `dig-client`: repo
    `vllnt/dig`, workflow `canary.yml`.
 3. Set the repo variable: `gh variable set CANARY_ENABLED --body true`.
@@ -82,10 +87,11 @@ That triggers:
 - **`release.yml`** → GoReleaser builds the cross-compiled binaries + checksums
   and creates the **GitHub Release** for `vX.Y.Z` (changelog from Conventional
   Commits).
-- The published-release event triggers **`npm-publish.yml`** and
-  **`pypi-publish.yml`**, which build + test against a real `dig serve` and
-  publish `@vllnt/dig@latest` / `dig-client`. Those two still use the
-  `NPM_TOKEN` / `PYPI_TOKEN` secrets and skip gracefully when unset.
+- The published-release event triggers the **`release` job in `npm.yml`** (OIDC,
+  publishes `@vllnt/dig@latest` — moving `latest` off any earlier canary) and
+  **`pypi-publish.yml`** (publishes `dig-client`; still `PYPI_TOKEN`-gated,
+  skips gracefully when unset). The npm release reuses the same `npm.yml` trusted
+  publisher as the canary, so there is no token to manage.
 
 ## Versioning policy
 
