@@ -1,6 +1,6 @@
 name: npm publish
 
-# Publishes @dig/client to npm when a GitHub release is published. Requires an
+# Publishes @vllnt/dig to npm when a GitHub release is published. Requires an
 # NPM_TOKEN repo secret; without it the publish step is skipped (the build +
 # test still run, so the workflow stays green and ready).
 

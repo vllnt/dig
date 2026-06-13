@@ -11,7 +11,7 @@ All notable changes to dig are documented here. The format is based on
 - **Canary release channel** (`canary.yml`) — every push to `main` publishes
   bleeding-edge builds of all three artifacts: a rolling `canary` GitHub
   prerelease of the cross-compiled CLI (GoReleaser snapshot; `dig --version`
-  reports `X.Y.Z-canary.<sha>`), `@dig/client@canary` on npm, and `dig-client`
+  reports `X.Y.Z-canary.<sha>`), `@vllnt/dig@canary` on npm, and `dig-client`
   `.devN` on PyPI. The CLI canary runs on `GITHUB_TOKEN` alone; the npm/PyPI
   canaries use OIDC trusted publishing and stay dormant until `CANARY_ENABLED`
   is set. Stable releases stay tag-driven. See [docs/RELEASING.md](docs/RELEASING.md).
@@ -54,7 +54,7 @@ All notable changes to dig are documented here. The format is based on
   apply-gated), so apps and SDKs embed dig without shelling out — including dig
   as a memory layer (`/retain` captures, `/recall` loads a budgeted pack). Binds
   loopback only — never public.
-- **`@dig/client` TypeScript SDK** (`clients/typescript`) — dependency-free typed
+- **`@vllnt/dig` TypeScript SDK** (`clients/typescript`) — dependency-free typed
   client over the daemon, incl. `recall()` / `retain()` memory methods (typed
   `RecallPack`); CI builds + tests it against a real `dig serve`, and an
   npm-publish workflow ships it on release (gated on `NPM_TOKEN`).
@@ -63,7 +63,7 @@ All notable changes to dig are documented here. The format is based on
   `dig serve`; a PyPI-publish workflow ships it on release (gated on `PYPI_TOKEN`).
 - **Claude Code plugin** (`.claude-plugin/`) — `/plugin marketplace add vllnt/dig`
   then `/plugin install dig@dig` bundles the dig skill + the `dig mcp` server.
-- **AI SDK tools** (`@dig/client/ai`) — `digTools(client)` returns Vercel AI SDK
+- **AI SDK tools** (`@vllnt/dig/ai`) — `digTools(client)` returns Vercel AI SDK
   `tool()` definitions for the dig surface, so an agent can search/organize a KB
   and use it as memory via `dig_recall` + `dig_retain` (write a decision, recall
   a budgeted pack later — mutations apply-gated, reversible). `ai` + `zod` are

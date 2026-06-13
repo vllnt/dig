@@ -1,4 +1,4 @@
-# @dig/client
+# @vllnt/dig
 
 TypeScript client for a local [dig](https://github.com/vllnt/dig) daemon — search,
 organize, reconcile, and export a knowledge base over HTTP. Dependency-free
@@ -7,7 +7,7 @@ organize, reconcile, and export a knowledge base over HTTP. Dependency-free
 ## Install
 
 ```sh
-npm i @dig/client
+npm i @vllnt/dig
 ```
 
 Start a daemon next to your KB (dig binary from https://dig.vllnt.com):
@@ -19,7 +19,7 @@ dig serve            # binds 127.0.0.1:3978 (loopback only)
 ## Use
 
 ```ts
-import { DigClient } from "@dig/client";
+import { DigClient } from "@vllnt/dig";
 
 const dig = new DigClient(); // defaults to http://127.0.0.1:3978
 
@@ -64,13 +64,13 @@ HTTP status.
 
 ## Vercel AI SDK
 
-`@dig/client/ai` turns a client into AI SDK tools an agent can call (`ai` + `zod`
+`@vllnt/dig/ai` turns a client into AI SDK tools an agent can call (`ai` + `zod`
 are optional peer deps):
 
 ```ts
 import { generateText } from "ai";
-import { DigClient } from "@dig/client";
-import { digTools } from "@dig/client/ai";
+import { DigClient } from "@vllnt/dig";
+import { digTools } from "@vllnt/dig/ai";
 
 const dig = new DigClient();
 await generateText({
