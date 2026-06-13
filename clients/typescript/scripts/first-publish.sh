@@ -35,7 +35,7 @@ step() { printf '\n\033[1m==> %s\033[0m\n' "$1"; }
 
 # ---- 1. Preconditions -------------------------------------------------------
 step "Checking preconditions"
-for bin in npm pnpm git go; do
+for bin in npm pnpm git; do
 	command -v "$bin" >/dev/null || { echo "error: '$bin' not found on PATH"; exit 1; }
 done
 npm whoami >/dev/null 2>&1 || { echo "error: not logged in — run 'npm login' first"; exit 1; }
@@ -53,10 +53,34 @@ if npm view "$NAME" version >/dev/null 2>&1; then
 	exit 1
 fi
 
-# ---- 2. Build the dig binary the SDK tests drive ----------------------------
-step "Building dig (for the real-daemon tests)"
-DIG_BIN="$(mktemp -d)/dig"
-( cd "$REPO_ROOT" && go build -o "$DIG_BIN" ./cmd/dig )
+# ---- 2. Resolve the dig binary the SDK tests drive --------------------------
+# Order: an explicit $DIG_BIN, else build from source with Go (discovered even
+# if not on PATH). We never grab `dig` off PATH — that name collides with the
+# BIND DNS lookup tool.
+step "Resolving the dig binary (for the real-daemon tests)"
+BUILT_DIR=""
+if [ -n "${DIG_BIN:-}" ]; then
+	[ -x "$DIG_BIN" ] || { echo "error: DIG_BIN='$DIG_BIN' is not an executable"; exit 1; }
+	echo "using DIG_BIN=$DIG_BIN"
+else
+	GO="$(command -v go || true)"
+	for cand in /usr/local/go/bin/go /usr/lib/go/bin/go /opt/go/bin/go "$HOME/go/bin/go"; do
+		[ -n "$GO" ] && break
+		[ -x "$cand" ] && GO="$cand"
+	done
+	if [ -z "$GO" ]; then
+		echo "error: no dig binary available. Either:"
+		echo "  - install Go (https://go.dev/dl) so this can build it, or"
+		echo "  - point DIG_BIN at a dig binary, e.g. the latest canary:"
+		echo "      gh release download canary -R vllnt/dig -p 'dig_*_linux_amd64.tar.gz'"
+		echo "      tar -xzf dig_*_linux_amd64.tar.gz && export DIG_BIN=\"\$PWD/dig\""
+		exit 1
+	fi
+	echo "building dig with $GO"
+	BUILT_DIR="$(mktemp -d)"
+	DIG_BIN="$BUILT_DIR/dig"
+	( cd "$REPO_ROOT" && "$GO" build -o "$DIG_BIN" ./cmd/dig )
+fi
 
 # ---- 3. Install, typecheck, build, test (no mocks) --------------------------
 step "Installing + typecheck + build"
@@ -77,7 +101,7 @@ npm version "$CANARY" --no-git-tag-version --allow-same-version >/dev/null
 # Always restore package.json (and clean the temp binary) on exit, even on error.
 cleanup() {
 	git -C "$PKG_DIR" checkout -- package.json 2>/dev/null || true
-	rm -rf "$(dirname "$DIG_BIN")"
+	[ -n "$BUILT_DIR" ] && rm -rf "$BUILT_DIR"
 }
 trap cleanup EXIT
 
