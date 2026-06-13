@@ -7,10 +7,16 @@ npm SDK, and the **`dig-client`** PyPI SDK:
 |----------|----------|-------------------------|------------------------|
 | **npm** `@vllnt/dig` | `npm.yml` | `@vllnt/dig@canary` | `@vllnt/dig@latest` (release / dispatch) |
 | **Go CLI** | `canary.yml` + `release.yml` | rolling `canary` prerelease | GoReleaser binaries |
-| **PyPI** `dig-client` | `canary.yml` + `pypi-publish.yml` | `.devN` prerelease | stable on release |
+| **PyPI** `dig-client` | `pypi.yml` | `.devN` prerelease | stable on release |
 
-npm canary **and** release live in one file (`npm.yml`), mirroring `@vllnt/ui`'s
-`publish.yml`. The Go CLI and PyPI keep their own workflows.
+npm and PyPI each keep canary **and** release in one file (`npm.yml` / `pypi.yml`),
+mirroring `@vllnt/ui`'s `publish.yml`. The Go CLI canary is `canary.yml`; its
+stable release is `release.yml` (GoReleaser, on a tag).
+
+> **Private-repo note:** npm `--provenance` and PyPI attestations require a
+> **public** source repo (sigstore). While `vllnt/dig` is private, `npm.yml`
+> publishes without `--provenance` and `pypi.yml` sets `attestations: false`.
+> OIDC auth is unaffected. Re-enable both when the repo goes public.
 
 The canary channel is the bleeding edge — a dress rehearsal of every release,
 built from the exact commit on `main`. **Not for production.**
@@ -26,7 +32,7 @@ Each artifact's workflow runs a quality gate, then publishes a canary:
   `X.Y.Z-canary.<short-sha>`.
 - **npm** (`npm.yml` → `canary` job) — publishes
   `@vllnt/dig@{version}-canary.<short-sha>` under the `canary` dist-tag.
-- **PyPI** (`canary.yml` → `pypi` job) — publishes `dig-client` as a PEP 440 dev
+- **PyPI** (`pypi.yml` → `canary` job) — publishes `dig-client` as a PEP 440 dev
   release (`{version}.dev{run-number}`), which `pip` only installs with `--pre`.
 
 Consume the latest canary:
@@ -54,8 +60,10 @@ variable** and stay dormant until you:
 1. **npm** — on npmjs.org, add a *Trusted Publisher* for `@vllnt/dig`: GitHub
    Actions, repo `vllnt/dig`, workflow **`npm.yml`** (covers both the canary and
    the release jobs).
-2. **PyPI** — on pypi.org, add a *Trusted Publisher* for `dig-client`: repo
-   `vllnt/dig`, workflow `canary.yml`.
+2. **PyPI** — on pypi.org, add a *Trusted Publisher* (or a **pending publisher**,
+   since `dig-client` isn't published yet) for project `dig-client`: repo
+   `vllnt/dig`, workflow **`pypi.yml`**. No PyPI org/scope needed — just an
+   account; the project name is claimed on first publish.
 3. Set the repo variable: `gh variable set CANARY_ENABLED --body true`.
 
 Until `CANARY_ENABLED` is `true`, the `npm` and `pypi` jobs are skipped (the
@@ -88,10 +96,9 @@ That triggers:
   and creates the **GitHub Release** for `vX.Y.Z` (changelog from Conventional
   Commits).
 - The published-release event triggers the **`release` job in `npm.yml`** (OIDC,
-  publishes `@vllnt/dig@latest` — moving `latest` off any earlier canary) and
-  **`pypi-publish.yml`** (publishes `dig-client`; still `PYPI_TOKEN`-gated,
-  skips gracefully when unset). The npm release reuses the same `npm.yml` trusted
-  publisher as the canary, so there is no token to manage.
+  publishes `@vllnt/dig@latest` — moving `latest` off any earlier canary) and the
+  **`release` job in `pypi.yml`** (OIDC, publishes `dig-client`). Both reuse the
+  same trusted publisher as their canary job — no tokens to manage.
 
 ## Versioning policy
 

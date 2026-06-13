@@ -1,13 +1,10 @@
-name: Canary
+name: CLI Canary
 
-# Canary builds ship automatically on every push to main: the Go CLI (a rolling
-# prerelease) and the Python SDK (a .devN release). The npm canary + release live
-# in their own single workflow (npm.yml); the CLI stable release is release.yml.
-#
-# Auth: the Go CLI canary needs only GITHUB_TOKEN and runs immediately. The PyPI
-# canary publishes via OIDC trusted publishing (no token) and is gated on the
-# CANARY_ENABLED repo variable, so it stays dormant until a trusted publisher is
-# configured for dig-client (pypi.org). See docs/RELEASING.md.
+# The Go CLI canary: every push to main builds a GoReleaser snapshot and moves a
+# rolling `canary` GitHub prerelease to the commit. Needs only GITHUB_TOKEN.
+# The npm and PyPI artifacts have their own single workflows (npm.yml, pypi.yml,
+# each canary + release); the CLI stable release is release.yml (GoReleaser/tag).
+# See docs/RELEASING.md.
 
 on:
   push:
@@ -15,7 +12,6 @@ on:
     paths:
       - "cmd/**"
       - "internal/**"
-      - "clients/**"
       - "go.mod"
       - "go.sum"
       - ".goreleaser.yaml"
@@ -77,54 +73,3 @@ jobs:
             --title "Canary (main@${SHORT_SHA})" \
             --notes "Rolling canary built from \`main@${SHORT_SHA}\`. Bleeding edge — **not for production**. For stable installs see the README." \
             dist/dig_*.tar.gz dist/dig_*.zip dist/checksums.txt
-
-  pypi:
-    name: Canary PyPI
-    needs: quality
-    if: vars.CANARY_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    defaults:
-      run:
-        working-directory: clients/python
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "stable"
-      - name: Build dig
-        run: go build -o "$RUNNER_TEMP/dig" ./cmd/dig
-        working-directory: .
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Test against a real dig serve
-        run: python -m unittest discover -s tests -v
-        env:
-          DIG_BIN: ${{ runner.temp }}/dig
-      - name: Stamp a PEP 440 dev version
-        env:
-          RUN: ${{ github.run_number }}
-        run: |
-          python - <<'PY'
-          import os, pathlib, re
-          path = pathlib.Path("pyproject.toml")
-          text = path.read_text()
-          run = os.environ["RUN"]
-          text = re.sub(
-              r'(?m)^version = "([^"]+)"',
-              lambda m: f'version = "{m.group(1)}.dev{run}"',
-              text,
-              count=1,
-          )
-          path.write_text(text)
-          PY
-      - name: Build distributions
-        run: |
-          python -m pip install --upgrade build
-          python -m build
-      - name: Publish canary to PyPI (OIDC trusted publishing)
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: clients/python/dist

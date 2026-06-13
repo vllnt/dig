@@ -24,3 +24,9 @@ Agent harness that keeps a knowledge base in order. Go CLI (`cmd/`, `internal/`)
 - Local: `pnpm -C web dev` → http://localhost:3977
 - Expose (device/cross-machine/preview testing): ALWAYS `tailscale serve` — see @.claude/rules/dev-server.md
 - NEVER `next dev -H 0.0.0.0`, ngrok, or a public tunnel for routine dev.
+
+## Release
+
+- Release system + **canary-only policy** (BLOCKING): @.claude/rules/release.md
+- One workflow per artifact: `npm.yml` / `pypi.yml` (canary + release, OIDC), `canary.yml` + `release.yml` (CLI). Runbook: `docs/RELEASING.md`.
+- The repo is private + pre-1.0 → **canary mode only**. Never cut a stable `vX.Y.Z` tag or publish `latest`/non-dev without explicit maintainer approval. No `--provenance`/attestations while private.

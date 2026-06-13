@@ -1,0 +1,66 @@
+# Release system + canary policy (BLOCKING)
+
+dig ships three artifacts — the Go CLI, the `@vllnt/dig` npm SDK, and the
+`dig-client` PyPI SDK. Each has one workflow that does both channels.
+
+## Workflows (one file per artifact)
+
+| Artifact | Workflow | Canary (push to `main`) | Stable (`vX.Y.Z` tag) |
+|----------|----------|-------------------------|------------------------|
+| Go CLI | `canary.yml` (canary) + `release.yml` (stable) | rolling `canary` GitHub prerelease (GoReleaser snapshot) | GoReleaser binaries |
+| npm `@vllnt/dig` | `npm.yml` | `@vllnt/dig@{version}-canary.<sha>` (tag `canary`) | `@vllnt/dig@{version}` (tag `latest`) |
+| PyPI `dig-client` | `pypi.yml` | `dig-client {version}.dev<run>` | `dig-client {version}` |
+
+- **npm.yml / pypi.yml** each have `quality` → `canary` (on push, gated on the
+  `CANARY_ENABLED` repo variable) → `release` (on a published GitHub release or
+  `workflow_dispatch`). One file, both channels — modeled on `@vllnt/ui`'s
+  `publish.yml`.
+- **Auth is OIDC trusted publishing** for npm + PyPI — **no tokens**. One trusted
+  publisher per package points at its workflow (`npm.yml` / `pypi.yml`) and covers
+  both the canary and release jobs. The CLI canary uses `GITHUB_TOKEN` only.
+- Full runbook: `docs/RELEASING.md`.
+
+## Canary mode is the default — stable is gated (BLOCKING)
+
+The repo is **private and pre-1.0**. Until the maintainer explicitly says "cut
+v1":
+
+- **NEVER cut a stable `vX.Y.Z` git tag** or publish a stable / `latest` / non-dev
+  release. That is the only trigger for the `release` jobs and GoReleaser; it is a
+  deliberate, maintainer-approved action — never do it on your own.
+- **Publish only canary/prerelease**: npm under the `canary` dist-tag, PyPI as
+  `.devN`, the CLI as the rolling `canary` prerelease. Versions stay
+  `X.Y.Z-canary.<sha>` / `X.Y.Z.dev<run>`.
+- `npm i @vllnt/dig` / `pip install dig-client` (bare) are expected to resolve only
+  once v1 ships; for now consumers use `@vllnt/dig@canary` / `pip install --pre`.
+
+## Provenance / attestations are OFF while private (BLOCKING)
+
+npm `--provenance` and PyPI attestations use sigstore, which **only supports
+public source repos**. `vllnt/dig` is private, so:
+
+- **npm.yml** publishes **without** `--provenance`.
+- **pypi.yml** sets **`attestations: false`**.
+
+Re-enable both (`--provenance`, `attestations: true`) only after the repo is made
+public. OIDC auth itself works fine on a private repo — provenance is the only
+part that needs public.
+
+## When v1 is approved (the only stable path)
+
+1. Bump versions: `clients/typescript/package.json`,
+   `clients/python/pyproject.toml`; move `CHANGELOG` `[Unreleased]` → `[X.Y.Z]`.
+2. Merge that PR (the canary publishes a dress rehearsal).
+3. `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z` → `release.yml`
+   (GoReleaser) creates the GitHub Release, whose `published` event fires the
+   `release` jobs in `npm.yml` + `pypi.yml` (npm `--tag latest` also moves
+   `latest` off the canary).
+
+## Never
+
+- Cut a `vX.Y.Z` tag, or publish a stable/`latest`/non-dev version, without
+  explicit maintainer approval.
+- Add `--provenance` / `attestations: true` while the repo is private.
+- Add an `NPM_TOKEN` / `PYPI_TOKEN` secret for publishing — auth is OIDC.
+- Force-move or delete a `vX.Y.Z` tag. (The rolling `canary` tag is the only
+  moving tag, and only `canary.yml` moves it.)

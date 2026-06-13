@@ -1,0 +1,125 @@
+name: pypi
+
+# Single workflow for the dig-client PyPI package, mirroring npm.yml:
+#
+#   push to main                 -> canary  : dig-client {version}.dev<run>   (pip --pre only)
+#   a published GitHub release   -> release : dig-client {version}
+#   workflow_dispatch            -> release : same, on demand
+#
+# Both publish via OIDC trusted publishing (no token) — configure ONE trusted
+# publisher (or "pending publisher") for project dig-client pointing at this
+# workflow (pypi.yml). The canary is gated on the CANARY_ENABLED repo variable.
+#
+# attestations: false — PyPI digital attestations (like npm provenance) require a
+# PUBLIC repo; vllnt/dig is private. Flip to true once it goes public.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "clients/python/**"
+      - "cmd/**"
+      - "internal/**"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/pypi.yml"
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+concurrency:
+  group: pypi-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Build dig
+        run: go build -o "$RUNNER_TEMP/dig" ./cmd/dig
+        working-directory: .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test against a real dig serve
+        run: python -m unittest discover -s tests -v
+        env:
+          DIG_BIN: ${{ runner.temp }}/dig
+
+  canary:
+    name: Publish Canary
+    needs: quality
+    if: github.event_name == 'push' && vars.CANARY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    defaults:
+      run:
+        working-directory: clients/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Stamp a PEP 440 dev version
+        env:
+          RUN: ${{ github.run_number }}
+        run: |
+          python - <<'PY'
+          import os, pathlib, re
+          path = pathlib.Path("pyproject.toml")
+          text = path.read_text()
+          run = os.environ["RUN"]
+          text = re.sub(
+              r'(?m)^version = "([^"]+)"',
+              lambda m: f'version = "{m.group(1)}.dev{run}"',
+              text,
+              count=1,
+          )
+          path.write_text(text)
+          PY
+      - name: Build distributions
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: Publish canary to PyPI (OIDC)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: clients/python/dist
+          attestations: false
+
+  release:
+    name: Publish Release
+    needs: quality
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    defaults:
+      run:
+        working-directory: clients/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build distributions
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: Publish release to PyPI (OIDC)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: clients/python/dist
+          attestations: false
