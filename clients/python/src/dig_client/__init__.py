@@ -1,4 +1,4 @@
-"""vllnt-dig — a dependency-free Python client for a local dig daemon (`dig serve`).
+"""dig-client — a dependency-free Python client for a local dig daemon (`dig serve`).
 
 Drives the same surface as the CLI over HTTP: search, drift, history, export
 (read) and organize / reconcile / undo (mutations, preview-by-default).

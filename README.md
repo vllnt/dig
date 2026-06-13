@@ -90,7 +90,7 @@ tag `vX.Y.Z` builds and publishes them. A `curl | sh` installer served from
 
 **Canary** builds track `main` automatically — a rolling
 [`canary` prerelease](https://github.com/vllnt/dig/releases/tag/canary) of the
-CLI, plus `npm add @vllnt/dig@canary` and `pip install --pre vllnt-dig`. Bleeding
+CLI, plus `npm add @dig/client@canary` and `pip install --pre dig-client`. Bleeding
 edge, not for production — see [docs/RELEASING.md](docs/RELEASING.md).
 
 ### Drive dig from your agent
@@ -101,7 +101,7 @@ edge, not for production — see [docs/RELEASING.md](docs/RELEASING.md).
   /plugin install dig@dig
   ```
 - **MCP (any client)**: register `dig mcp` (stdio) — see `.claude-plugin/`.
-- **SDKs over `dig serve`**: `npm i @vllnt/dig` · `pip install vllnt-dig`.
+- **SDKs over `dig serve`**: `npm i @dig/client` · `pip install dig-client`.
 
 ## Quick start
 

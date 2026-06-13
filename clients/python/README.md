@@ -1,4 +1,4 @@
-# vllnt-dig
+# dig-client
 
 Python client for a local [dig](https://github.com/vllnt/dig) daemon — search,
 organize, reconcile, and export a knowledge base over HTTP. Dependency-free
@@ -7,7 +7,7 @@ organize, reconcile, and export a knowledge base over HTTP. Dependency-free
 ## Install
 
 ```sh
-pip install vllnt-dig
+pip install dig-client
 ```
 
 Start a daemon next to your KB (dig binary from https://dig.vllnt.com):

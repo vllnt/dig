@@ -2,13 +2,13 @@ name: Canary
 
 # Canary builds ship automatically on every push to main, the bleeding-edge
 # channel for dig's three artifacts: the Go CLI (a rolling prerelease), the npm
-# SDK (@vllnt/dig@canary), and the Python SDK (a .devN release). Stable releases
+# SDK (@dig/client@canary), and the Python SDK (a .devN release). Stable releases
 # stay tag-driven (release.yml → GoReleaser → npm-publish.yml / pypi-publish.yml).
 #
 # Auth: the Go CLI canary needs only GITHUB_TOKEN and runs immediately. The npm
 # and PyPI canaries publish via OIDC trusted publishing (no token) and are gated
 # on the CANARY_ENABLED repo variable, so they stay dormant until a trusted
-# publisher is configured for @vllnt/dig (npmjs.org) and vllnt-dig (pypi.org).
+# publisher is configured for @dig/client (npmjs.org) and dig-client (pypi.org).
 # See docs/RELEASING.md.
 
 on:

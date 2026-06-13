@@ -1,6 +1,6 @@
 name: PyPI publish
 
-# Publishes vllnt-dig to PyPI when a GitHub release is published. Requires a
+# Publishes dig-client to PyPI when a GitHub release is published. Requires a
 # PYPI_TOKEN repo secret; without it the publish step is skipped (the build +
 # test still run, so the workflow stays green and ready).
 
