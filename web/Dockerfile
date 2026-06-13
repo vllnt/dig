@@ -30,9 +30,12 @@ WORKDIR /app
 
 RUN addgroup -S -g 65532 app && adduser -S -u 65532 -G app app
 
-# Next.js standalone output (output:'standalone' in next.config.mjs).
+# Next.js standalone output (output:'standalone' in next.config.mjs). Standalone
+# bundles server.js + traced node_modules but NOT .next/static or public/ —
+# both must be copied in by hand, or static assets (llms.txt, install.sh, …) 404.
 COPY --from=builder --chown=65532:65532 /src/.next/standalone ./
 COPY --from=builder --chown=65532:65532 /src/.next/static ./.next/static
+COPY --from=builder --chown=65532:65532 /src/public ./public
 
 USER 65532:65532
 EXPOSE 3000
