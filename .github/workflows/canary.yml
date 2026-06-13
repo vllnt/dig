@@ -54,6 +54,12 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "stable"
+      - name: Drop the rolling canary tag for versioning
+        # The previous run created the lightweight `canary` tag; fetch-depth:0
+        # pulls it back, and GoReleaser would derive a non-semver version from it
+        # ({{ incpatch .Version }} then fails). Delete it locally so versioning
+        # falls back to the latest vX.Y.Z (or 0.0.0). The remote tag is untouched.
+        run: git tag -d canary 2>/dev/null || true
       - name: Build canary binaries (GoReleaser snapshot)
         uses: goreleaser/goreleaser-action@v6
         with:
