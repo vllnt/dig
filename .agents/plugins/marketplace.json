@@ -1,0 +1,17 @@
+{
+  "name": "dig",
+  "plugins": [
+    {
+      "name": "dig",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/vllnt/dig.git"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
