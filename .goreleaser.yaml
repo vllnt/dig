@@ -81,3 +81,9 @@ release:
     # or with Go
     go install github.com/vllnt/dig/cmd/dig@latest
     ```
+
+# Homebrew is wired at go-public + v1 (a deliberate, gated step) — see
+# docs/RELEASING.md § Homebrew. It needs a public tap repo + token and a stable
+# release, and the GoReleaser formula/cask shape depends on Homebrew's
+# binary-formula deprecation state at that time. Not added here to avoid shipping
+# deprecated or macOS-only config while it would only sit dormant.
