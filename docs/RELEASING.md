@@ -41,6 +41,12 @@ first merge. The npm and PyPI canaries publish via **OIDC trusted publishing**
 (no long-lived token), so they are **gated on the `CANARY_ENABLED` repo
 variable** and stay dormant until you:
 
+0. **First npm publish (manual, once).** npm Trusted Publishing can only be
+   configured on a package that already exists, so claim the name with a manual
+   first publish: `clients/typescript/scripts/first-publish.sh` (needs
+   `npm login`). It builds + tests against a real `dig serve` and publishes the
+   first `@vllnt/dig@…-canary.<sha>` under the `canary` tag. (`dig-client` on
+   PyPI works the same — its first upload can also be a manual `twine upload`.)
 1. **npm** — on npmjs.org, add a *Trusted Publisher* for `@vllnt/dig`: GitHub
    Actions, repo `vllnt/dig`, workflow `canary.yml`.
 2. **PyPI** — on pypi.org, add a *Trusted Publisher* for `dig-client`: repo
