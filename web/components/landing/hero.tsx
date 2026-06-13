@@ -2,7 +2,7 @@ import { Badge, Button, Terminal } from "@vllnt/ui";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
-import { ARCHITECTURE_URL, GITHUB_URL } from "@/lib/site";
+import { GITHUB_URL } from "@/lib/site";
 
 const QUICK_START = [
   { content: "index a library", type: "comment" },
@@ -32,6 +32,9 @@ export function Hero() {
       </p>
       <div className="flex flex-wrap justify-center gap-3">
         <Button asChild size="lg">
+          <Link href="/integrations">{t("cta_agent")}</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline">
           <Link href="/install">{t("cta_install")}</Link>
         </Button>
         <Button asChild size="lg" variant="outline">
@@ -39,12 +42,13 @@ export function Hero() {
             {t("cta_github")}
           </a>
         </Button>
-        <Button asChild size="lg" variant="outline">
-          <a href={ARCHITECTURE_URL} rel="noreferrer" target="_blank">
-            {t("cta_docs")}
-          </a>
-        </Button>
       </div>
+      <Link
+        className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        href="/leaderboard"
+      >
+        {t("proof")}
+      </Link>
       <div className="w-full max-w-2xl text-left">
         <Terminal lines={[...QUICK_START]} title={t("terminal_title")} />
       </div>

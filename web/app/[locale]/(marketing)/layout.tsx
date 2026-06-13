@@ -41,6 +41,12 @@ export default function MarketingLayout({
               {t("faq")}
             </a>
             <Link
+              className="transition-colors hover:text-foreground"
+              href="/integrations"
+            >
+              {t("integrations")}
+            </Link>
+            <Link
               className="hidden transition-colors hover:text-foreground sm:block"
               href="/docs"
             >

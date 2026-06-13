@@ -6,6 +6,7 @@
   "nav": {
     "how": "How it works",
     "features": "Features",
+    "integrations": "Integrations",
     "faq": "FAQ",
     "benchmarks": "Benchmarks",
     "docs": "Docs",
@@ -29,6 +30,8 @@
     "meta_description": "Install dig in one line — curl the installer, go install, or download a prebuilt binary. Local-first, checksum-verified, no account required.",
     "title": "Install dig",
     "subtitle": "One line, no account, no cloud. The installer detects your OS and architecture, verifies the checksum, and drops dig on your PATH.",
+    "agent_title": "Drive dig from your agent",
+    "agent_note": "Already using a coding agent? Pick it and copy the 10-second install — plugin, MCP config, or SDK.",
     "primary_title": "Quick install",
     "primary_note": "Downloads the latest release for your platform from GitHub and verifies its SHA256 checksum. Set DIG_VERSION to pin a version, DIG_INSTALL_DIR to choose where it lands.",
     "go_title": "With Go",
@@ -53,11 +56,13 @@
   },
   "hero": {
     "badge": "Open source · MIT · local-first",
-    "title": "Agents that keep your knowledge base in order",
-    "subtitle": "You set the policy — folder structure, naming, labels, no duplicates. dig detects drift, fixes it, and versions every change so nothing is ever lost. Runs fully on your machine.",
+    "title": "Persistent, local memory for your coding agent",
+    "subtitle": "dig gives Claude Code, Codex, Cursor — any MCP agent — a knowledge base it can search, remember across sessions, and keep organized to your rules. Fully on your machine, every change reversible.",
+    "cta_agent": "Add to your agent",
     "cta_install": "Install dig",
     "cta_github": "Star on GitHub",
     "cta_docs": "Read the architecture",
+    "proof": "98% hit@5 on LongMemEval — fully local",
     "terminal_title": "quick start"
   },
   "problem": {
@@ -117,13 +122,29 @@
     "q4": "Can I use it today?",
     "a4": "Yes. The CLI ships the full lifecycle — scan, find, organize, dedupe, drift, reconcile, watch, export, undo — plus opt-in semantic search that beats the published memory benchmarks (98.0% hit@5 on LongMemEval, fully local). It's pre-1.0 and moving fast; install it and follow what lands next.",
     "q5": "What is the license?",
-    "a5": "MIT. Open source, no strings."
+    "a5": "MIT. Open source, no strings.",
+    "q6": "Does dig work with Claude Code, Codex, or other agents?",
+    "a6": "Yes. dig ships a Claude Code plugin (/plugin marketplace add vllnt/dig), a dig mcp server for any MCP client (Cursor, Codex, opencode, …), entry docs for Codex and Gemini, and TypeScript/Python SDKs. The integrations page has the exact 10-second install per agent."
   },
   "cta": {
     "title": "Follow the build",
     "body": "dig is being built in the open, phase by phase — the safety spine first, destructive features only on top of it. Star the repo to watch it land.",
     "github": "Star on GitHub",
     "roadmap": "View the roadmap"
+  },
+  "home_integrations": {
+    "title": "Works with your agent",
+    "subtitle": "dig is harness-agnostic — one MCP server and a portable skill plug it into every coding agent. Pick yours for the exact install.",
+    "picker_label": "Your agent",
+    "works_with": "Ships with:"
+  },
+  "integrations": {
+    "meta_title": "Integrations — drive dig from any agent",
+    "meta_description": "Plug dig into Claude Code, Codex, Cursor, the Vercel AI SDK, or any MCP client — local, reversible memory and retrieval for your coding agent, installed in seconds.",
+    "title": "Drive dig from your agent",
+    "subtitle": "One MCP server, a portable skill, and thin per-harness shims. dig stays the data + memory layer — never the agent or the model.",
+    "stable_label": "Available",
+    "wip_label": "WIP"
   },
   "footer": {
     "tagline": "An open-source agent harness for knowledge bases.",

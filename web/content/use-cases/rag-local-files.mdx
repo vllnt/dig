@@ -1,0 +1,32 @@
+---
+title: RAG over your local files — no vector service, no upload
+description: Point dig at a directory and your agent can retrieve across it with hybrid search — PDFs, notes, and docs included, indexed locally, nothing uploaded to a cloud vector store.
+updated: "2026-06-14"
+---
+
+Retrieval-augmented generation usually means shipping your files to a hosted vector database. dig does RAG over the directory as it sits on disk — locally.
+
+## How it works
+
+1. **Index a directory.** `dig init ~/library && dig scan` builds a content-addressed store plus a search index over paths, labels, and **content** — PDFs and text included.
+2. **Retrieve.** `dig find "<query>" --mode hybrid --json` returns ranked results combining full-text and [semantic search](/learn/hybrid-retrieval). The `--json` surface is built for agents.
+3. **Ground the answer.** Your agent feeds those passages to the model. dig is the retriever; the agent and model do the generating.
+
+```bash
+dig init ~/library
+dig scan
+dig find "invoice acme 2024" --mode hybrid --json
+```
+
+## Why dig for RAG
+
+- **No external vector DB.** The index is a derived view over the store — `dig scan` rebuilds it. Nothing to provision or keep in sync.
+- **Nothing uploaded.** With no model endpoint configured, dig makes zero network calls. Your documents stay on your machine.
+- **Whole corpus.** Content-hash dedupe and real content indexing mean every file counts, not just Markdown.
+- **Any agent.** Reach the same index from [Claude Code](/integrations/claude-code), Codex, or the [AI SDK](/integrations/ai-sdk) over [MCP](/learn/what-is-mcp).
+
+## Start
+
+[Install dig](/install), point it at a folder, and your agent has a local retriever.
+
+[All integrations](/integrations) · [Hybrid retrieval explained](/learn/hybrid-retrieval)

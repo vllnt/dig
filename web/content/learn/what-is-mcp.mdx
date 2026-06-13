@@ -1,0 +1,31 @@
+---
+title: What is MCP (Model Context Protocol)? And how dig uses it
+description: MCP is the open protocol that lets AI agents talk to tools and data over a standard interface. dig ships an MCP server so any compatible agent can drive a knowledge base.
+updated: "2026-06-14"
+---
+
+**MCP** — the Model Context Protocol — is an open standard for connecting AI agents to tools and data through one consistent interface. Instead of a bespoke integration per app, a client (the agent) talks to any number of MCP servers (the tools), and each server advertises the tools it offers.
+
+## Why it matters
+
+Before MCP, every agent–tool pairing was custom glue. With MCP, a tool implements the protocol **once** and every MCP-capable client can use it — Claude Code, Cursor, Codex, and more. One server, the whole ecosystem.
+
+## dig as an MCP server
+
+dig ships a stdio MCP server. Register it and your agent gets the full dig surface:
+
+```json
+{ "mcpServers": { "dig": { "command": "dig", "args": ["mcp"] } } }
+```
+
+The tools it exposes:
+
+- **Read** — `dig_find` (ranked search), `dig_recall` ([budgeted memory](/learn/agent-memory)), `dig_drift`, `dig_log`, `dig_export`. These never change state.
+- **Capture** — `dig_retain` writes a note, document, or session into memory.
+- **Mutate** — `dig_org`, `dig_reconcile` (preview unless you pass `apply`), and `dig_undo`. Every change is reversible.
+
+## Getting started
+
+The fastest path is the [Claude Code plugin](/integrations/claude-code), which bundles the server for you. Any other MCP client uses the config above — see [all integrations](/integrations).
+
+[Install dig](/install) · [What is agent memory?](/learn/agent-memory)
