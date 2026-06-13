@@ -64,6 +64,7 @@ jobs:
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.CANARY_ENABLED == 'true'
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       id-token: write
     defaults:
       run:
@@ -120,6 +121,7 @@ jobs:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       id-token: write
     defaults:
       run:
