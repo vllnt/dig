@@ -82,6 +82,14 @@ else
 	( cd "$REPO_ROOT" && "$GO" build -o "$DIG_BIN" ./cmd/dig )
 fi
 
+# Restore package.json (a no-op until it's bumped) and drop the temp build dir on
+# any exit — set now, so a failing test/build can't leak it.
+cleanup() {
+	git -C "$PKG_DIR" checkout -- package.json 2>/dev/null || true
+	[ -n "$BUILT_DIR" ] && rm -rf "$BUILT_DIR"
+}
+trap cleanup EXIT
+
 # ---- 3. Install, typecheck, build, test (no mocks) --------------------------
 step "Installing + typecheck + build"
 pnpm install --frozen-lockfile=false
@@ -97,13 +105,6 @@ SHA="$(git -C "$PKG_DIR" rev-parse --short HEAD)"
 CANARY="${BASE}-canary.${SHA}"
 step "Versioning $NAME@$CANARY (tag: $TAG)"
 npm version "$CANARY" --no-git-tag-version --allow-same-version >/dev/null
-
-# Always restore package.json (and clean the temp binary) on exit, even on error.
-cleanup() {
-	git -C "$PKG_DIR" checkout -- package.json 2>/dev/null || true
-	[ -n "$BUILT_DIR" ] && rm -rf "$BUILT_DIR"
-}
-trap cleanup EXIT
 
 # ---- 5. Publish -------------------------------------------------------------
 # Scoped package -> --access public. Provenance is omitted: it requires CI OIDC
