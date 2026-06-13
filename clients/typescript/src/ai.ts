@@ -1,5 +1,5 @@
 /**
- * Vercel AI SDK helpers for @vllnt/dig. {@link digTools} turns a
+ * Vercel AI SDK helpers for @dig/client. {@link digTools} turns a
  * {@link DigClient} into a set of AI SDK tools an agent can call directly —
  * search, inspect, and (preview-gated) reorganize a dig knowledge base.
  *
@@ -8,8 +8,8 @@
  *
  * @example
  * import { generateText } from "ai";
- * import { DigClient } from "@vllnt/dig";
- * import { digTools } from "@vllnt/dig/ai";
+ * import { DigClient } from "@dig/client";
+ * import { digTools } from "@dig/client/ai";
  *
  * const dig = new DigClient();
  * await generateText({ model, prompt, tools: digTools(dig) });

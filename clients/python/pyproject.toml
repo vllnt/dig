@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "vllnt-dig"
+name = "dig-client"
 version = "0.1.0"
 description = "Python client for a local dig daemon — search, organize, reconcile, and export a knowledge base over HTTP."
 readme = "README.md"

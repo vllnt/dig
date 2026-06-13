@@ -79,8 +79,8 @@ unless `apply:true`), `dig_undo`. Each takes an optional `kb` argument. See
 (`?apply=true` to commit), plus `GET /health`. Query params mirror the CLI
 flags (`kb`, `query`, `mode`, `limit`, `budget`, `as`, `filter`, `at`); `/retain`
 takes the content as the request body. Official clients:
-[`@vllnt/dig`](../clients/typescript) (npm, with `recall()`/`retain()` and AI SDK
-`dig_recall`/`dig_retain` tools) and [`vllnt-dig`](../clients/python) (PyPI).
+[`@dig/client`](../clients/typescript) (npm, with `recall()`/`retain()` and AI SDK
+`dig_recall`/`dig_retain` tools) and [`dig-client`](../clients/python) (PyPI).
 
 ## Portable skill
 

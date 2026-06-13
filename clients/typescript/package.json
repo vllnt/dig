@@ -1,5 +1,5 @@
 {
-  "name": "@vllnt/dig",
+  "name": "@dig/client",
   "version": "0.1.0",
   "description": "TypeScript client for a local dig daemon — search, organize, reconcile, and export a knowledge base over HTTP.",
   "license": "MIT",

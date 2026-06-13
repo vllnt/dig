@@ -1,5 +1,5 @@
 /**
- * @vllnt/dig — a thin, dependency-free TypeScript client for a local dig
+ * @dig/client — a thin, dependency-free TypeScript client for a local dig
  * daemon (`dig serve`). It drives the same surface as the CLI over HTTP:
  * search, drift, history, export (read) and organize / reconcile / undo
  * (mutations, preview-by-default). Local-first: it talks only to the loopback
