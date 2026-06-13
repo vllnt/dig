@@ -92,7 +92,9 @@ jobs:
           BASE_VERSION=$(node -p "require('./package.json').version")
           SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
           npm version "${BASE_VERSION}-canary.${SHORT_SHA}" --no-git-tag-version
-          npx --yes npm@latest publish --tag canary --provenance --access public
+          # No --provenance: npm rejects sigstore provenance for PRIVATE repos.
+          # Re-add `--provenance` once vllnt/dig is public. OIDC auth is unaffected.
+          npx --yes npm@latest publish --tag canary --access public
 
   release:
     name: Publish Release
@@ -125,4 +127,6 @@ jobs:
             echo "::error::@vllnt/dig@${VERSION} is already published — bump clients/typescript/package.json before releasing."
             exit 1
           fi
-          npx --yes npm@latest publish --tag latest --provenance --access public
+          # No --provenance while the repo is private (see the canary job). Re-add
+          # `--provenance` once vllnt/dig is public.
+          npx --yes npm@latest publish --tag latest --access public

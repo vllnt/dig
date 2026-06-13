@@ -8,13 +8,15 @@ All notable changes to dig are documented here. The format is based on
 
 ### Added
 
-- **Canary release channel** (`canary.yml`) — every push to `main` publishes
-  bleeding-edge builds of all three artifacts: a rolling `canary` GitHub
-  prerelease of the cross-compiled CLI (GoReleaser snapshot; `dig --version`
-  reports `X.Y.Z-canary.<sha>`), `@vllnt/dig@canary` on npm, and `dig-client`
-  `.devN` on PyPI. The CLI canary runs on `GITHUB_TOKEN` alone; the npm/PyPI
-  canaries use OIDC trusted publishing and stay dormant until `CANARY_ENABLED`
-  is set. Stable releases stay tag-driven. See [docs/RELEASING.md](docs/RELEASING.md).
+- **Canary release channel** — every push to `main` publishes bleeding-edge
+  builds of all three artifacts: a rolling `canary` GitHub prerelease of the
+  cross-compiled CLI (`canary.yml`; `dig --version` reports `X.Y.Z-canary.<sha>`),
+  `@vllnt/dig@canary` on npm (`npm.yml`), and `dig-client` `.devN` on PyPI
+  (`pypi.yml`). npm and PyPI keep canary + release in one file each (OIDC trusted
+  publishing, no tokens), gated on `CANARY_ENABLED`. Provenance/attestations are
+  off while the repo is private. Stable releases are tag-driven and gated behind
+  maintainer approval — **canary mode is the default** (see
+  `.claude/rules/release.md`). Runbook: [docs/RELEASING.md](docs/RELEASING.md).
 - **`dig retain [file]`** — the agent-memory capture primitive: writes content (a
   file argument, stdin, or a rendered session via `--transcript`) into the KB at a
   dated, content-addressed `memory/` path (`--as` to override, `--date` for
