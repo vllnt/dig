@@ -1,0 +1,34 @@
+name: gitleaks
+
+# Secret-scanning guard: fails the check if any committed content contains a
+# secret. Uses the gitleaks CLI directly — the official gitleaks-action requires
+# a paid license for GitHub organizations; the CLI is free (MIT).
+#
+# Scans the committed history (`gitleaks git`), not the working tree, so build
+# artifacts (e.g. web/.next preview keys) never trip it.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so every commit is scanned
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Install gitleaks
+        run: |
+          go install github.com/zricethezav/gitleaks/v8@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+      - name: Scan committed history for secrets
+        run: gitleaks git . --redact --no-banner
