@@ -41,7 +41,10 @@ checksum:
   name_template: checksums.txt
 
 snapshot:
-  version_template: "{{ incpatch .Version }}-next"
+  # Used by canary builds (.github/workflows/canary.yml) and local snapshots.
+  # Stable releases stay tag-driven. The sha stamp makes a canary binary's
+  # `dig --version` self-identifying.
+  version_template: "{{ incpatch .Version }}-canary.{{ .ShortCommit }}"
 
 changelog:
   sort: asc

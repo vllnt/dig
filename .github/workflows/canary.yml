@@ -1,0 +1,175 @@
+name: Canary
+
+# Canary builds ship automatically on every push to main, the bleeding-edge
+# channel for dig's three artifacts: the Go CLI (a rolling prerelease), the npm
+# SDK (@vllnt/dig@canary), and the Python SDK (a .devN release). Stable releases
+# stay tag-driven (release.yml → GoReleaser → npm-publish.yml / pypi-publish.yml).
+#
+# Auth: the Go CLI canary needs only GITHUB_TOKEN and runs immediately. The npm
+# and PyPI canaries publish via OIDC trusted publishing (no token) and are gated
+# on the CANARY_ENABLED repo variable, so they stay dormant until a trusted
+# publisher is configured for @vllnt/dig (npmjs.org) and vllnt-dig (pypi.org).
+# See docs/RELEASING.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cmd/**"
+      - "internal/**"
+      - "clients/**"
+      - "go.mod"
+      - "go.sum"
+      - ".goreleaser.yaml"
+      - ".github/workflows/canary.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: canary-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Build
+        run: go build ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Test
+        run: go test ./...
+
+  cli:
+    name: Canary CLI
+    needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Build canary binaries (GoReleaser snapshot)
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --snapshot --clean
+      - name: Publish rolling canary prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          # Move the rolling "canary" tag + release to this commit.
+          gh release delete canary --yes --cleanup-tag 2>/dev/null || true
+          gh release create canary \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "Canary (main@${SHORT_SHA})" \
+            --notes "Rolling canary built from \`main@${SHORT_SHA}\`. Bleeding edge — **not for production**. For stable installs see the README." \
+            dist/dig_*.tar.gz dist/dig_*.zip dist/checksums.txt
+
+  npm:
+    name: Canary npm
+    needs: quality
+    if: vars.CANARY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: clients/typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Build dig
+        run: go build -o "$RUNNER_TEMP/dig" ./cmd/dig
+        working-directory: .
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm typecheck
+      - run: pnpm build
+      - name: Test against a real dig serve
+        run: pnpm test
+        env:
+          DIG_BIN: ${{ runner.temp }}/dig
+      - name: Publish canary to npm (OIDC trusted publishing)
+        run: |
+          # Force OIDC: drop any token auth so npm uses trusted publishing.
+          sed -i '/_authToken/d' "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}" 2>/dev/null || true
+          unset NODE_AUTH_TOKEN
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          npm version "${BASE_VERSION}-canary.${SHORT_SHA}" --no-git-tag-version
+          npx --yes npm@latest publish --tag canary --provenance --access public
+
+  pypi:
+    name: Canary PyPI
+    needs: quality
+    if: vars.CANARY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    defaults:
+      run:
+        working-directory: clients/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - name: Build dig
+        run: go build -o "$RUNNER_TEMP/dig" ./cmd/dig
+        working-directory: .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test against a real dig serve
+        run: python -m unittest discover -s tests -v
+        env:
+          DIG_BIN: ${{ runner.temp }}/dig
+      - name: Stamp a PEP 440 dev version
+        env:
+          RUN: ${{ github.run_number }}
+        run: |
+          python - <<'PY'
+          import os, pathlib, re
+          path = pathlib.Path("pyproject.toml")
+          text = path.read_text()
+          run = os.environ["RUN"]
+          text = re.sub(
+              r'(?m)^version = "([^"]+)"',
+              lambda m: f'version = "{m.group(1)}.dev{run}"',
+              text,
+              count=1,
+          )
+          path.write_text(text)
+          PY
+      - name: Build distributions
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: Publish canary to PyPI (OIDC trusted publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: clients/python/dist
