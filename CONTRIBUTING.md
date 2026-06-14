@@ -1,7 +1,7 @@
 # Contributing to dig
 
-Thanks for your interest. dig is an open, local, reversible data/retrieval/memory
-primitive for AI agents — a Go CLI over a content-addressed store. This guide covers
+Thanks for your interest. dig is an open, local, reversible knowledge-base layer
+for AI agents — a Go CLI over a content-addressed store. This guide covers
 how to build it, the conventions we hold, and how to land a change.
 
 ## Project layout

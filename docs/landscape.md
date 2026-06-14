@@ -1,6 +1,6 @@
 # Landscape & positioning
 
-Prior art for `dig` — an **open-source, local-first agent harness** that manages a knowledge base: retrieve fast, organize by policy (naming / foldering / labels), dedupe, version everything, **detect & reconcile drift**, and do it **safely in parallel** (isolate → merge → escalate) while humans keep editing with their own tools.
+Prior art for `dig` — an **open-source, local-first KB-management harness**: retrieve fast, organize by policy (naming / foldering / labels), dedupe, version everything, **detect & reconcile drift**, and do it **safely in parallel** (isolate → merge → escalate) while humans keep editing with their own tools.
 
 Six camps surround the problem. Each owns one or two slices; **none cover the whole job, none reconcile structural drift, and none operate concurrently with merge + escalation.** That, plus being **open + local + small-model-driven**, is dig's moat.
 
@@ -126,7 +126,7 @@ Every MemPalace 1.x command exercised on an identical 13-file messy KB (invoices
 
 **Measured footprint:** dig 12 MB single binary, 244 KB store · MemPalace 330 MB venv, 620 KB palace. Ingest 0.05 s vs 24 s. Query 11 ms vs 1.9 s.
 
-**Honest read:** dig now wins or matches on every function MemPalace has for *files*, plus the entire management surface MemPalace lacks. MemPalace's two historic strengths are now both contested: true embedding semantics — dig's opt-in vector driver is **built and benchmarked** (hybrid hit@5 98.0% vs MemPalace's 96.6% on the full LongMemEval-S set, 2026-06); and turnkey agent-memory glue (session retention, wake-up context, MCP server, transcript splitting) — which dig **now chases too** (the `agent-memory` roadmap phase). The reason is sovereignty: the goal is to use your own system end-to-end, not rent the memory layer from anyone.
+**Honest read:** dig now wins or matches on every function MemPalace has for *files*, plus the entire management surface MemPalace lacks. MemPalace's two historic strengths are now both contested: true embedding semantics — dig's opt-in vector driver is **built and benchmarked** (hybrid hit@5 98.0% vs MemPalace's 96.6% on the full LongMemEval-S set, 2026-06); and turnkey agent-memory glue (session retention, wake-up context, MCP server, transcript splitting) — which dig **exposes as thin glue over the same store** (the `agent-memory` roadmap phase), not a memory engine of its own. dig is not a Camp-E product: it serves the recall *substrate* these tools sit on. The reason is sovereignty — use your own system end-to-end, never rent the recall layer.
 
 ---
 
@@ -169,7 +169,7 @@ dig aims to be **the pi.dev of KB management** — tiny core, rich ecosystem. Th
 - **AI stays opt-in, local, and small.** Camp C proves content-aware naming is valuable; Camp F proves the closed/cloud/big-model version is the default trap. dig inverts it: deterministic core, AI as an opt-in layer over strong tools, OpenAI-compatible endpoint defaulting to localhost — so a 7B model is enough and `off` still works.
 - **Open + local is a moat, not a footnote.** Camp F's leaders (Glean, Dust) are closed cloud SaaS on enterprise data. An open, self-hosted, no-telemetry tool that never sends the KB anywhere is a different value proposition for anyone who can't or won't ship their knowledge base to a vendor.
 - **Extensibility is the platform bet.** Camps A–F are products; dig aims to be a *platform* — the pi.dev of KB management. Typed seams (storage, events, extraction, …) mean a company adapts dig (own object store, own backup) without forking, and the safety spine (every extension only *proposes a changeset*) makes a third-party ecosystem tolerable. That combination — open + local + extensible + reversible — is what none of the six camps offer.
-- **One-line positioning:** *"an open, local, extensible agent harness that keeps your knowledge base organized to your rules — detects drift, fixes it reversibly, runs in parallel, works with a small local model, and serves as your own agent's memory so you never rent the recall layer."*
+- **One-line positioning:** *"an open, local, extensible harness that keeps your knowledge base organized to your rules — detects drift, fixes it reversibly, runs in parallel, works with a small local model; a KB kept that clean doubles as recall that doesn't rot, so you never rent the memory layer."*
 
 ## v0 wedge
 

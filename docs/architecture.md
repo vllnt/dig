@@ -253,10 +253,12 @@ chunk_overlap    = 200                  # overlap between chunks (chars); changi
   on a handful of known pairs before trusting one (gpustack's bge-m3 GGUF is sound).
 - Scores against the standard memory benchmarks live in [evals.md](evals.md).
 
-### Agent memory (shipped — capture + recall)
+### Memory falls out of it (capture + recall)
 
-The same store + retrieval that organize files make dig an agent's memory layer.
-Two primitives, both built on the deterministic spine — no new storage model:
+Because the same store + retrieval that organize files already hold and rank
+everything, an agent's memory falls out for free — capture and recall, two
+primitives on the deterministic spine, no new storage model. dig serves the
+recall; the agent does the answering:
 
 ```
   capture                                   recall

@@ -1,6 +1,6 @@
 # dig
 
-> Open, local, reversible **data + retrieval + memory primitive for AI agents**. A Go CLI over a content-addressed store: organize a knowledge base to a declarative policy, retrieve it fast (deterministic full-text + opt-in semantic/hybrid), reconcile drift, and remember across sessions — every mutation journaled and `undo`-able. Local-first and offline by default; AI is an opt-in layer that only ever proposes through the same reversible spine.
+> Open, local, reversible **knowledge-base layer for AI agents**. A Go CLI over a content-addressed store: organize a knowledge base to a declarative policy, retrieve it fast (deterministic full-text + opt-in semantic/hybrid), and reconcile drift — every mutation journaled and `undo`-able. A KB kept this clean doubles as agent memory that doesn't rot: it serves recall, never answers. Local-first and offline by default; AI is an opt-in layer that only ever proposes through the same reversible spine.
 
 Key facts:
 - Language: Go (`cmd/dig`, `internal/`). Pure-Go, CGO-free, single static binary.

@@ -1,6 +1,6 @@
 # dig
 
-> The open, local, reversible **data layer for AI agents** — it keeps a knowledge base in order *and* serves as your agent's memory. You set the policy (folder structure, naming, labels, no duplicates); `dig`'s agents enforce it, **detect drift, fix it, and version every change** so nothing is ever lost. It **retrieves fast** (hybrid full-text + semantic), **remembers across sessions**, and plugs into any agent or framework via **MCP + native SDKs**. Humans keep editing with their own tools — `dig` reconciles around them instead of locking them out, and runs many agents in parallel without colliding. **Open source, runs fully on your machine, works with any OpenAI-compatible model — including a small local one.**
+> The open, local, reversible **knowledge-base layer for AI agents** — it keeps a knowledge base in order, organized to *your* policy (folder structure, naming, labels, no duplicates). `dig`'s agents enforce it, **detect drift, fix it, and version every change** so nothing is ever lost, and **retrieve it fast** (hybrid full-text + semantic). A knowledge base kept this clean is one your agent can recall across sessions — so `dig` doubles as **memory that doesn't rot**: it *serves recall, never answers*. It plugs into any agent or framework via **MCP + native SDKs**. Humans keep editing with their own tools — `dig` reconciles around them instead of locking them out, and runs many agents in parallel without colliding. **Open source, runs fully on your machine, works with any OpenAI-compatible model — including a small local one.**
 
 A company's or a person's knowledge base rots: files land in the wrong place, names drift from convention, duplicates pile up, structure erodes. Keeping it tidy is real, recurring work most people would rather **delegate**. `dig` is that delegate — an agent harness that does the librarian's whole job (**find, organize, dedupe, label, version, reconcile**) over one content-addressed core, safely, even while humans and other agents touch the same library.
 
@@ -136,7 +136,7 @@ dig log
 | `dig retain [file]` | Capture content (a file, stdin, or a rendered agent session via `--transcript`) into the KB and index it — the agent-memory capture primitive; dated `memory/` path by default (`--as`, `--date`) | planned |
 | `dig recall <query>` | Emit a token-budgeted, provenance-tagged context pack for a query — the agent-memory recall primitive (`--budget`, `--mode`, `--json`) | planned |
 | `dig embed` | Drain the semantic-index backlog in the background (resumable; `watch` also drains it per tick) | planned |
-| `dig mcp` | Run dig as an MCP server (stdio) — exposes find/recall/retain/drift/log/export + org/reconcile/undo as tools for any agent harness (dig as a memory layer) | planned |
+| `dig mcp` | Run dig as an MCP server (stdio) — exposes find/recall/retain/drift/log/export + org/reconcile/undo as tools for any agent harness | planned |
 | `dig serve` | Run a localhost HTTP+JSON daemon over the CLI — find/recall/drift/log/export + retain/org/reconcile/undo, for SDKs/apps that embed dig without shelling out (loopback only) | planned |
 | `dig export` | Emit a reproducible, manifest-pinned dataset (JSONL etc.) for ML training | planned |
 | `dig org` | Apply organization policy (move / rename / label). `--dry-run` previews | planned |

@@ -71,7 +71,7 @@
     "headline_label": "{metric} on {benchmark}",
     "headline_bar": "vs. {system}'s published {bar}% on the same benchmark and model class",
     "baselines_title": "Published numbers from other systems",
-    "baselines_intro": "Shown for context. Retrieval recall and LLM-judged QA accuracy are different measurements — recall is structurally higher, since finding the evidence is easier than answering from it. dig reports retrieval metrics because dig is the retrieval/memory layer; answering belongs to the agent driving it.",
+    "baselines_intro": "Shown for context. Retrieval recall and LLM-judged QA accuracy are different measurements — recall is structurally higher, since finding the evidence is easier than answering from it. dig reports retrieval metrics because dig is the retrieval layer serving knowledge-base management; answering belongs to the agent driving it.",
     "method_title": "Method",
     "method_body": "Each benchmark is mapped onto a real dig knowledge base (one file per session or turn), indexed with the production FTS + vector pipeline, and scored per question against its evidence with standard IR metrics (recall@k, hit@k, NDCG@10, MRR). FTS is the deterministic default; vector and hybrid (Reciprocal Rank Fusion) opt in via a [retrieval] policy. Full methodology and reproduction commands live in docs/evals.md."
   },
@@ -141,7 +141,7 @@
     "q3": "Will it overwrite my edits?",
     "a3": "Never silently. dig observes direct edits, folds them into history, and reconciles them against policy. A deliberate human change is escalated, not overridden.",
     "q4": "Can I use it today?",
-    "a4": "Yes. The CLI ships the full lifecycle — scan, find, organize, dedupe, drift, reconcile, watch, export, undo — plus opt-in semantic search that beats the published memory benchmarks (98.0% hit@5 on LongMemEval, fully local). It's pre-1.0 and moving fast; install it and follow what lands next.",
+    "a4": "Yes. The CLI ships the full lifecycle — scan, find, organize, dedupe, drift, reconcile, watch, export, undo — plus opt-in semantic search that beats the published retrieval benchmarks (98.0% hit@5 on LongMemEval, fully local). It's pre-1.0 and moving fast; install it and follow what lands next.",
     "q5": "What is the license?",
     "a5": "MIT. Open source, no strings.",
     "q6": "Does dig work with Claude Code, Codex, or other agents?",

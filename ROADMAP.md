@@ -1,6 +1,6 @@
 # Roadmap — dig
 
-> The open, local, reversible **data + retrieval + memory primitive for AI agents** — organize a knowledge base to *your* mental model, retrieve it fast, remember across sessions, and plug it into any agent or framework (MCP first, then native SDKs). Configurable and extensible at every stage, bring-your-own model (PARA, GTD, Memory Palace, or your own). Your own system end-to-end — and the data layer others build on.
+> The open, local, reversible **knowledge-base layer for AI agents** — organize a knowledge base to *your* mental model and retrieve it fast, then plug it into any agent or framework (MCP first, then native SDKs). Configurable and extensible at every stage, bring-your-own organization model (PARA, GTD, Memory Palace, or your own). A KB kept this clean is one your agent can recall across sessions — memory that doesn't rot falls out of the management, never the other way around. Your own system end-to-end — and the data layer others build on.
 
 **Now:** agent-memory loop dogfooding — finished Claude Code sessions auto-capture (SessionEnd hook → `dig retain --transcript`) into a KB that `dig recall` serves back budgeted; capture/recall also exposed as `dig_retain`/`dig_recall` MCP tools. Integration surface shipped (MCP · daemon · TS/Python SDKs · AI-SDK tools · Claude plugin). DONE: semantic-retrieval, public-release, site-launch, eval-harness, harness-plugins core, public-extensibility core, integrations core.
 **Last updated:** 2026-06-14
@@ -247,7 +247,7 @@
 
 ## agent-memory [PLANNED]
 
-**Goal:** dig is the user's own agent memory — it captures their agent sessions, serves token-budgeted recall to any harness, and syncs across devices, so they never reach for an external memory tool (the sovereignty bet — see the reversed non-goal in docs/landscape.md). Tasks ordered by dogfood value: capture + recall first.
+**Goal:** dig doubles as the user's own agent memory — because it already manages and ranks the KB, it captures their agent sessions and serves token-budgeted recall to any harness (thin glue over the store, not a memory engine of its own), synced across devices, so they never rent an external memory tool (the sovereignty bet — see docs/landscape.md). Tasks ordered by dogfood value: capture + recall first.
 **Exit criteria:** an opt-in hook retains Claude Code sessions into a KB; `dig recall <q>` returns a token-budgeted, provenance-tagged context bundle; the same memory is reachable from a second device and through MCP; dig's own daily agent work runs on it.
 
 - [x] agent-memory.1 Session retention — `dig retain` is the capture primitive (file / stdin / `--transcript`), writing to a dated `memory/` path (or `--as`), scanned + indexed as a reversible, path-escape-guarded changeset so `dig find`/`dig recall` surface it. `--transcript` renders a Claude Code session JSONL (internal/transcript) to readable markdown — user + assistant turns, tool calls summarized, injected noise (thinking, tool output, system reminders, isMeta/skill bodies) dropped. A SessionEnd plugin hook (hooks/retain-session.sh, double opt-in via DIG_RETAIN_SESSIONS + a `.dig` at cwd, fail-open) auto-captures finished Claude Code sessions into memory/sessions/. Real E2E: renderer fixtures, CLI capture→recall→undo, and the hook script end-to-end. Codex/Cursor/Gemini renderers are additive next (2026-06-13)
