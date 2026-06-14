@@ -57,6 +57,7 @@ on   = "changeset.committed"
 exec = "restic backup {changed_paths}"   # or  url = "https://hooks.internal/dig"
 ```
 - **Isolation:** OS process / network. **Trust:** you wrote the command. **Use for:** backups, notifications, mirrors.
+- **`exec` sinks are gated:** they run a shell command, so dig only fires them when `DIG_ALLOW_EXEC_SINKS=1` is set (default-deny code execution). `url` webhook sinks need no gate. Sinks *observe* — a sink failure warns, it never rolls back the changeset. (Shipped — see `SECURITY.md`.)
 
 ### T1 — PATH subcommand (git-style)
 Any executable named `dig-<name>` on `$PATH` becomes `dig <name>`. Zero protocol, any language.
@@ -142,8 +143,8 @@ Extensions extend the *edges* (storage, events, extraction, matching, verbs, ind
 
 These X-phases are extension-specific sub-tracks of the core roadmap in the README: **X0 lands with core P0** (the seams are defined as the core is built — first-party backends *are* the interfaces), and **X1–X4 are the public-transport work grouped under README P7**.
 
-- [ ] **X0 — seams (with P0):** define the Go interfaces (`StorageBackend`, `EventSink`, `Extractor`, …); first-party impls compiled in (local FS store, FTS5 index, regex/OCR extractors).
-- [ ] **X1 — T0 + T1:** declarative event sinks/exec + PATH subcommands. Covers "backup" and "save elsewhere via a script" with zero plugin host.
+- [x] **X0 — seams (with P0):** the Go interfaces (`StorageBackend`, `EventSink`, `IndexBackend`, …) are defined and first-party impls are compiled in (local FS store, FTS5 + vector index). Shipped.
+- [~] **X1 — T0 + T1:** **T0 declarative event sinks (webhook + `DIG_ALLOW_EXEC_SINKS`-gated exec) are shipped**; T1 PATH subcommands (`dig-<name>`) are still to come.
 - [ ] **X2 — registry:** `dig ext` commands + manifest + install-from-git.
 - [ ] **X3 — T2 gRPC:** first robust out-of-tree backend (e.g. a company blob store).
 - [ ] **X4 — T3 WASM + signing:** sandboxed third-party extensions; public catalog.

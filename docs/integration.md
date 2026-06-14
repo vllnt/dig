@@ -51,6 +51,35 @@ Rules of the contract:
 - **Local-first**: with no `[retrieval]`/`[llm]` endpoint configured, dig makes
   zero network calls.
 
+## Bootstrapping a KB
+
+The table above is the steady-state surface; an agent setting a KB up also uses:
+
+- **`dig init <dir>`** — create the KB (writes `.dig/`).
+- **`dig scan`** — index files already on disk. `retain` only indexes what it
+  captures, so existing content needs a `scan` first.
+- **`dig embed`** — drain the semantic-index backlog when `[retrieval]` vector or
+  hybrid mode is configured (`watch` also drains it per tick).
+- **`dig watch`** — run continuously: observe edits, reconcile, surface escalations.
+
+Parallel/isolated work (`dig work` views + `dig merge`) is for harnesses running
+many writers on one KB; single-writer integrations don't need it.
+
+## Errors
+
+One error model, because there is one surface (the daemon and MCP server run the
+same CLI in-process):
+
+- **CLI** — non-zero exit code; the message is **plain text on stderr**, stdout
+  stays empty. `--json` shapes *success* output only, never errors — branch on
+  the exit code, don't parse stderr as JSON.
+- **HTTP daemon (`dig serve`)** — a failed command is **HTTP 400** with body
+  `{"error": "<message>"}`; a wrong method is **405** (`{"error": "use POST"}`).
+  `GET /health` is the liveness probe. Success is the command's raw JSON, or
+  `{"output": "<text>"}` for commands that emit plain text.
+- **MCP (`dig mcp`)** — a failing tool returns a JSON-RPC error; an unknown tool
+  name is rejected.
+
 ## Recall & capture (memory as a consequence)
 
 Because dig already holds and ranks the KB, it doubles as an agent's recall
