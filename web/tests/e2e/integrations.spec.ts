@@ -12,9 +12,9 @@ test("the homepage selector emits the exact install for the chosen agent", async
   const section = page.locator("#integrations");
   await section.scrollIntoViewIfNeeded();
 
-  // Default is Claude Code — the plugin one-liner appears before any click.
+  // Default is Claude Code — the plugin CLI command appears before any click.
   await expect(
-    section.getByText("/plugin marketplace add vllnt/dig"),
+    section.getByText("claude plugin marketplace add vllnt/dig"),
   ).toBeVisible();
 
   // Pick "Any MCP client" → the MCP server config replaces the snippet.
@@ -35,7 +35,7 @@ test("a visitor browses the integrations hub and opens an agent guide", async ({
 
   await page.getByRole("link", { name: /Claude Code/ }).click();
   await expect(page).toHaveURL(/\/integrations\/claude-code$/);
-  await expect(page.getByText("/plugin install dig@dig")).toBeVisible();
+  await expect(page.getByText("claude plugin install dig@dig")).toBeVisible();
   await expect(page.getByText("dig_recall")).toBeVisible();
 });
 
@@ -68,6 +68,6 @@ test("the install page lets you pick an agent and copy its install", async ({
     page.getByRole("heading", { name: "Drive dig from your agent" }),
   ).toBeVisible();
   await expect(
-    page.getByText("/plugin marketplace add vllnt/dig"),
+    page.getByText("claude plugin marketplace add vllnt/dig"),
   ).toBeVisible();
 });

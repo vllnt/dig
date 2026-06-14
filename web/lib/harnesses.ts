@@ -68,31 +68,65 @@ const HARNESSES_DATA = [
     docPath: "/.claude-plugin",
     install: [
       {
-        content: "add the dig marketplace, then install the plugin",
+        content:
+          "add dig to Claude Code — installs the skill + the dig mcp server",
         type: "comment",
       },
-      { content: "/plugin marketplace add vllnt/dig", type: "command" },
-      { content: "/plugin install dig@dig", type: "command" },
-      { content: "", type: "output" },
-      {
-        content: "bundles the dig skill + `dig mcp` + a SessionEnd memory hook",
-        type: "comment",
-      },
+      { content: "claude plugin marketplace add vllnt/dig", type: "command" },
+      { content: "claude plugin install dig@dig", type: "command" },
     ],
     mcp: DIG_MCP_SERVER,
     name: "Claude Code",
     slug: "claude-code",
     status: "stable",
     unlocks:
-      "A slash-command plugin that bundles the dig skill, the `dig mcp` server, and a SessionEnd hook that captures finished sessions into memory.",
+      "Two CLI commands add the dig plugin to Claude Code — bundling the dig skill, the `dig mcp` server, and a SessionEnd hook that captures finished sessions into memory.",
+  },
+  {
+    docPath: "/.codex-plugin",
+    install: [
+      {
+        content: "add dig to Codex — installs the skill + the dig mcp server",
+        type: "comment",
+      },
+      { content: "codex plugin marketplace add vllnt/dig", type: "command" },
+    ],
+    mcp: DIG_MCP_SERVER,
+    name: "Codex",
+    slug: "codex",
+    status: "stable",
+    unlocks:
+      "One CLI command adds the dig plugin to Codex — it bundles the dig skill and the `dig mcp` server, ready to use with no extra config.",
+  },
+  {
+    docPath: "/.cursor/rules/dig.mdc",
+    install: [
+      {
+        content:
+          "Cursor: add the dig MCP server (Settings → MCP, or ~/.cursor/mcp.json)",
+        type: "comment",
+      },
+      {
+        content:
+          '{ "mcpServers": { "dig": { "command": "dig", "args": ["mcp"] } } }',
+        type: "output",
+      },
+    ],
+    mcp: DIG_MCP_SERVER,
+    name: "Cursor",
+    slug: "cursor",
+    status: "stable",
+    unlocks:
+      "A `.cursor/rules/dig.mdc` rule points the agent at the portable dig skill; register the `dig mcp` server to give Cursor the full tool surface.",
   },
   {
     docPath: "/docs/integration.md",
     install: [
-      {
-        content: "register the dig MCP server with your client",
-        type: "comment",
-      },
+      { content: "Claude Code or Codex — one command:", type: "comment" },
+      { content: "claude mcp add dig -- dig mcp", type: "command" },
+      { content: "codex mcp add dig -- dig mcp", type: "command" },
+      { content: "", type: "output" },
+      { content: "any other MCP client — config:", type: "comment" },
       {
         content:
           '{ "mcpServers": { "dig": { "command": "dig", "args": ["mcp"] } } }',
@@ -107,58 +141,12 @@ const HARNESSES_DATA = [
       "One stdio server — `dig mcp` — exposes find, recall, retain, drift, log, export, org, reconcile, and undo as MCP tools to any compatible client.",
   },
   {
-    docPath: "/.cursor/rules/dig.mdc",
-    install: [
-      {
-        content: "dig ships a Cursor rule in the repo; add the MCP server too",
-        type: "comment",
-      },
-      {
-        content:
-          '{ "mcpServers": { "dig": { "command": "dig", "args": ["mcp"] } } }',
-        type: "output",
-      },
-    ],
-    mcp: DIG_MCP_SERVER,
-    name: "Cursor",
-    slug: "cursor",
-    status: "stable",
-    unlocks:
-      "A `.cursor/rules/dig.mdc` rule points the agent at the portable dig skill; register `dig mcp` to give Cursor the full tool surface.",
-  },
-  {
-    docPath: "/AGENTS.md",
-    install: [
-      {
-        content: "Codex reads AGENTS.md, which points at the dig skill",
-        type: "comment",
-      },
-      {
-        content:
-          "# add to your project's AGENTS.md, or register the MCP server:",
-        type: "comment",
-      },
-      {
-        content:
-          '{ "mcpServers": { "dig": { "command": "dig", "args": ["mcp"] } } }',
-        type: "output",
-      },
-    ],
-    mcp: DIG_MCP_SERVER,
-    name: "Codex",
-    slug: "codex",
-    status: "stable",
-    unlocks:
-      "Codex reads the canonical `AGENTS.md`, which points at the portable dig skill + integration contract. A native Codex plugin is in progress; MCP works today.",
-  },
-  {
     docPath: "/GEMINI.md",
     install: [
       {
-        content: "Gemini reads GEMINI.md → AGENTS.md → the dig skill",
+        content: "Gemini reads GEMINI.md; register the dig MCP server too",
         type: "comment",
       },
-      { content: "# or register the MCP server:", type: "comment" },
       {
         content:
           '{ "mcpServers": { "dig": { "command": "dig", "args": ["mcp"] } } }',

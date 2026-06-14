@@ -27,24 +27,25 @@ test("landing page loads with zero console errors and the hero sells dig", async
 test("primary CTA targets the GitHub repo in a new tab", async ({ page }) => {
   await page.goto("/");
 
-  const cta = page.getByRole("link", { name: "Star on GitHub" }).first();
+  const cta = page.getByRole("link", { name: /Star on GitHub/ }).first();
   await expect(cta).toBeVisible();
   await expect(cta).toHaveAttribute("href", GITHUB_URL);
   await expect(cta).toHaveAttribute("target", "_blank");
 });
 
-test("user can jump to the FAQ via header nav and read an answer", async ({
+test("user can reach Integrations via header nav", async ({
   isMobile,
   page,
 }) => {
-  test.skip(isMobile, "section nav links are hidden on mobile");
+  test.skip(isMobile, "secondary nav links are hidden on mobile");
 
   await page.goto("/");
-  await page.getByRole("link", { name: "FAQ" }).click();
+  await page.getByRole("link", { name: "Integrations" }).click();
 
+  await expect(page).toHaveURL(/\/integrations$/);
   await expect(
-    page.getByText("Is dig a RAG or Q&A assistant?"),
-  ).toBeInViewport();
+    page.getByRole("heading", { level: 1, name: "Drive dig from your agent" }),
+  ).toBeVisible();
 });
 
 test("cookie consent can be declined and stays decided after reload", async ({
