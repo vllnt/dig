@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { CommandTable } from "@/components/docs/command-table";
+import { DocsSidebar } from "@/components/docs/docs-sidebar";
+import { Integrate } from "@/components/docs/integrate";
 import { PolicyReference } from "@/components/docs/policy-reference";
 import { QUICKSTART } from "@/lib/docs";
 import { buildCanonicalUrl } from "@/lib/site";
@@ -35,40 +37,53 @@ export default async function DocsPage({
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "docs" });
 
+  const navItems = [
+    { href: "#quickstart", label: t("quickstart_title") },
+    { href: "#commands", label: t("commands_title") },
+    { href: "#policy", label: t("policy_title") },
+    { href: "#integrate", label: t("integrate_title") },
+  ];
+
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-16 px-6 py-24">
-      <header className="flex flex-col gap-4">
-        <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-          {t("title")}
-        </h1>
-        <p className="text-pretty text-lg text-muted-foreground">
-          {t("subtitle")}
-        </p>
-      </header>
+    <div className="mx-auto flex max-w-6xl gap-12 px-6 py-16">
+      <DocsSidebar items={navItems} />
 
-      <section className="flex flex-col gap-4" id="quickstart">
-        <h2 className="scroll-mt-20 text-2xl font-semibold tracking-tight">
-          {t("quickstart_title")}
-        </h2>
-        <p className="text-muted-foreground">{t("quickstart_body")}</p>
-        <Terminal lines={QUICKSTART_LINES} title="quick start" />
-      </section>
+      <div className="flex min-w-0 flex-1 flex-col gap-16">
+        <header className="flex flex-col gap-4">
+          <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
+            {t("title")}
+          </h1>
+          <p className="text-pretty text-lg text-muted-foreground">
+            {t("subtitle")}
+          </p>
+        </header>
 
-      <section className="flex flex-col gap-4" id="commands">
-        <h2 className="scroll-mt-20 text-2xl font-semibold tracking-tight">
-          {t("commands_title")}
-        </h2>
-        <p className="text-muted-foreground">{t("commands_body")}</p>
-        <CommandTable />
-      </section>
+        <section className="flex scroll-mt-20 flex-col gap-4" id="quickstart">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {t("quickstart_title")}
+          </h2>
+          <p className="text-muted-foreground">{t("quickstart_body")}</p>
+          <Terminal lines={QUICKSTART_LINES} title="quick start" />
+        </section>
 
-      <section className="flex flex-col gap-4" id="policy">
-        <h2 className="scroll-mt-20 text-2xl font-semibold tracking-tight">
-          {t("policy_title")}
-        </h2>
-        <p className="text-muted-foreground">{t("policy_body")}</p>
-        <PolicyReference />
-      </section>
+        <section className="flex scroll-mt-20 flex-col gap-4" id="commands">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {t("commands_title")}
+          </h2>
+          <p className="text-muted-foreground">{t("commands_body")}</p>
+          <CommandTable />
+        </section>
+
+        <section className="flex scroll-mt-20 flex-col gap-4" id="policy">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {t("policy_title")}
+          </h2>
+          <p className="text-muted-foreground">{t("policy_body")}</p>
+          <PolicyReference />
+        </section>
+
+        <Integrate />
+      </div>
     </div>
   );
 }

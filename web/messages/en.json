@@ -15,15 +15,25 @@
   },
   "docs": {
     "meta_title": "Docs — dig",
-    "meta_description": "dig user docs: quickstart, the full command reference, and the policy file reference. Local-first, reversible knowledge-base management.",
+    "meta_description": "dig user docs: quickstart, the full command reference, the policy file, and how to drive dig from any agent (MCP, the Vercel AI SDK, and the TypeScript/Python SDKs). Local-first, reversible.",
     "title": "Docs",
-    "subtitle": "Everything you need to drive dig — the first run, every command, and the policy file that decides where things live.",
+    "subtitle": "Everything you need to drive dig — the first run, every command, the policy file, and how any agent plugs in.",
     "quickstart_title": "Quickstart",
     "quickstart_body": "Index a directory, search it, reorganize by policy, and step back — all reversible.",
     "commands_title": "Command reference",
     "commands_body": "Read commands (find, export, drift, log) support --json for other harnesses. Mutating commands (org, dedup, reconcile, merge, undo) journal every change.",
     "policy_title": "Policy reference",
-    "policy_body": "The policy lives at .dig/policy.toml and travels with the KB. Validation is strict — unknown keys and path escapes fail loudly."
+    "policy_body": "The policy lives at .dig/policy.toml and travels with the KB. Validation is strict — unknown keys and path escapes fail loudly.",
+    "integrate_title": "Integrate",
+    "integrate_body": "Drive dig from any agent, app, or script — over MCP, the typed SDKs on a local daemon, or the CLI directly. One surface, three doors.",
+    "integrate_mcp_title": "Any agent over MCP",
+    "integrate_mcp_body": "Register the dig mcp server and your agent gets find, recall, retain, drift, log, export, org, reconcile, and undo as tools.",
+    "integrate_aisdk_title": "Vercel AI SDK",
+    "integrate_aisdk_body": "Expose dig as AI SDK tools so the model searches the knowledge base and remembers across sessions, locally.",
+    "integrate_aisdk_cta": "Read the AI SDK guide",
+    "integrate_sdk_title": "TypeScript & Python SDKs",
+    "integrate_sdk_body": "Dependency-light clients over the local dig serve daemon — the same surface, including recall and retain memory.",
+    "integrate_cta": "Browse all integrations"
   },
   "install": {
     "meta_title": "Install dig",

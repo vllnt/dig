@@ -15,11 +15,14 @@ export const baseMdxComponents: MDXComponents = {
       {children}
     </blockquote>
   ),
-  code: ({ children }) => (
-    <code className="rounded bg-muted px-[0.4rem] py-[0.2rem] font-mono text-sm">
-      {children}
-    </code>
-  ),
+  code: ({ children, className }) =>
+    className ? (
+      <code className={className}>{children}</code>
+    ) : (
+      <code className="rounded bg-muted px-[0.4rem] py-[0.2rem] font-mono text-sm">
+        {children}
+      </code>
+    ),
   h1: ({ children }) => (
     <h1 className="mt-8 mb-4 text-3xl font-bold tracking-tight">{children}</h1>
   ),
@@ -36,6 +39,11 @@ export const baseMdxComponents: MDXComponents = {
   ),
   p: ({ children }) => (
     <p className="my-4 leading-7 text-foreground/90">{children}</p>
+  ),
+  pre: ({ children }) => (
+    <pre className="my-6 overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 font-mono text-sm leading-6">
+      {children}
+    </pre>
   ),
   ul: ({ children }) => (
     <ul className="my-4 ml-6 list-disc space-y-2">{children}</ul>
