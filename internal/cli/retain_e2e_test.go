@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -49,15 +50,43 @@ func TestChainRetainRecall(t *testing.T) {
 		t.Fatal("recall did not surface the retained content")
 	}
 
-	// undo rewinds the capture (M2 → M1): the index no longer surfaces it. The
-	// file itself stays on disk — dig never deletes files when undoing an
-	// observation (the same guarantee that makes undoing a scan safe).
+	// undo reverts the capture (M2 → M1): retain is a mutation, so undo is true
+	// reversal — the file retain created is removed and the index no longer
+	// surfaces it. The file existed only because retain wrote it.
 	run(t, "--kb", root, "undo")
-	if _, ok := diskState(t, root)["memory/session-1.md"]; !ok {
-		t.Fatal("undo of a retain must not delete the file (observe-undo is non-destructive)")
+	if _, ok := diskState(t, root)["memory/session-1.md"]; ok {
+		t.Fatal("undo of a retain must remove the file it created (true reversal)")
 	}
 	if strings.Contains(run(t, "--kb", root, "find", "renewal contract"), "memory/session-1.md") {
 		t.Fatal("after undo the retained session should be out of the index")
+	}
+}
+
+// TestRetainUndoLeavesUnindexedDrift is the safety regression for true-reversal
+// retain: undo must remove exactly the file retain created, even when the KB has
+// real files sitting un-indexed on disk. A retain that re-scanned the whole tree
+// would fold that drift into its changeset and a blob-diff undo would delete it —
+// this proves retain records only its own write, so undo stays surgical.
+func TestRetainUndoLeavesUnindexedDrift(t *testing.T) {
+	root := t.TempDir()
+	run(t, "init", root)
+	run(t, "--kb", root, "scan") // M1 — baseline (empty)
+
+	// Drift: a real file lands on disk but is never scanned into the KB.
+	const precious = "precious work that was never indexed"
+	if err := os.WriteFile(filepath.Join(root, "untracked.md"), []byte(precious), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	runStdin(t, "a captured note", "--kb", root, "retain", "--as", "memory/note.md")
+	run(t, "--kb", root, "undo")
+
+	disk := diskState(t, root)
+	if _, ok := disk["memory/note.md"]; ok {
+		t.Fatal("undo must remove the file retain created")
+	}
+	if disk["untracked.md"] != precious {
+		t.Fatalf("undo must NOT touch un-indexed drift — only what retain created; got %q", disk["untracked.md"])
 	}
 }
 
