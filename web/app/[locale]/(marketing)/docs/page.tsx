@@ -2,6 +2,7 @@ import { Terminal } from "@vllnt/ui";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { AgentSetup } from "@/components/docs/agent-setup";
 import { CommandTable } from "@/components/docs/command-table";
 import { DocsSidebar } from "@/components/docs/docs-sidebar";
 import { Integrate } from "@/components/docs/integrate";
@@ -39,6 +40,7 @@ export default async function DocsPage({
 
   const navItems = [
     { href: "#quickstart", label: t("quickstart_title") },
+    { href: "#agent-setup", label: t("agent_nav") },
     { href: "#commands", label: t("commands_title") },
     { href: "#policy", label: t("policy_title") },
     { href: "#integrate", label: t("integrate_title") },
@@ -65,6 +67,8 @@ export default async function DocsPage({
           <p className="text-muted-foreground">{t("quickstart_body")}</p>
           <Terminal lines={QUICKSTART_LINES} title="quick start" />
         </section>
+
+        <AgentSetup />
 
         <section className="flex scroll-mt-20 flex-col gap-4" id="commands">
           <h2 className="text-2xl font-semibold tracking-tight">
