@@ -1,6 +1,6 @@
 # dig — full reference for LLMs
 
-> Open, local, reversible data + retrieval + memory primitive for AI agents. This file is a
+> Open, local, reversible knowledge-base layer for AI agents. This file is a
 > self-contained briefing: what dig is, how it's built, its CLI surface, its policy model,
 > its retrieval system, and its measured results. For canonical detail, read the linked
 > source docs — this summarizes them.
@@ -12,10 +12,12 @@ duplicates pile up, structure erodes. dig is the delegate that does the libraria
 job — **find, organize, dedupe, label, version, reconcile** — over one content-addressed
 core, safely, even while humans and other agents touch the same library concurrently.
 
-Beyond file management, dig is positioned as the **data/retrieval/memory layer for AI
-agents**: organize a KB to *your* mental model, retrieve it fast, remember across sessions,
-and plug it into any agent or framework (MCP first, then native SDKs). Bring-your-own
-organization model (PARA, GTD, Memory Palace, Zettelkasten, or your own). Your own system
+Beyond file management, dig is positioned as the **knowledge-base layer for AI
+agents**: organize a KB to *your* mental model, retrieve it fast, and plug it into any
+agent or framework (MCP first, then native SDKs). Bring-your-own organization model
+(PARA, GTD, Memory Palace, Zettelkasten, or your own). A KB kept this clean is one your
+agent can recall across sessions — memory that doesn't rot is a consequence of the
+management, not a separate product: dig serves recall, the agent answers. Your own system
 end-to-end — and the data layer others build on.
 
 Design pillars:
@@ -152,8 +154,8 @@ local on CPU with small open embedding models — no reranker, no LLM in the loo
   hybrid — weak lexical rankings dilute RRF.) Larger tiers in progress.
 
 Honesty note: retrieval recall and LLM-judged QA accuracy are different metrics; recall is
-structurally higher. dig reports retrieval metrics because dig is the retrieval/memory
-layer — answering belongs to the agent driving it.
+structurally higher. dig reports retrieval metrics because dig is the retrieval
+layer serving knowledge-base management — answering belongs to the agent driving it.
 
 ## 7. Extensibility
 

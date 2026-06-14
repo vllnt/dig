@@ -31,8 +31,8 @@ with `dig init <dir>`.
 | Goal | Command | Side |
 |------|---------|------|
 | Search, ranked | `dig --kb K find "<q>" --json` (`--mode fts\|vector\|hybrid`, `--limit`) | read |
-| Recall budgeted memory | `dig --kb K recall "<q>" --json` (`--budget`, `--mode`) | read |
-| Capture into memory | `dig --kb K retain [file]` (or stdin / `--transcript <s.jsonl>`, `--as`) | write |
+| Recall budgeted context | `dig --kb K recall "<q>" --json` (`--budget`, `--mode`) | read |
+| Capture content | `dig --kb K retain [file]` (or stdin / `--transcript <s.jsonl>`, `--as`) | write |
 | Divergence from policy | `dig --kb K drift --json` | read |
 | History | `dig --kb K log --json` | read |
 | Reproducible dataset | `dig --kb K export --filter "<sel>" --json` | read |
@@ -51,9 +51,11 @@ Rules of the contract:
 - **Local-first**: with no `[retrieval]`/`[llm]` endpoint configured, dig makes
   zero network calls.
 
-## Memory (capture + recall)
+## Recall & capture (memory as a consequence)
 
-dig doubles as an agent's memory layer, reachable through every path above:
+Because dig already holds and ranks the KB, it doubles as an agent's recall
+layer — capture and recall, reachable through every path above (dig serves the
+context; the agent answers):
 
 - **`retain`** captures content — a note, a document, or a rendered agent
   session (`--transcript <session.jsonl>` turns a Claude Code transcript into

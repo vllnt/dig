@@ -5,7 +5,7 @@ Canonical instructions for AI agents working in this repository. Harness-specifi
 
 ## What this repo is
 
-dig — an open, local, reversible **data + retrieval + memory primitive for AI agents**.
+dig — an open, local, reversible **knowledge-base layer for AI agents**.
 A Go CLI over a content-addressed store: organize a knowledge base to a declarative policy,
 retrieve it (FTS + opt-in semantic/hybrid), and reconcile drift — all reversibly.
 

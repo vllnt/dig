@@ -4,7 +4,7 @@
     "name": "vllnt",
     "url": "https://github.com/vllnt"
   },
-  "description": "dig — the open, local, reversible data/retrieval/memory primitive for AI agents.",
+  "description": "dig — the open, local, reversible knowledge-base layer for AI agents.",
   "plugins": [
     {
       "name": "dig",
