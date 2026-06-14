@@ -1,0 +1,53 @@
+---
+title: dig TypeScript SDK — @vllnt/dig
+description: Search, recall, retain, organize, and export a local dig knowledge base from TypeScript over the dig serve daemon. Dependency-free (native fetch), typed, local-first, reversible.
+updated: "2026-06-14"
+---
+
+`@vllnt/dig` is a dependency-free TypeScript client for a local dig daemon — the same surface as the CLI, over HTTP.
+
+## Install and run the daemon
+
+```sh
+npm i @vllnt/dig
+dig serve            # binds 127.0.0.1:3978 (loopback only)
+```
+
+Need the CLI? [Install dig](/install).
+
+## Use
+
+```ts
+import { DigClient } from "@vllnt/dig";
+
+const dig = new DigClient(); // defaults to http://127.0.0.1:3978
+
+// search — fts (default), vector, or hybrid (semantic)
+const hits = await dig.find("invoice acme 2024", { mode: "hybrid", limit: 5 });
+
+// agent memory — capture, then recall a token-budgeted pack
+await dig.retain(sessionMarkdown, { as: "memory/sessions/today.md" });
+const pack = await dig.recall("billing ledger decision", { budget: 1000 });
+
+// reorganize by policy — preview, then apply (reversible)
+await dig.org({ apply: false }); // preview the plan
+await dig.org({ apply: true }); // commit it
+await dig.undo(); // step back
+
+// reproducible dataset export (JSONL text)
+const jsonl = await dig.export({ filter: "label:finance" });
+
+// read-only inspection
+await dig.drift();
+await dig.log();
+```
+
+## Notes
+
+- Target a specific KB with `{ kb: "/path/or/name" }` on any call; omit it to use the KB at the daemon's working directory.
+- Errors throw a `DigError` carrying the HTTP status.
+- The client speaks the same contract as `dig serve` — a thin adapter over the dig CLI — so it never drifts from the tool.
+
+Building an agent? `@vllnt/dig/ai` turns the client into [Vercel AI SDK tools](/learn/vercel-ai-sdk).
+
+[Python SDK](/learn/python-sdk) · [All integrations](/integrations) · [Install dig](/install)

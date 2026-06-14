@@ -61,3 +61,17 @@ test("docs Integrate section opens the Vercel AI SDK guide", async ({
   ).toBeVisible();
   await expect(page.getByText("digTools(dig)").first()).toBeVisible();
 });
+
+test("docs shows TS + Python SDK examples and opens the Python guide", async ({
+  page,
+}) => {
+  await page.goto("/docs");
+  await expect(
+    page.getByText("from dig_client import DigClient").first(),
+  ).toBeVisible();
+  await expect(page.getByText("new DigClient()").first()).toBeVisible();
+
+  await page.getByRole("link", { name: /Python SDK guide/ }).click();
+  await expect(page).toHaveURL(/\/learn\/python-sdk$/);
+  await expect(page.getByText("dig.recall(").first()).toBeVisible();
+});

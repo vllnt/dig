@@ -33,6 +33,8 @@
     "integrate_aisdk_cta": "Read the AI SDK guide",
     "integrate_sdk_title": "TypeScript & Python SDKs",
     "integrate_sdk_body": "Dependency-light clients over the local dig serve daemon — the same surface, including recall and retain memory.",
+    "integrate_sdk_ts_cta": "TypeScript SDK guide",
+    "integrate_sdk_py_cta": "Python SDK guide",
     "integrate_cta": "Browse all integrations"
   },
   "install": {

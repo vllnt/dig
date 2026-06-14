@@ -1,0 +1,51 @@
+---
+title: dig Python SDK — dig-client
+description: Search, recall, retain, organize, and export a local dig knowledge base from Python over the dig serve daemon. Standard-library only, local-first, reversible.
+updated: "2026-06-14"
+---
+
+`dig-client` is a standard-library-only Python client for a local dig daemon — the same surface as the CLI, over HTTP.
+
+## Install and run the daemon
+
+```sh
+pip install dig-client
+dig serve            # binds 127.0.0.1:3978 (loopback only)
+```
+
+Need the CLI? [Install dig](/install).
+
+## Use
+
+```python
+from dig_client import DigClient
+
+dig = DigClient()  # http://127.0.0.1:3978
+
+# search — fts (default), vector, or hybrid (semantic)
+hits = dig.find("invoice acme 2024", mode="hybrid", limit=5)
+
+# agent memory — capture, then recall a token-budgeted pack
+dig.retain(session_markdown, as_="memory/sessions/today.md")
+pack = dig.recall("billing ledger decision", budget=1000)
+
+# reorganize by policy — preview, then apply (reversible)
+dig.org(apply=False)   # preview the plan
+dig.org(apply=True)    # commit it
+dig.undo()             # step back
+
+# reproducible dataset export (JSONL text)
+jsonl = dig.export(filter="label:finance")
+
+# read-only inspection
+dig.drift()
+dig.log()
+```
+
+## Notes
+
+- Target a specific KB with `kb="/path/or/name"` on any call; omit it to use the KB at the daemon's working directory.
+- Errors raise `DigError` carrying the HTTP status.
+- The client speaks the same contract as `dig serve` — a thin adapter over the dig CLI — so it never drifts from the tool.
+
+[TypeScript SDK](/learn/typescript-sdk) · [All integrations](/integrations) · [Install dig](/install)
