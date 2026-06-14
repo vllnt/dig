@@ -6,6 +6,7 @@
   "nav": {
     "how": "How it works",
     "features": "Features",
+    "integrations": "Integrations",
     "faq": "FAQ",
     "benchmarks": "Benchmarks",
     "docs": "Docs",
@@ -14,21 +15,44 @@
   },
   "docs": {
     "meta_title": "Docs — dig",
-    "meta_description": "dig user docs: quickstart, the full command reference, and the policy file reference. Local-first, reversible knowledge-base management.",
+    "meta_description": "dig user docs: quickstart, the full command reference, the policy file, and how to drive dig from any agent (MCP, the Vercel AI SDK, and the TypeScript/Python SDKs). Local-first, reversible.",
     "title": "Docs",
-    "subtitle": "Everything you need to drive dig — the first run, every command, and the policy file that decides where things live.",
+    "subtitle": "Everything you need to drive dig — the first run, every command, the policy file, and how any agent plugs in.",
     "quickstart_title": "Quickstart",
     "quickstart_body": "Index a directory, search it, reorganize by policy, and step back — all reversible.",
+    "agent_title": "Let your agent set it up",
+    "agent_body": "dig is built to be agent-operated. Once your agent has the dig skill, you don't run the commands — you ask. The skill is dig's canonical instruction set; it teaches the agent the whole surface and the safety rules, so it can do the setup for you, reversibly.",
+    "agent_install_title": "1 · Install the skill",
+    "agent_install_body": "The Claude Code and Codex plugins bundle the dig skill — one command installs the skill and the dig mcp server. Any other agent can read the portable skill at skills/dig/SKILL.md, or register the dig mcp server for the same tools.",
+    "agent_ask_title": "2 · Ask it to set up dig",
+    "agent_ask_body": "With the skill loaded, your agent knows the whole surface. Point it at a directory and it will:",
+    "agent_prompts_label": "Try asking",
+    "agent_cta": "Add dig to your agent",
+    "agent_nav": "Agent setup",
     "commands_title": "Command reference",
     "commands_body": "Read commands (find, export, drift, log) support --json for other harnesses. Mutating commands (org, dedup, reconcile, merge, undo) journal every change.",
     "policy_title": "Policy reference",
-    "policy_body": "The policy lives at .dig/policy.toml and travels with the KB. Validation is strict — unknown keys and path escapes fail loudly."
+    "policy_body": "The policy lives at .dig/policy.toml and travels with the KB. Validation is strict — unknown keys and path escapes fail loudly.",
+    "integrate_title": "Integrate",
+    "integrate_body": "Drive dig from any agent, app, or script — over MCP, the typed SDKs on a local daemon, or the CLI directly. One surface, three doors.",
+    "integrate_mcp_title": "Any agent over MCP",
+    "integrate_mcp_body": "Register the dig mcp server and your agent gets find, recall, retain, drift, log, export, org, reconcile, and undo as tools.",
+    "integrate_aisdk_title": "Vercel AI SDK",
+    "integrate_aisdk_body": "Expose dig as AI SDK tools so the model searches the knowledge base and remembers across sessions, locally.",
+    "integrate_aisdk_cta": "Read the AI SDK guide",
+    "integrate_sdk_title": "TypeScript & Python SDKs",
+    "integrate_sdk_body": "Dependency-light clients over the local dig serve daemon — the same surface, including recall and retain memory.",
+    "integrate_sdk_ts_cta": "TypeScript SDK guide",
+    "integrate_sdk_py_cta": "Python SDK guide",
+    "integrate_cta": "Browse all integrations"
   },
   "install": {
     "meta_title": "Install dig",
     "meta_description": "Install dig in one line — curl the installer, go install, or download a prebuilt binary. Local-first, checksum-verified, no account required.",
     "title": "Install dig",
     "subtitle": "One line, no account, no cloud. The installer detects your OS and architecture, verifies the checksum, and drops dig on your PATH.",
+    "agent_title": "Drive dig from your agent",
+    "agent_note": "Already using a coding agent? Pick it and copy the 10-second install — plugin, MCP config, or SDK.",
     "primary_title": "Quick install",
     "primary_note": "Downloads the latest release for your platform from GitHub and verifies its SHA256 checksum. Set DIG_VERSION to pin a version, DIG_INSTALL_DIR to choose where it lands.",
     "go_title": "With Go",
@@ -53,12 +77,14 @@
   },
   "hero": {
     "badge": "Open source · MIT · local-first",
-    "title": "Agents that keep your knowledge base in order",
-    "subtitle": "You set the policy — folder structure, naming, labels, no duplicates. dig detects drift, fixes it, and versions every change so nothing is ever lost. Runs fully on your machine.",
+    "title": "Persistent, local memory for your coding agent",
+    "subtitle": "dig gives Claude Code, Codex, Cursor — any MCP agent — a knowledge base it can search, remember across sessions, and keep organized to your rules. Fully on your machine, every change reversible.",
+    "cta_agent": "Add to your agent",
     "cta_install": "Install dig",
     "cta_github": "Star on GitHub",
     "cta_docs": "Read the architecture",
-    "terminal_title": "quick start"
+    "proof": "98% hit@5 on LongMemEval — fully local",
+    "terminal_title": "install"
   },
   "problem": {
     "title": "Every knowledge base rots",
@@ -117,13 +143,29 @@
     "q4": "Can I use it today?",
     "a4": "Yes. The CLI ships the full lifecycle — scan, find, organize, dedupe, drift, reconcile, watch, export, undo — plus opt-in semantic search that beats the published memory benchmarks (98.0% hit@5 on LongMemEval, fully local). It's pre-1.0 and moving fast; install it and follow what lands next.",
     "q5": "What is the license?",
-    "a5": "MIT. Open source, no strings."
+    "a5": "MIT. Open source, no strings.",
+    "q6": "Does dig work with Claude Code, Codex, or other agents?",
+    "a6": "Yes. dig ships a Claude Code plugin (/plugin marketplace add vllnt/dig), a dig mcp server for any MCP client (Cursor, Codex, opencode, …), entry docs for Codex and Gemini, and TypeScript/Python SDKs. The integrations page has the exact 10-second install per agent."
   },
   "cta": {
     "title": "Follow the build",
     "body": "dig is being built in the open, phase by phase — the safety spine first, destructive features only on top of it. Star the repo to watch it land.",
     "github": "Star on GitHub",
     "roadmap": "View the roadmap"
+  },
+  "home_integrations": {
+    "title": "Works with your agent",
+    "subtitle": "dig is harness-agnostic — one MCP server and a portable skill plug it into every coding agent. Pick yours for the exact install.",
+    "picker_label": "Your agent",
+    "works_with": "Ships with:"
+  },
+  "integrations": {
+    "meta_title": "Integrations — drive dig from any agent",
+    "meta_description": "Plug dig into Claude Code, Codex, Cursor, the Vercel AI SDK, or any MCP client — local, reversible memory and retrieval for your coding agent, installed in seconds.",
+    "title": "Drive dig from your agent",
+    "subtitle": "One MCP server, a portable skill, and thin per-harness shims. dig stays the data + memory layer — never the agent or the model.",
+    "stable_label": "Available",
+    "wip_label": "WIP"
   },
   "footer": {
     "tagline": "An open-source agent harness for knowledge bases.",

@@ -1,0 +1,27 @@
+---
+title: dig vs Obsidian — dig organizes the vault Obsidian edits
+description: Obsidian is a local Markdown editor for your notes. dig is the agent that keeps the vault organized, deduped, and searchable — and it coexists with Obsidian instead of replacing it.
+updated: "2026-06-14"
+---
+
+This is not an either/or. dig is built to run **alongside** Obsidian.
+
+## What each one is
+
+**Obsidian** is a local-first Markdown editor and graph view — the human interface to a vault of notes.
+
+**dig** is the librarian for that same folder. You declare a policy — where files live, how they are named, which labels they carry, no duplicates — and dig keeps the vault converged on it, versioning every change. It also exposes the vault to your agent over [MCP](/learn/what-is-mcp).
+
+## How they fit together
+
+- **Keep editing in Obsidian.** dig observes direct edits, folds them into history, and reconciles them against policy. A deliberate human change is escalated, never silently overwritten.
+- **dig handles the structure work** Obsidian doesn't: content-hash dedupe, policy-driven foldering and naming, drift detection, and a reversible journal of every move.
+- **Your agent gets the vault.** Point [Claude Code](/integrations/claude-code) or any MCP client at the same directory and it can search, [recall](/learn/agent-memory), and retain notes — the vault becomes shared memory.
+
+## When to use which
+
+Use **Obsidian** to read, write, and link notes as a human.
+
+Add **dig** when the vault grows past hand-tidying — to keep it organized, deduped, searchable, and available to your agent, without giving up the editor you like.
+
+[Install dig](/install) · [Use cases](/use-cases/rag-local-files)

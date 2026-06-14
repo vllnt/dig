@@ -1,0 +1,28 @@
+---
+title: dig vs Letta (MemGPT) — a memory layer, not an agent framework
+description: Letta (formerly MemGPT) is an agent framework with tiered self-managed memory. dig is the data + memory layer underneath any agent — local, reversible, framework-agnostic.
+updated: "2026-06-14"
+---
+
+Letta and dig both care about agent memory, but one is the agent and the other is the layer it stands on.
+
+## What each one is
+
+**Letta** (formerly MemGPT) is an agent framework. It runs an agent that pages its own memory between tiers autonomously — a full runtime for building stateful agents.
+
+**dig** is not an agent and not a model. It is the local, reversible **data + memory layer** an agent reads and writes: search a knowledge base, [recall budgeted context](/learn/agent-memory), retain a note or a finished session, all journaled. You bring the agent; dig holds the knowledge.
+
+## Where they differ
+
+- **Layer.** Letta *is* the agent. dig stays the backend — drive it from Letta, [Claude Code](/integrations/claude-code), Codex, or your own loop over [MCP](/learn/what-is-mcp).
+- **Lock-in.** Letta is a framework you build inside. dig is harness-agnostic: one MCP server and a portable skill plug into anything, so you are never married to one agent runtime.
+- **Local + reversible.** dig runs fully on your machine with no model required, and every change is undoable. Memory is auditable data, not opaque agent state.
+- **Files, not just memory.** dig also organizes, dedupes, and reconciles the real files behind the memory to a policy you set.
+
+## When to use which
+
+Use **Letta** if you want a batteries-included agent runtime that manages its own memory.
+
+Use **dig** if you want a portable memory/retrieval backend that any agent or framework — Letta included — can use as its store, locally and reversibly.
+
+[Install dig](/install) · [Drive dig from your agent](/integrations)

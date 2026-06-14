@@ -2,6 +2,7 @@ import { Button, Terminal } from "@vllnt/ui";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { HarnessPicker } from "@/components/integrations/harness-picker";
 import { buildCanonicalUrl, GITHUB_URL } from "@/lib/site";
 
 const RELEASES_URL = `${GITHUB_URL}/releases`;
@@ -67,6 +68,18 @@ export default async function InstallPage({
           {t("subtitle")}
         </p>
       </header>
+
+      <section className="flex flex-col gap-4 rounded-lg border border-border bg-muted/30 p-6">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-xl font-semibold tracking-tight">
+            {t("agent_title")}
+          </h2>
+          <p className="text-sm leading-6 text-muted-foreground">
+            {t("agent_note")}
+          </p>
+        </div>
+        <HarnessPicker />
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold tracking-tight">

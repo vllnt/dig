@@ -1,21 +1,28 @@
-import { Badge, Button, Terminal } from "@vllnt/ui";
+import { Badge, Button, buttonVariants, Terminal } from "@vllnt/ui";
 import { useTranslations } from "next-intl";
 
+import { GithubStars } from "@/components/github-stars";
 import { Link } from "@/i18n/routing";
-import { ARCHITECTURE_URL, GITHUB_URL } from "@/lib/site";
 
-const QUICK_START = [
-  { content: "index a library", type: "comment" },
-  { content: "dig init ~/library", type: "command" },
-  { content: "dig scan", type: "command" },
+const INSTALL = [
+  { content: "1 · install the dig CLI", type: "comment" },
+  {
+    content: "curl -fsSL https://dig.vllnt.com/install.sh | sh",
+    type: "command",
+  },
   { content: "", type: "output" },
-  { content: "search, ranked", type: "comment" },
-  { content: 'dig find "invoice acme 2024"', type: "command" },
+  {
+    content:
+      "2 · add it to your agent — bundles the skill + the dig mcp server",
+    type: "comment",
+  },
+  { content: "claude plugin marketplace add vllnt/dig", type: "command" },
+  { content: "claude plugin install dig@dig", type: "command" },
   { content: "", type: "output" },
-  { content: "preview, apply, undo", type: "comment" },
-  { content: "dig org --dry-run", type: "command" },
-  { content: "dig org", type: "command" },
-  { content: "dig undo", type: "command" },
+  {
+    content: "3 · ready — dig is on your PATH and in your agent",
+    type: "comment",
+  },
 ] as const;
 
 export function Hero() {
@@ -30,23 +37,23 @@ export function Hero() {
       <p className="max-w-2xl text-pretty text-lg text-muted-foreground">
         {t("subtitle")}
       </p>
-      <div className="flex flex-wrap justify-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3">
         <Button asChild size="lg">
           <Link href="/install">{t("cta_install")}</Link>
         </Button>
-        <Button asChild size="lg" variant="outline">
-          <a href={GITHUB_URL} rel="noreferrer" target="_blank">
-            {t("cta_github")}
-          </a>
-        </Button>
-        <Button asChild size="lg" variant="outline">
-          <a href={ARCHITECTURE_URL} rel="noreferrer" target="_blank">
-            {t("cta_docs")}
-          </a>
-        </Button>
+        <GithubStars
+          className={buttonVariants({ size: "lg", variant: "outline" })}
+          label={t("cta_github")}
+        />
       </div>
+      <Link
+        className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        href="/leaderboard"
+      >
+        {t("proof")}
+      </Link>
       <div className="w-full max-w-2xl text-left">
-        <Terminal lines={[...QUICK_START]} title={t("terminal_title")} />
+        <Terminal copyable lines={[...INSTALL]} title={t("terminal_title")} />
       </div>
     </section>
   );

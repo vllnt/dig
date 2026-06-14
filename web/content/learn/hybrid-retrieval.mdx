@@ -1,0 +1,31 @@
+---
+title: Hybrid retrieval — FTS + vector search, fused with RRF
+description: dig combines deterministic full-text search with semantic vector search using Reciprocal Rank Fusion. The result beats the published memory-benchmark bar — 98% hit@5 on LongMemEval, fully local on CPU.
+updated: "2026-06-14"
+---
+
+Keyword search and semantic search fail in opposite ways. **Hybrid retrieval** runs both and fuses the results, so you get exact matches and meaning matches in one ranked list.
+
+## The three modes
+
+dig exposes retrieval as three modes you opt into per query or per policy:
+
+- **FTS** — deterministic full-text search over paths, labels, and content. The default; no model required.
+- **vector** — semantic search over embeddings, for "find what I mean" queries.
+- **hybrid** — both, combined with **Reciprocal Rank Fusion (RRF)**: each result's rank in each list contributes to a fused score, so a document strong in either signal ranks well.
+
+```bash
+dig find "contract renewal terms" --mode hybrid --limit 5
+```
+
+## The measured result
+
+On LongMemEval — a published memory benchmark — dig's hybrid pipeline scores **98.0% hit@5**, beating the published 96.6% bar, **fully local on CPU** with small open embedding models. No reranker, no LLM in the loop. dig reports retrieval metrics because dig is the retrieval/memory layer; answering belongs to the agent driving it.
+
+See the full scoreboard and method on the [benchmarks page](/leaderboard).
+
+## Why local matters
+
+Retrieval this good usually implies a hosted vector service. dig's index is a derived view over a content-addressed store — it runs on your machine, makes zero network calls without a configured endpoint, and rebuilds from `dig scan`.
+
+[How agents query it](/learn/what-is-mcp) · [Install dig](/install)

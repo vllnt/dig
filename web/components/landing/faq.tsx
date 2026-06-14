@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 
-const QUESTIONS = [1, 2, 3, 4, 5] as const;
+const QUESTIONS = [1, 2, 3, 4, 5, 6] as const;
 
 export function Faq() {
   const t = useTranslations("faq");

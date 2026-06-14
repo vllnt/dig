@@ -1,0 +1,33 @@
+---
+title: Give your coding agent persistent memory with dig
+description: Wire dig into Claude Code, Codex, or any MCP agent so it remembers across sessions — finished sessions are captured automatically and recalled on demand, locally and reversibly.
+updated: "2026-06-14"
+---
+
+Your coding agent forgets everything between sessions. dig makes the last session — and every one before it — recallable.
+
+## The loop
+
+1. **Work a session** in [Claude Code](/integrations/claude-code) (or Codex, Cursor, any [MCP](/learn/what-is-mcp) agent).
+2. **It gets captured.** The Claude Code plugin ships a `SessionEnd` hook that renders the finished session and runs `dig retain` into a local `memory/` knowledge base (double opt-in: `DIG_RETAIN_SESSIONS=1` and a `.dig` KB at the session directory).
+3. **Recall it later.** Next session, the agent calls `dig_recall` and gets a [token-budgeted, provenance-tagged](/learn/agent-memory) pack of what it knew about the topic — no window overflow.
+
+```bash
+# the hook does this for you; you can also do it by hand
+dig retain --transcript session.jsonl
+dig recall "where did we leave the migration" --budget 2000
+```
+
+## Why dig for this
+
+- **Local.** Memory never leaves your machine; zero network calls without a configured model.
+- **Reversible.** Every capture is journaled — audit it, or `dig undo`.
+- **Harness-agnostic.** The same memory is reachable from every agent over MCP, the daemon, or the [AI SDK](/integrations/ai-sdk) tools.
+
+## Set it up
+
+1. [Install dig](/install).
+2. Add the [Claude Code plugin](/integrations/claude-code) (or register `dig mcp` in your client).
+3. `dig init` a directory to hold the memory, and set `DIG_RETAIN_SESSIONS=1`.
+
+[All integrations](/integrations) · [What is agent memory?](/learn/agent-memory)

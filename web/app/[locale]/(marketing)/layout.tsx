@@ -1,5 +1,7 @@
+import { buttonVariants } from "@vllnt/ui";
 import { useTranslations } from "next-intl";
 
+import { GithubStars } from "@/components/github-stars";
 import { Link } from "@/i18n/routing";
 import { ARCHITECTURE_URL, GITHUB_URL, ROADMAP_URL } from "@/lib/site";
 
@@ -21,51 +23,26 @@ export default function MarketingLayout({
           >
             dig
           </Link>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a
+          <div className="flex items-center gap-5 text-sm text-muted-foreground">
+            <Link
               className="hidden transition-colors hover:text-foreground sm:block"
-              href="#how"
+              href="/integrations"
             >
-              {t("how")}
-            </a>
-            <a
-              className="hidden transition-colors hover:text-foreground sm:block"
-              href="#features"
-            >
-              {t("features")}
-            </a>
-            <a
-              className="hidden transition-colors hover:text-foreground sm:block"
-              href="#faq"
-            >
-              {t("faq")}
-            </a>
+              {t("integrations")}
+            </Link>
             <Link
               className="hidden transition-colors hover:text-foreground sm:block"
               href="/docs"
             >
               {t("docs")}
             </Link>
-            <Link
-              className="transition-colors hover:text-foreground"
-              href="/leaderboard"
-            >
-              {t("benchmarks")}
-            </Link>
-            <Link
-              className="transition-colors hover:text-foreground"
-              href="/install"
-            >
+            <GithubStars
+              className="font-medium text-foreground transition-colors hover:text-foreground/80"
+              label={t("github")}
+            />
+            <Link className={buttonVariants({ size: "sm" })} href="/install">
               {t("install")}
             </Link>
-            <a
-              className="font-medium text-foreground transition-colors hover:text-foreground/80"
-              href={GITHUB_URL}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {t("github")}
-            </a>
           </div>
         </nav>
       </header>

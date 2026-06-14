@@ -3,6 +3,7 @@ import { Features } from "@/components/landing/features";
 import { FinalCta } from "@/components/landing/final-cta";
 import { Hero } from "@/components/landing/hero";
 import { HowItWorks } from "@/components/landing/how-it-works";
+import { Integrations } from "@/components/landing/integrations";
 import { Principles } from "@/components/landing/principles";
 import { Problem } from "@/components/landing/problem";
 
@@ -10,6 +11,7 @@ export default function LandingPage() {
   return (
     <>
       <Hero />
+      <Integrations />
       <Problem />
       <HowItWorks />
       <Features />

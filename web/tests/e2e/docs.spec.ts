@@ -44,3 +44,47 @@ test("a visitor reaches docs from the nav and reads the command reference", asyn
     page.getByRole("cell", { name: "dig find <query>" }),
   ).toBeVisible();
 });
+
+test("docs Integrate section opens the Vercel AI SDK guide", async ({
+  page,
+}) => {
+  await page.goto("/docs");
+  await expect(page.getByRole("heading", { name: "Integrate" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Vercel AI SDK" }),
+  ).toBeVisible();
+
+  await page.getByRole("link", { name: /AI SDK guide/ }).click();
+  await expect(page).toHaveURL(/\/learn\/vercel-ai-sdk$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: /Vercel AI SDK/ }),
+  ).toBeVisible();
+  await expect(page.getByText("digTools(dig)").first()).toBeVisible();
+});
+
+test("docs shows TS + Python SDK examples and opens the Python guide", async ({
+  page,
+}) => {
+  await page.goto("/docs");
+  await expect(
+    page.getByText("from dig_client import DigClient").first(),
+  ).toBeVisible();
+  await expect(page.getByText("new DigClient()").first()).toBeVisible();
+
+  await page.getByRole("link", { name: /Python SDK guide/ }).click();
+  await expect(page).toHaveURL(/\/learn\/python-sdk$/);
+  await expect(page.getByText("dig.recall(").first()).toBeVisible();
+});
+
+test("docs has an agent-setup guide with the skill install and prompts", async ({
+  page,
+}) => {
+  await page.goto("/docs");
+  await expect(
+    page.getByRole("heading", { name: "Let your agent set it up" }),
+  ).toBeVisible();
+  await expect(page.getByText(/Set up dig on/)).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Add dig to your agent" }),
+  ).toHaveAttribute("href", /\/integrations$/);
+});

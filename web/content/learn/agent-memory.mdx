@@ -1,0 +1,32 @@
+---
+title: What is agent memory? Capture and recall, explained
+description: Agent memory is the loop that lets an AI agent remember across sessions — capture what happened, recall the relevant slice later. Here is how dig implements it locally and reversibly.
+updated: "2026-06-14"
+---
+
+An agent with no memory starts every session from zero. **Agent memory** is the loop that fixes that: capture what happened, then recall the relevant slice when it matters again — without overflowing the context window.
+
+## The two halves
+
+dig implements agent memory as two operations over a local knowledge base:
+
+- **`retain`** captures content — a note, a document, or a whole finished agent session — to a dated `memory/` path. It is indexed and reversible. A Claude Code transcript can be rendered to readable Markdown and retained automatically.
+- **`recall`** returns a **token-budgeted, provenance-tagged** context pack. Its snippets land on the passage relevant to your query, so the agent loads what it knows about a topic without blowing its window.
+
+```bash
+# capture a finished session, then recall it later
+dig retain --transcript session.jsonl
+dig recall "what did we decide about auth" --budget 2000
+```
+
+## Why local and reversible matters
+
+- **Local-first.** With no model endpoint configured, dig makes zero network calls. Your memory never leaves your machine.
+- **Reversible.** Every capture is a journaled changeset. Memory is data you can audit and `dig undo` — not opaque agent state.
+- **Provenance.** Recalled snippets carry where they came from, so the agent (and you) can trust the source.
+
+## How agents reach it
+
+`retain` and `recall` are exposed as `dig_retain` and `dig_recall` over [MCP](/learn/what-is-mcp), and as tools in the [Vercel AI SDK](/integrations/ai-sdk) adapter. Any harness — [Claude Code](/integrations/claude-code), Codex, Cursor — reads and writes the same memory.
+
+[See it in a workflow](/use-cases/agent-memory) · [Install dig](/install)

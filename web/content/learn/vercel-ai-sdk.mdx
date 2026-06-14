@@ -1,0 +1,53 @@
+---
+title: Use dig as agent memory in the Vercel AI SDK
+description: Wire dig into the Vercel AI SDK as tools — your agent searches a local knowledge base, recalls budgeted memory, and remembers across sessions, all over a local dig serve daemon. Reversible, no vector service.
+updated: "2026-06-14"
+---
+
+`@vllnt/dig/ai` turns a dig client into [Vercel AI SDK](https://sdk.vercel.ai) tools an agent can call — search, recall, and remember, against a local knowledge base.
+
+## 1 · Install and run the daemon
+
+```sh
+npm i @vllnt/dig      # ai + zod are optional peer deps
+dig serve             # binds 127.0.0.1:3978 (loopback only)
+```
+
+`dig serve` is a thin HTTP adapter over the dig CLI, so the SDK never drifts from the tool. Need the CLI? [Install dig](/install).
+
+## 2 · Hand the tools to your agent
+
+```ts
+import { generateText } from "ai";
+import { DigClient } from "@vllnt/dig";
+import { digTools } from "@vllnt/dig/ai";
+
+const dig = new DigClient(); // defaults to http://127.0.0.1:3978
+
+await generateText({
+  model,
+  prompt: "What invoices are in my KB? Organize them if needed.",
+  // dig_find, dig_recall, dig_retain, dig_drift, dig_log,
+  // dig_export, dig_org, dig_reconcile, dig_undo
+  tools: digTools(dig),
+});
+```
+
+One call exposes the whole dig surface as tools, named `dig_*`.
+
+## 3 · Memory: recall and retain
+
+`dig_recall` and `dig_retain` make dig the agent's memory. It writes a decision to the knowledge base and loads a [token-budgeted pack](/learn/agent-memory) back on a later turn:
+
+```ts
+await generateText({ model, prompt, tools: digTools(dig) });
+// the agent calls dig_retain to remember, dig_recall to recall — reversibly
+```
+
+## Safe by default
+
+Read tools never change state. Mutating tools (`dig_org`, `dig_reconcile`) **preview by default**; the agent passes `apply: true` to commit, and every change is reversible via `dig_undo`.
+
+The same client also exposes plain methods — `dig.find()`, `dig.recall()`, `dig.retain()`, `dig.org({ apply })`, `dig.undo()` — if you'd rather call dig directly than through the model.
+
+[All integrations](/integrations) · [What is agent memory?](/learn/agent-memory) · [Install dig](/install)

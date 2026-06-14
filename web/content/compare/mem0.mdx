@@ -1,0 +1,28 @@
+---
+title: dig vs mem0 — local-first memory without a vector database
+description: mem0 is a pluggable memory SDK that needs a vector store. dig is a local-first CLI + MCP server with built-in hybrid retrieval and reversible history. When to pick which.
+updated: "2026-06-14"
+---
+
+Both give an AI agent memory. They sit at different layers.
+
+## What each one is
+
+**mem0** is a pluggable memory layer — a drop-in SDK (Python, with a TS client) that stores and retrieves agent memories across a vector store, with an optional graph. You wire it into your app and bring a vector database.
+
+**dig** is a local-first binary you drive from the command line or over [MCP](/learn/what-is-mcp). It indexes a directory of real files, retrieves with a [hybrid FTS + vector pipeline](/learn/hybrid-retrieval), and captures/recalls agent memory — with every change journaled and reversible. No service to run, no vector DB to provision.
+
+## Where they differ
+
+- **Deployment.** mem0 is a library you embed and a vector store you operate. dig is a single Go binary; `dig mcp` is the whole integration. Nothing to host.
+- **Storage.** mem0 expects an external vector database. dig's index is a derived view over a content-addressed store — `dig scan` rebuilds it; there is nothing to diverge or migrate.
+- **Reversibility.** dig journals every mutation as a changeset you can preview and `dig undo`. Memory is data you can walk back.
+- **Scope.** mem0 is memory only. dig is also the librarian — it organizes, dedupes, and reconciles the underlying files to a policy you declare.
+
+## When to use which
+
+Reach for **mem0** if you want an embedded memory SDK inside a Python/TS service and you already run a vector database.
+
+Reach for **dig** if you want memory and retrieval as a local, reversible, harness-agnostic layer — one that any agent ([Claude Code](/integrations/claude-code), Codex, Cursor, the [AI SDK](/integrations/ai-sdk)) drives over MCP, with no external infrastructure.
+
+[Install dig](/install) · [All integrations](/integrations)
