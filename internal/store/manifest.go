@@ -18,8 +18,8 @@ type Entry struct {
 // Kind distinguishes how a manifest came to be — the distinction that makes
 // undo safe. Observation commits (scan) record what disk already looks like;
 // undoing one only moves the head pointer and never touches files. Mutation
-// commits (org, dedup) record changes dig itself made to disk; undoing one
-// also reverses those disk changes.
+// commits (org, dedup, retain) record changes dig itself made to disk; undoing
+// one also reverses those disk changes (moving, restoring, or removing files).
 const (
 	KindObserve = "observe"
 	KindMutate  = "mutate"

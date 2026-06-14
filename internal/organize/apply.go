@@ -77,7 +77,9 @@ func Apply(kbRoot string, st *store.Store, head *store.Manifest, plan *Plan) (*s
 // Revert reverses the disk effects of an undone mutation manifest: every blob
 // that lives at a different path in the parent moves back; entries the parent
 // has but disk lost (e.g. duplicates a dedup removed) are restored from the
-// blob store. Labels are manifest-only and revert with the head pointer itself.
+// blob store; and files the manifest created — a path the parent never held,
+// holding content new to the store (e.g. a `dig retain` capture) — are removed.
+// Labels are manifest-only and revert with the head pointer itself.
 func Revert(kbRoot string, st *store.Store, undone, parent *store.Manifest) error {
 	if parent == nil {
 		return nil
@@ -145,6 +147,36 @@ func Revert(kbRoot string, st *store.Store, undone, parent *store.Manifest) erro
 		_ = rc.Close()
 		_ = os.Chtimes(dst, e.ModTime, e.ModTime)
 	}
+
+	// Deletion pass: files the mutation CREATED — a path absent from the parent,
+	// holding content the parent never had (so it can't be a move handled above)
+	// — are removed, so reverting a creation leaves no orphan on disk. The diff
+	// to the parent is the sole source of truth here, which is why a creating
+	// changeset (retain) records only the new file on top of head: unrelated
+	// drift never appears in this set. Guarded by a content check so a file
+	// edited since the mutation is left for the next scan to observe.
+	parentHasPath := map[string]bool{}
+	for _, e := range parent.Entries {
+		parentHasPath[e.Path] = true
+	}
+	for _, e := range undone.Entries {
+		if parentHasPath[e.Path] {
+			continue // path survives into the parent — not created here
+		}
+		if _, ok := parentPath[e.Blob]; ok {
+			continue // content exists in the parent (a move) — handled above
+		}
+		p := filepath.Join(kbRoot, filepath.FromSlash(e.Path))
+		data, err := os.ReadFile(p)
+		if err != nil {
+			continue // already gone (e.g. moved above) or unreadable
+		}
+		if store.HashBytes(data) != e.Blob {
+			continue // changed since the mutation — leave it for the next scan
+		}
+		_ = os.Remove(p)
+	}
+
 	pruneEmptyDirs(kbRoot)
 	return nil
 }

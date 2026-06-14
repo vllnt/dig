@@ -137,6 +137,36 @@ measurements; recall is structurally the higher number (finding the document is
 easier than answering from it). dig reports retrieval metrics because dig is the
 retrieval/management layer — answering belongs to the agent driving it.
 
+## Coverage — what these evals do and don't cover
+
+A scoreboard is only honest with its own gaps stated. What's exercised today vs
+what isn't yet:
+
+**Measured**
+
+- **Retrieval quality** — `recall@k`, `hit@k`, `ndcg@10`, `mrr` for fts / vector /
+  hybrid on LoCoMo, the full LongMemEval-S set, and the BEAM 128K tier (above).
+- **Spine invariants (CI, `-race`)** — byte-identical undo, idempotent re-runs,
+  no lost content, dedup-never-last-copy, across the full lifecycle
+  (scan → org → dedup → drift → reconcile → export → undo).
+- **Concurrency correctness** — merge / disjointness / escalation are covered by
+  property + race tests in `internal/store` (not scored here, but gated in CI).
+
+**Not yet measured (open)**
+
+- **Answer / QA accuracy** (LLM-judged) — these are *retrieval* numbers; turning
+  retrieved context into an answer is the agent's job (and an opt-in reading
+  stage on the roadmap, `composable-pipeline.5`). The field's headline QA scores
+  (e.g. mem0 ~94.4) are a different, lower-by-construction measurement.
+- **BEAM 500K / 1M / 10M tiers + the end-to-end QA pipeline** — 128K retrieval is
+  published; larger tiers are running (`semantic-retrieval.4`).
+- **MemoryAgentBench / MemBench** — selective forgetting, contradiction
+  detection, test-time learning, capacity-under-growth (`eval-harness.4`, pending).
+- **Temporal-subset disaggregation** — aggregate scores only; the time-aware
+  query lever isn't broken out yet (`composable-pipeline.3`).
+- **Chunk-size / overlap ablation** — scores are for the shipped default config;
+  no sweep over `chunk_size` / `chunk_overlap` is published.
+
 ## History
 
 | Date | Change | Effect |

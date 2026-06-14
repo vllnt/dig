@@ -26,7 +26,7 @@ dig is a thin CLI over **one content-addressed store** and a **policy engine** t
 ```
 
 - **One binary, many KBs.** Each KB is self-contained: its store, journal, index, and `policy / rules / workflows / llm` config live in a `.dig/` directory at the KB root (git-style — config travels with the data). A machine-level registry only maps names → roots.
-- **CLI is the sole interface.** No GUI, no importable SDK, no network API. `watch` is a long-running CLI command, not a separate service. Tiny, auditable surface.
+- **CLI is the core contract.** No GUI and no in-process library to link. The `dig serve` loopback daemon, the `dig mcp` server, and the language SDKs (`@vllnt/dig`, `dig-client`) are thin clients that run the same CLI in-process — one surface, no divergent API. `watch` is a long-running CLI command, not a separate service. Tiny, auditable surface.
 - **Composable by design.** Other harnesses drive dig the way a human does — by running commands. Read commands emit `--json`; the command set splits read vs write; exit codes are stable. dig is a *tool other agents use*, not a framework they embed.
 - **dig owns its LLM.** dig's internal LLM system (§5) is configured per-KB and independent of any caller's model. Two LLM layers can coexist — the outer agent and dig's own small-model judgments — without coupling.
 

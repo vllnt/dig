@@ -175,7 +175,7 @@ func newUndoCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "undo",
 		Short: "Revert the last changeset (move head to its parent)",
-		Long:  "Moves the head manifest back to its parent. If the undone changeset was a\nmutation dig made to disk (org, dedup), the disk changes are reversed too.\nUndoing a scan only rewinds history — your files are never touched.",
+		Long:  "Moves the head manifest back to its parent. If the undone changeset changed\nfiles on disk (org, dedup, retain), those disk changes are reversed too —\nincluding removing a file that retain created.\nUndoing a scan only rewinds history — your files are never touched.",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			k, err := kb.Resolve(kbFlag)

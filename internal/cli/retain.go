@@ -1,19 +1,20 @@
 package cli
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/vllnt/dig/internal/kb"
-	"github.com/vllnt/dig/internal/scan"
 	"github.com/vllnt/dig/internal/store"
 	"github.com/vllnt/dig/internal/transcript"
 )
@@ -66,17 +67,37 @@ func newRetainCmd() *cobra.Command {
 			if err := os.WriteFile(full, data, 0o644); err != nil {
 				return err
 			}
+			info, err := os.Stat(full)
+			if err != nil {
+				return err
+			}
 
 			st, err := store.Open(dig)
 			if err != nil {
 				return err
 			}
 			defer func() { _ = st.Close() }()
-			entries, err := scan.Walk(k, st, false)
+
+			// retain is a creation, not a re-scan: record exactly the new file on
+			// top of the current head and commit it as a mutation. That keeps the
+			// changeset's diff to its parent equal to {this file}, so `dig undo`
+			// removes precisely what retain wrote and never disturbs unrelated
+			// drift sitting un-indexed on disk.
+			hash := store.HashBytes(data)
+			if err := st.Blobs().Put(hash, bytes.NewReader(data)); err != nil {
+				return fmt.Errorf("store %s: %w", rel, err)
+			}
+			head, err := st.Head()
 			if err != nil {
 				return err
 			}
-			m, err := st.Commit("retain", store.KindObserve, entries)
+			created := store.Entry{
+				Path:    filepath.ToSlash(rel),
+				Blob:    hash,
+				Size:    info.Size(),
+				ModTime: info.ModTime().UTC(),
+			}
+			m, err := st.Commit("retain", store.KindMutate, mergeEntry(head, created))
 			if err != nil {
 				return err
 			}
@@ -91,6 +112,31 @@ func newRetainCmd() *cobra.Command {
 	cmd.Flags().StringVar(&now, "date", "", "date for the default path as YYYY-MM-DD (default: today) — for reproducible captures")
 	cmd.Flags().StringVar(&transcriptPath, "transcript", "", "render an agent session transcript (JSONL) to markdown and retain that")
 	return cmd
+}
+
+// mergeEntry returns the head's entries with e added — or replaced, if a file
+// already lives at its path — sorted by path for a deterministic manifest. A
+// nil head (no commits yet) yields a single-entry manifest.
+func mergeEntry(head *store.Manifest, e store.Entry) []store.Entry {
+	var base []store.Entry
+	if head != nil {
+		base = head.Entries
+	}
+	out := make([]store.Entry, 0, len(base)+1)
+	replaced := false
+	for _, cur := range base {
+		if cur.Path == e.Path {
+			out = append(out, e)
+			replaced = true
+			continue
+		}
+		out = append(out, cur)
+	}
+	if !replaced {
+		out = append(out, e)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].Path < out[j].Path })
+	return out
 }
 
 // retainInput resolves the content to capture: a rendered transcript when

@@ -101,8 +101,10 @@ Semantic recall of *text* for AI agents. Adjacent, not a direct rival — but th
 | **MemPalace** | Local-first verbatim "palace" (Wings/Rooms/Drawers); init → mine → search | no API key, verbatim (no lossy summarize), benchmarked recall | embedding/vector overhead, AI-agent-shaped, not file management | Python + ChromaDB |
 | **mem0** | Pluggable memory layer (vector + graph) | drop-in SDK, hybrid store | library not CLI, needs a vector DB | Python (+ TS SDK) |
 | **Letta** (ex-MemGPT) | Agent with tiered self-managed memory | autonomous memory paging | heavy agent framework, not a file tool | Python |
+| **Zep** | Temporal knowledge graph memory (entity resolution, contradiction detection, validity windows) | strong temporal/graph model, enterprise-grade | cloud/SaaS-leaning, graph engine to operate, closed core, not file management | Python/Go service |
+| **MCP memory servers** (the 2026 wave) | Per-harness stateful context tools exposed over MCP | trivial to plug into Claude/Cursor; large + growing set | thin, bespoke, no versioning/merge/provenance; storage varies wildly | various |
 
-**Borrow:** the `init → index → search` UX. **Reject:** mandatory embeddings — semantic search is an opt-in driver in dig, default index stays SQLite FTS5.
+**Borrow:** the `init → index → search` UX; Zep's temporal-validity + contradiction model (dig's roadmap entity-graph maps facts to validity windows and surfaces contradictions as *escalations*, not silent overwrites). **Reject:** mandatory embeddings (semantic search is an opt-in driver in dig; default index stays SQLite FTS5) and a separate graph engine to operate. **Note:** this is the camp growing fastest into dig's path — and the one most exposed on dig's axes (versioned undo, merge, provenance, local-first). It's covered here as adjacent, but for the agent-memory positioning it is the *primary* battlefield, not a footnote.
 
 ### Full functionality matrix: dig vs MemPalace, verified hands-on (2026-06)
 

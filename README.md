@@ -8,7 +8,7 @@ Most tools do one slice: some move bytes, some apply naming rules, some lint pro
 
 `dig` aims to be **the pi.dev of KB management** — a small, sharp core with a rich extension ecosystem. Need to store blobs in your own object store, back up on every change, parse a proprietary format, or add a command? That's an extension, not a fork.
 
-> **Status: early scaffold.** This README describes the intended design. Nearly everything is _(planned)_. Expect breaking changes.
+> **Status: pre-1.0 (canary).** The reversible core is shipped and tested — content store, `organize`, `dedup`, `drift`/`reconcile`, parallel work views + merge/escalation, hybrid FTS+vector retrieval, and `watch` — alongside the agent-memory loop (`retain`/`recall`), the `dig mcp` server, the `dig serve` daemon, and the `@vllnt/dig` / `dig-client` SDKs. Items still on the roadmap are marked **planned** in the command table below. Private repo, canary releases only — expect breaking changes until v1.
 
 ---
 
@@ -49,7 +49,7 @@ Why these aren't separate features: a single content-addressed store gives dedup
 - **Source of truth is the disk, not `dig`.** Humans edit files directly with their own tools; `dig`'s store is a versioned shadow it reconciles against — never a gatekeeper you must check in through.
 - **Open, local, AI-optional.** Open source, runs fully on-device, no telemetry. AI is opt-in, points at any OpenAI-compatible endpoint (localhost by default), and a small local model suffices — the deterministic core works with no model at all.
 - **Parallel model: multiple autonomous agents** on one library — the design assumption behind the full isolate → merge → escalate machinery.
-- **CLI-only.** The command line is the *sole* interface — no GUI, no importable SDK. This is what makes `dig` composable: any larger agent harness drives it by calling the CLI.
+- **CLI-first, no in-process library.** The command line is the core contract — no GUI, and nothing to link into your process. The `dig serve` daemon, the `dig mcp` server, and the `@vllnt/dig` / `dig-client` SDKs are all thin clients over that same CLI surface, not imports of dig's internals. This is what makes `dig` composable: any larger agent harness drives it by calling the CLI (or the daemon/MCP over it).
 - **Multi-KB.** One machine hosts many knowledge bases. Each is configured independently (its own policy / rules / workflows / LLM); a machine-level registry tracks them.
 - **Extensible.** Storage, events/backup, extraction, matching, workflow steps, commands, the index, and the model endpoint are all typed extension points (eight seams). The core spine (store semantics, changeset state machine, undo) is not extensible — extensions plug into the edges, never the spine.
 
@@ -130,27 +130,27 @@ dig log
 
 | Command | Does | Status |
 |---------|------|--------|
-| `dig init <root>` | Create a library at a directory | planned |
-| `dig scan` | Index files into the content-addressed store | planned |
-| `dig find <query>` | Search the library, ranked results. FTS by default; opt-in semantic + hybrid (`--mode`, `[retrieval]` policy) | planned |
-| `dig retain [file]` | Capture content (a file, stdin, or a rendered agent session via `--transcript`) into the KB and index it — the agent-memory capture primitive; dated `memory/` path by default (`--as`, `--date`) | planned |
-| `dig recall <query>` | Emit a token-budgeted, provenance-tagged context pack for a query — the agent-memory recall primitive (`--budget`, `--mode`, `--json`) | planned |
-| `dig embed` | Drain the semantic-index backlog in the background (resumable; `watch` also drains it per tick) | planned |
-| `dig mcp` | Run dig as an MCP server (stdio) — exposes find/recall/retain/drift/log/export + org/reconcile/undo as tools for any agent harness | planned |
-| `dig serve` | Run a localhost HTTP+JSON daemon over the CLI — find/recall/drift/log/export + retain/org/reconcile/undo, for SDKs/apps that embed dig without shelling out (loopback only) | planned |
-| `dig export` | Emit a reproducible, manifest-pinned dataset (JSONL etc.) for ML training | planned |
-| `dig org` | Apply organization policy (move / rename / label). `--dry-run` previews | planned |
+| `dig init <root>` | Create a library at a directory | shipped |
+| `dig scan` | Index files into the content-addressed store | shipped |
+| `dig find <query>` | Search the library, ranked results. FTS by default; opt-in semantic + hybrid (`--mode`, `[retrieval]` policy) | shipped |
+| `dig retain [file]` | Capture content (a file, stdin, or a rendered agent session via `--transcript`) into the KB and index it — the agent-memory capture primitive; dated `memory/` path by default (`--as`, `--date`) | shipped |
+| `dig recall <query>` | Emit a token-budgeted, provenance-tagged context pack for a query — the agent-memory recall primitive (`--budget`, `--mode`, `--json`) | shipped |
+| `dig embed` | Drain the semantic-index backlog in the background (resumable; `watch` also drains it per tick) | shipped |
+| `dig mcp` | Run dig as an MCP server (stdio) — exposes find/recall/retain/drift/log/export + org/reconcile/undo as tools for any agent harness | shipped |
+| `dig serve` | Run a localhost HTTP+JSON daemon over the CLI — find/recall/drift/log/export + retain/org/reconcile/undo, for SDKs/apps that embed dig without shelling out (loopback only) | shipped |
+| `dig export` | Emit a reproducible, manifest-pinned dataset (JSONL etc.) for ML training | shipped |
+| `dig org` | Apply organization policy (move / rename / label). `--dry-run` previews | shipped |
 | `dig run <workflow>` | Execute a named workflow; commits its steps as one reversible changeset | planned |
-| `dig dedup` | Find duplicates and collapse per policy | planned |
-| `dig label <selector>` | Apply labels/tags per policy | planned |
-| `dig drift` | Report how the KB diverges from policy (misfiled, misnamed, duplicated, unlabeled) | planned |
-| `dig reconcile` | Bring the KB back to policy — auto where safe, proposals where not. `--dry-run` previews | planned |
-| `dig watch` | Run as a harness: observe edits + reconcile continuously, escalate when unsure | planned |
-| `dig log` | Browse change history | planned |
-| `dig undo [ref]` | Revert the last changeset (or a specific one) | planned |
-| `dig work <name>` | Open an isolated work view (worktree-like) | planned |
-| `dig merge <work>` | Merge a work view back; auto-resolve or escalate | planned |
-| `dig policy` | Edit / validate the organization policy | planned |
+| `dig dedup` | Find duplicates and collapse per policy | shipped |
+| `dig label <selector>` | Apply labels/tags per policy (today: via `[[rule]]` label actions through `org`) | planned |
+| `dig drift` | Report how the KB diverges from policy (misfiled, misnamed, duplicated, unlabeled) | shipped |
+| `dig reconcile` | Bring the KB back to policy — auto where safe, proposals where not. `--dry-run` previews | shipped |
+| `dig watch` | Run as a harness: observe edits + reconcile continuously, escalate when unsure | shipped |
+| `dig log` | Browse change history | shipped |
+| `dig undo` | Revert the last changeset (move head to its parent) — reverses org/dedup/retain disk changes too | shipped |
+| `dig work <create\|list\|abort\|resolve>` | Manage isolated work views (worktree-like) | shipped |
+| `dig merge <work>` | Merge a work view back via the escalation ladder; auto-resolve or escalate | shipped |
+| `dig policy` | Inspect and validate the organization policy | shipped |
 | `dig kb <list\|add\|remove>` | Manage the knowledge bases registered on this machine | planned |
 | `dig ext <list\|add\|enable\|remove>` | Manage extensions (storage backends, event sinks, extractors, commands) | planned |
 | `dig config` | View and edit configuration | planned |
@@ -166,6 +166,8 @@ Run `dig <command> --help` for flags. Commands target a KB via `--kb <name>` (or
 - **Rules** — `match → action`. Stateless: where a file belongs, what it's named, which labels it gets.
 - **Policy** — the desired-state spec: the full rule set plus invariants (naming convention, no duplicates, retention). Defines what "organized" *means*; `dig drift` is measured against it.
 - **Workflows** — ordered, multi-step, optionally triggered/stateful procedures. Where real restructuring and agent steps live: *ingest contract → extract parties → file under client → label → version → notify*. Steps can call tools, extractors, or an LLM; the whole workflow commits as **one** reversible changeset.
+
+> **Full schema reference** — every `[[rule]]` match field, `into`/`rename` template variable, plus `[dedup]`, `[retrieval]`, and `[llm]` — is published at [dig.vllnt.com/docs](https://dig.vllnt.com/docs) (synced from `internal/policy`, the single source of truth). `dig policy validate` lints your file and explains rule matches. The block below is illustrative, not exhaustive.
 
 ```toml
 # rules — declarative placement
@@ -264,7 +266,7 @@ metadata/regex → PDF text layer → OCR (scanned PDFs / images) → LLM judgme
 ```
 
 - **Per-KB config.** Each KB keeps its own `policy / rules / workflows / LLM` in a `.dig/` folder at its root — portable and independently customizable. A machine-level registry just maps names to roots.
-- **CLI is the only interface.** No GUI, no library to import. Other harnesses use `dig` exactly the way you do: by running commands. `--json` on read commands makes output machine-consumable; exit codes are stable.
+- **CLI is the core contract.** No GUI, and no in-process library to link — the `dig serve` daemon, `dig mcp`, and the language SDKs (`@vllnt/dig`, `dig-client`) are thin clients over the CLI, not bindings into dig. Other harnesses use `dig` the way you do: by running commands (or the daemon/MCP over them). `--json` on read commands makes output machine-consumable; exit codes are stable.
 - **dig owns its own LLM.** When embedded in a bigger harness, `dig` still uses *its* configured (local, OpenAI-compatible) model for its internal judgments — it does not depend on, and is not coupled to, the caller's model. The outer harness orchestrates; `dig` manages the KB.
 
 ---
@@ -387,16 +389,18 @@ dig's unfilled gap: **policy-driven structure + drift detection + reconcile + fu
 
 Phased so the safety spine exists before destructive features, and one-shot before continuous:
 
-- [ ] **P0 — foundation:** content store + manifests + journal · `init` / `scan` / `find` · `--dry-run` + `undo` everywhere
-- [ ] **P1 — organize:** policy engine · `org` (rename / move / label), single worker, fully reversible
-- [ ] **P2 — dedupe:** `dedup` (free once content-addressed)
-- [ ] **P2.5 — export:** `dig export` — reproducible, manifest-pinned, deduped, policy-filtered datasets (data layer for ML; trivial once store + labels exist)
-- [ ] **P3 — drift + reconcile:** `drift` (desired vs actual) · `reconcile` (one-shot) · detect external human edits via scan-diff
-- [ ] **P4 — parallel:** isolated work views · auto-merge of disjoint changesets
-- [ ] **P5 — conflicts:** policy precedence · human escalation
-- [ ] **P6 — harness:** `watch` (continuous observe + reconcile loop) · agent orchestration · escalation queue
-- [ ] **P7 — public extensibility:** T0 event-sinks (backup) + T1 PATH subcommands · `dig ext` + manifest/registry · then T2 gRPC, T3 WASM + signing (see [docs/extensions.md](docs/extensions.md))
+- [x] **P0 — foundation:** content store + manifests + journal · `init` / `scan` / `find` · `--dry-run` + `undo` everywhere
+- [x] **P1 — organize:** policy engine · `org` (rename / move / label), single worker, fully reversible
+- [x] **P2 — dedupe:** `dedup` (free once content-addressed)
+- [x] **P2.5 — export:** `dig export` — reproducible, manifest-pinned, deduped, policy-filtered datasets (data layer for ML; trivial once store + labels exist)
+- [x] **P3 — drift + reconcile:** `drift` (desired vs actual) · `reconcile` (one-shot) · detect external human edits via scan-diff
+- [x] **P4 — parallel:** isolated work views · auto-merge of disjoint changesets
+- [x] **P5 — conflicts:** policy precedence · human escalation
+- [x] **P6 — harness:** `watch` (continuous observe + reconcile loop) · agent orchestration · escalation queue
+- [~] **P7 — public extensibility:** T0 event-sinks (backup) shipped · T1 PATH subcommands · `dig ext` + manifest/registry · then T2 gRPC, T3 WASM + signing (see [docs/extensions.md](docs/extensions.md))
 - [ ] **P8 — reach:** remote storage backends (SFTP, object storage) · opt-in AI extractor/classifier/search drivers
+
+Beyond P0–P8, the agent-memory loop (`retain`/`recall`, MCP + daemon + SDKs) and opt-in **hybrid semantic retrieval** are shipped; full current state lives in [ROADMAP.md](ROADMAP.md).
 
 Note: the **extension seam interfaces** are defined from P0, not P7 — first-party backends (local store, FTS5 index, regex/OCR extractors) are themselves implementations of those interfaces, so the core is built extensible from the start. P7 only adds the *public plugin transports* (third-party code) on top of seams that already exist.
 
