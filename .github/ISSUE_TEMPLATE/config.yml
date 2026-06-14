@@ -1,0 +1,8 @@
+# Force every issue through a structured template — no free-form "blank" issues.
+# Once the repo is public this is the only thing that stops drive-by, contextless
+# reports: the chooser shows Bug report / Feature request and nothing else.
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/vllnt/dig/security/advisories/new
+    about: Report security issues privately via GitHub advisories — never in a public issue. See SECURITY.md.
