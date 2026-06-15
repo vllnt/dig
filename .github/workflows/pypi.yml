@@ -11,8 +11,9 @@ name: pypi
 # validation); prefer OIDC and drop the token once it works. The canary is gated
 # on the CANARY_ENABLED repo variable.
 #
-# attestations: false — PyPI digital attestations (like npm provenance) require a
-# PUBLIC repo; vllnt/dig is private. Flip to true once it goes public.
+# attestations — PyPI digital attestations (like npm provenance) require a PUBLIC
+# repo AND OIDC. vllnt/dig is now public, so the OIDC publish steps set
+# attestations: true; the token-bridge steps keep it false (a token can't attest).
 
 on:
   push:
@@ -113,7 +114,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: clients/python/dist
-          attestations: false
+          attestations: true
 
   release:
     name: Publish Release
@@ -153,4 +154,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: clients/python/dist
-          attestations: false
+          attestations: true

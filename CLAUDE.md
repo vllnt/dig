@@ -34,4 +34,4 @@ Agent harness that keeps a knowledge base in order. Go CLI (`cmd/`, `internal/`)
 
 - Release system + **canary-only policy** (BLOCKING): @.claude/rules/release.md
 - One workflow per artifact: `npm.yml` / `pypi.yml` (canary + release, OIDC), `canary.yml` + `release.yml` (CLI). Runbook: `docs/RELEASING.md`.
-- The repo is private + pre-1.0 → **canary mode only**. Never cut a stable `vX.Y.Z` tag or publish `latest`/non-dev without explicit maintainer approval. No `--provenance`/attestations while private.
+- The repo is public but pre-1.0 → **canary mode only**. Never cut a stable `vX.Y.Z` tag or publish `latest`/non-dev without explicit maintainer approval. Provenance/attestations are ON now that the repo is public.

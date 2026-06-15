@@ -13,10 +13,10 @@ npm and PyPI each keep canary **and** release in one file (`npm.yml` / `pypi.yml
 mirroring `@vllnt/ui`'s `publish.yml`. The Go CLI canary is `canary.yml`; its
 stable release is `release.yml` (GoReleaser, on a tag).
 
-> **Private-repo note:** npm `--provenance` and PyPI attestations require a
-> **public** source repo (sigstore). While `vllnt/dig` is private, `npm.yml`
-> publishes without `--provenance` and `pypi.yml` sets `attestations: false`.
-> OIDC auth is unaffected. Re-enable both when the repo goes public.
+> **Provenance:** npm `--provenance` and PyPI attestations require a **public**
+> source repo (sigstore). `vllnt/dig` is public, so `npm.yml` publishes with
+> `--provenance` and `pypi.yml`'s OIDC steps set `attestations: true` (the
+> token-bridge steps keep it false — a token can't attest). OIDC auth is unaffected.
 
 The canary channel is the bleeding edge — a dress rehearsal of every release,
 built from the exact commit on `main`. **Not for production.**
