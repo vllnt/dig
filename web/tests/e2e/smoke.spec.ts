@@ -16,7 +16,7 @@ test("landing page loads with zero console errors and the hero sells dig", async
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: /memory for your coding agent/i,
+      name: /knowledge base your coding agent/i,
     }),
   ).toBeVisible();
   await expect(page.getByText("Open source · MIT · local-first")).toBeVisible();

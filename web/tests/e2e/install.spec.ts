@@ -37,9 +37,11 @@ test("releases link points at GitHub releases in a new tab", async ({
   await expect(cta).toHaveAttribute("target", "_blank");
 });
 
-test("a visitor installs from the homepage CTA", async ({ page }) => {
+test("a visitor reaches install from the homepage agent CTA", async ({
+  page,
+}) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Install dig" }).first().click();
+  await page.getByRole("link", { name: "Add to your agent" }).first().click();
 
   await expect(page).toHaveURL(/\/install$/);
   await expect(

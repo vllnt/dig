@@ -39,7 +39,7 @@ export function Hero() {
       </p>
       <div className="flex flex-wrap items-center justify-center gap-3">
         <Button asChild size="lg">
-          <Link href="/install">{t("cta_install")}</Link>
+          <Link href="/install">{t("cta_agent")}</Link>
         </Button>
         <GithubStars
           className={buttonVariants({ size: "lg", variant: "outline" })}
