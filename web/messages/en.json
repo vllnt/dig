@@ -54,6 +54,8 @@
     "meta_description": "Install dig in one line — curl the installer, go install, or download a prebuilt binary. Local-first, checksum-verified, no account required.",
     "title": "Install dig",
     "subtitle": "One line, no account, no cloud. The installer detects your OS and architecture, verifies the checksum, and drops dig on your PATH.",
+    "status_badge": "Public beta",
+    "status_note": "dig is pre-1.0 and ships from its canary channel — it updates often. Pin a build with DIG_VERSION, and every change dig makes is reversible.",
     "agent_title": "Drive dig from your agent",
     "agent_note": "Already using a coding agent? Pick it and copy the 10-second install — plugin, MCP config, or SDK.",
     "primary_title": "Quick install",
@@ -79,7 +81,7 @@
     "method_body": "Each benchmark is mapped onto a real dig knowledge base (one file per session or turn), indexed with the production FTS + vector pipeline, and scored per question against its evidence with standard IR metrics (recall@k, hit@k, NDCG@10, MRR). FTS is the deterministic default; vector and hybrid (Reciprocal Rank Fusion) opt in via a [retrieval] policy. Full methodology and reproduction commands live in docs/evals.md."
   },
   "hero": {
-    "badge": "Open source · MIT · local-first",
+    "badge": "Public beta · Open source · MIT · local-first",
     "title": "The knowledge base your coding agent keeps in order",
     "subtitle": "dig keeps a knowledge base organized to your rules — deduped, versioned, every change reversible — and retrieves it fast over MCP for Claude Code, Codex, Cursor, any agent. A KB kept this clean is one your agent recalls across sessions. Runs fully on your machine.",
     "cta_agent": "Add to your agent",

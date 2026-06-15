@@ -1,4 +1,4 @@
-import { Button, Terminal } from "@vllnt/ui";
+import { Badge, Button, Terminal } from "@vllnt/ui";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
@@ -61,11 +61,17 @@ export default async function InstallPage({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-12 px-6 py-24">
       <header className="flex flex-col gap-4">
+        <Badge className="w-fit" variant="secondary">
+          {t("status_badge")}
+        </Badge>
         <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
           {t("title")}
         </h1>
         <p className="text-pretty text-lg text-muted-foreground">
           {t("subtitle")}
+        </p>
+        <p className="text-pretty text-sm leading-6 text-muted-foreground">
+          {t("status_note")}
         </p>
       </header>
 
