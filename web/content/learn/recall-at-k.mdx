@@ -1,0 +1,27 @@
+---
+title: recall@k and hit@k — the IR metrics dig reports
+description: recall@k, hit@k, and hit@5 are standard information-retrieval metrics for ranked search. dig scores 98.0% hit@5 on the full LongMemEval set, fully local on CPU, beating the published 96.6% bar.
+updated: "2026-06-15"
+---
+
+dig is a retrieval layer, so it measures itself with standard **information-retrieval (IR) metrics** over ranked results — not answer quality, which belongs to the agent driving it.
+
+## What the metrics mean
+
+For each question, dig ranks the candidate set and the metrics score how well the evidence lands near the top:
+
+- **recall@k** — the fraction of evidence items present in the top-k results, averaged across questions.
+- **hit@k** — whether *any* evidence item appears in the top-k (a hit/miss per question).
+- **hit@5** — the rank-5 cutoff specifically; the common headline number. Some benchmarks call this `recall_any@5`.
+
+`ndcg@10` and `mrr` add ranking-quality detail. You can reproduce them across modes:
+
+```bash
+dig find "contract renewal terms" --mode hybrid --limit 5
+```
+
+## dig's measured scores
+
+On the full official **LongMemEval-S** set (500 questions, 19,829 sessions), dig's hybrid pipeline scores **98.0% hit@5**, beating MemPalace's published **96.6%** `recall_any@5` bar — same model class, **fully local on CPU** with a small open embedding model, no reranker and no LLM in the loop. On LoCoMo, hybrid reaches 91.3% hit@5.
+
+[See the full scoreboard](/leaderboard) · [Hybrid retrieval](/learn/hybrid-retrieval)

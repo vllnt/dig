@@ -1,0 +1,29 @@
+---
+title: Collapse duplicates across a document library — reversibly
+description: dig detects identical files by content hash, keeps the copy your policy chooses, and never deletes the last copy — every collapse is journaled and undoable.
+updated: "2026-06-15"
+---
+
+A library accumulates the same file under five names in three folders. dig finds those duplicates by construction and collapses them to one — without you trusting a delete.
+
+## How it works
+
+1. **Index the library.** `dig init ~/library && dig scan` hashes every file into a content-addressed store. Two paths with the same content map to the same blob — that *is* the duplicate set, detected for free, not guessed by filename.
+2. **Pick the canonical copy.** A `[dedup]` policy block decides which copy survives — `strategy = "keep-oldest"` or `"keep-newest"` — and `on_conflict = "escalate"` so dig never silently deletes when the call is ambiguous.
+3. **Collapse.** `dig dedup` removes the redundant paths per policy. The store guarantees the **last copy is never deleted** while referenced.
+
+```bash
+dig init ~/library
+dig scan
+dig dedup --dry-run   # preview every collapse — nothing touched
+dig dedup             # apply; each removal is journaled
+dig undo              # changed your mind? step back
+```
+
+## Why dig
+
+- **Hash-true, not name-true.** Duplicates are the same blob, so renames and copies are caught; near-identical names that differ in content are not.
+- **Never destructive by accident.** Last copy always kept; ambiguous cases escalate instead of deleting.
+- **Fully reversible.** Every collapse is a journaled changeset — audit it in `dig log`, reverse it with `dig undo`.
+
+[RAG over local files](/use-cases/rag-local-files) · [Reversible changesets](/learn/reversible-changesets)

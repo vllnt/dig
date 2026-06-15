@@ -1,0 +1,28 @@
+---
+title: Keep your Obsidian vault filed, deduped, and searchable
+description: Point dig at your vault directory and it files notes by policy, collapses duplicate markdown, and gives your agent hybrid search and recall over the files — locally and reversibly.
+updated: "2026-06-15"
+---
+
+Obsidian edits the markdown; dig is the librarian over the same directory — filing, deduping, and retrieving the files while you keep using Obsidian as normal.
+
+## How it works
+
+1. **Index the vault.** `dig init ~/vault && dig scan` builds a content-addressed store and a search index over your `.md` files. The vault stays the source of truth — dig observes your edits, it doesn't lock you out.
+2. **File by policy.** Declare `[[rule]]` placement rules (folder, name, labels); `dig org` moves and renames notes to match. `dig drift` reports what has wandered from policy.
+3. **Dedupe and retrieve.** `dig dedup` collapses identical notes (never the last copy); `dig find --mode hybrid` ranks across full-text and semantics; `dig recall` hands an agent a token-budgeted pack.
+
+```bash
+dig init ~/vault
+dig scan
+dig org --dry-run                 # preview filing — nothing touched
+dig find "spaced repetition" --mode hybrid --json
+```
+
+## Why dig
+
+- **Coexists with Obsidian.** dig reconciles around your direct edits; it never demands you go "through" it.
+- **The files, honestly.** dig manages where notes live, what they're named, and retrieval over their text — not your backlinks or graph, which stay Obsidian's job.
+- **Reversible.** Every move, rename, and collapse is journaled — `dig undo` rewinds it.
+
+[Dedupe a library](/use-cases/dedupe-library) · [vs Obsidian](/compare/obsidian)

@@ -1,0 +1,29 @@
+---
+title: A local second brain you own — organized, deduped, recallable
+description: dig files your notes by policy, collapses duplicates, and retrieves across everything with hybrid search and recall — running fully on your machine, every change reversible.
+updated: "2026-06-15"
+---
+
+A second brain is only useful if it stays in order and gives back what you put in. dig does the librarian's whole job over your knowledge — organize, dedupe, retrieve, recall — on disk, under your control.
+
+## How it works
+
+1. **Index your knowledge.** `dig init ~/brain && dig scan` builds a content-addressed store and a search index over your files — notes, PDFs, docs.
+2. **Keep it organized.** Declare `[[rule]]` policy (folders, naming, labels); `dig org` files everything to match and `dig drift` flags what wanders. `dig dedup` collapses identical files, never the last copy.
+3. **Retrieve and recall.** `dig find "<query>" --mode hybrid --json` ranks across full-text and semantics; `dig recall "<query>" --budget 2000` hands an agent a token-budgeted, provenance-tagged pack.
+
+```bash
+dig init ~/brain
+dig scan
+dig org --dry-run                          # preview filing
+dig dedup                                  # collapse duplicates
+dig recall "that idea about pricing" --budget 2000
+```
+
+## Why dig
+
+- **You own it.** Runs fully on-device, no telemetry; with no model configured, zero network calls.
+- **Stays in order.** Policy plus drift detection keep the structure converged instead of decaying.
+- **Reversible.** Every move, collapse, and capture is journaled — `dig undo` reverses any of it.
+
+[Organize by PARA / GTD / Zettelkasten](/use-cases/para-gtd-zettelkasten) · [Agent memory](/use-cases/agent-memory)
