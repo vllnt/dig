@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   isCluster,
   listAllContent,
+  listCluster,
   listSlugs,
   parseContent,
   readContent,
@@ -89,5 +90,17 @@ describe("listSlugs / listAllContent (real files)", () => {
       expect(entry.title.length).toBeGreaterThan(0);
       expect(entry.description.length).toBeGreaterThan(0);
     });
+  });
+});
+
+describe("listCluster (real files)", () => {
+  it("returns only entries for the given cluster, sorted by slug", () => {
+    const entries = listCluster("compare");
+    expect(entries.length).toBeGreaterThan(0);
+    entries.forEach((entry) => {
+      expect(entry.cluster).toBe("compare");
+    });
+    const slugs = entries.map((entry) => entry.slug);
+    expect([...slugs]).toEqual([...slugs].sort());
   });
 });
