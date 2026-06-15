@@ -32,6 +32,24 @@ export default function MarketingLayout({
             </Link>
             <Link
               className="hidden transition-colors hover:text-foreground sm:block"
+              href="/compare"
+            >
+              {t("compare")}
+            </Link>
+            <Link
+              className="hidden transition-colors hover:text-foreground sm:block"
+              href="/learn"
+            >
+              {t("learn")}
+            </Link>
+            <Link
+              className="hidden transition-colors hover:text-foreground sm:block"
+              href="/use-cases"
+            >
+              {t("use_cases")}
+            </Link>
+            <Link
+              className="hidden transition-colors hover:text-foreground sm:block"
               href="/docs"
             >
               {t("docs")}
@@ -48,37 +66,94 @@ export default function MarketingLayout({
       </header>
       <main className="flex-1">{children}</main>
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-5xl flex-col gap-10 px-6 py-12 text-sm text-muted-foreground sm:flex-row sm:justify-between">
           <div className="flex flex-col gap-1">
             <span className="font-mono font-semibold text-foreground">dig</span>
             <span>{f("tagline")}</span>
             <span>{f("license")}</span>
           </div>
-          <div className="flex gap-4">
-            <a
-              className="transition-colors hover:text-foreground"
-              href={GITHUB_URL}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {f("github")}
-            </a>
-            <a
-              className="transition-colors hover:text-foreground"
-              href={ROADMAP_URL}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {f("roadmap")}
-            </a>
-            <a
-              className="transition-colors hover:text-foreground"
-              href={ARCHITECTURE_URL}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {f("architecture")}
-            </a>
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+            <div className="flex flex-col gap-2">
+              <span className="font-medium text-foreground">
+                {f("product")}
+              </span>
+              <Link
+                className="transition-colors hover:text-foreground"
+                href="/integrations"
+              >
+                {t("integrations")}
+              </Link>
+              <Link
+                className="transition-colors hover:text-foreground"
+                href="/install"
+              >
+                {t("install")}
+              </Link>
+              <Link
+                className="transition-colors hover:text-foreground"
+                href="/docs"
+              >
+                {t("docs")}
+              </Link>
+              <Link
+                className="transition-colors hover:text-foreground"
+                href="/leaderboard"
+              >
+                {f("benchmarks")}
+              </Link>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="font-medium text-foreground">
+                {f("resources")}
+              </span>
+              <Link
+                className="transition-colors hover:text-foreground"
+                href="/compare"
+              >
+                {t("compare")}
+              </Link>
+              <Link
+                className="transition-colors hover:text-foreground"
+                href="/learn"
+              >
+                {t("learn")}
+              </Link>
+              <Link
+                className="transition-colors hover:text-foreground"
+                href="/use-cases"
+              >
+                {t("use_cases")}
+              </Link>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="font-medium text-foreground">
+                {f("project")}
+              </span>
+              <a
+                className="transition-colors hover:text-foreground"
+                href={GITHUB_URL}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {f("github")}
+              </a>
+              <a
+                className="transition-colors hover:text-foreground"
+                href={ROADMAP_URL}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {f("roadmap")}
+              </a>
+              <a
+                className="transition-colors hover:text-foreground"
+                href={ARCHITECTURE_URL}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {f("architecture")}
+              </a>
+            </div>
           </div>
         </div>
       </footer>

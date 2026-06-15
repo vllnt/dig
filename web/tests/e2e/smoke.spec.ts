@@ -40,7 +40,10 @@ test("user can reach Integrations via header nav", async ({
   test.skip(isMobile, "secondary nav links are hidden on mobile");
 
   await page.goto("/");
-  await page.getByRole("link", { name: "Integrations" }).click();
+  await page
+    .getByRole("navigation")
+    .getByRole("link", { name: "Integrations" })
+    .click();
 
   await expect(page).toHaveURL(/\/integrations$/);
   await expect(

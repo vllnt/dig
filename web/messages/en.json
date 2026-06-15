@@ -11,6 +11,9 @@
     "benchmarks": "Benchmarks",
     "docs": "Docs",
     "install": "Install",
+    "compare": "Compare",
+    "learn": "Learn",
+    "use_cases": "Use cases",
     "github": "GitHub"
   },
   "docs": {
@@ -171,7 +174,31 @@
     "license": "MIT licensed",
     "github": "GitHub",
     "roadmap": "Roadmap",
-    "architecture": "Architecture"
+    "architecture": "Architecture",
+    "product": "Product",
+    "resources": "Resources",
+    "project": "Project",
+    "benchmarks": "Benchmarks"
+  },
+  "clusters": {
+    "compare": {
+      "meta_title": "Compare dig — vs memory services, vector DBs, RAG, and note apps",
+      "meta_description": "How dig stacks up against mem0, Zep, vector databases, RAG frameworks, and Obsidian — local-first, reversible, no service to run. When to pick which.",
+      "title": "How dig compares",
+      "subtitle": "dig is the local, reversible knowledge-base layer your agent retrieves from. Here is where it sits next to memory services, vector databases, RAG frameworks, and note apps — and when to pick which."
+    },
+    "learn": {
+      "meta_title": "Learn dig — concepts and guides",
+      "meta_description": "How dig works under the hood: hybrid retrieval, the content-addressed store, drift detection, reversible changesets, and the IR metrics it reports.",
+      "title": "Concepts & guides",
+      "subtitle": "How dig works under the hood — hybrid retrieval, the content-addressed store, drift, reversibility — and how to drive it from your stack."
+    },
+    "use-cases": {
+      "meta_title": "What you can build with dig",
+      "meta_description": "Real workflows on dig: agent memory, local RAG, deduping a library, organizing notes by policy, research notes, meeting transcripts, a second brain — all local.",
+      "title": "What you can build with dig",
+      "subtitle": "Real workflows running on dig locally — agent memory, RAG over your files, dedupe, and organizing a knowledge base to your own rules."
+    }
   },
   "consent": {
     "message": "We use privacy-respecting analytics to improve dig.",

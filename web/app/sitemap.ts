@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { DEFAULT_LOCALE, LOCALES } from "@/i18n/locales";
-import { listAllContent } from "@/lib/content";
+import { CLUSTERS, listAllContent } from "@/lib/content";
 import { HARNESS_SLUGS } from "@/lib/harnesses";
 import { buildCanonicalUrl } from "@/lib/site";
 
@@ -29,6 +29,11 @@ function harnessRoutes(): Route[] {
   }));
 }
 
+/** Cluster hub index pages (/compare, /learn, /use-cases). */
+function clusterHubRoutes(): Route[] {
+  return CLUSTERS.map((cluster) => ({ path: `/${cluster}`, priority: 0.7 }));
+}
+
 /** MDX SEO pages (compare / use-cases / learn), generated from `content/`. */
 function contentRoutes(): Route[] {
   return listAllContent().map((entry) => ({
@@ -39,7 +44,12 @@ function contentRoutes(): Route[] {
 
 /** Every route in the sitemap, static + dynamic. */
 export function allRoutes(): Route[] {
-  return [...ROUTES, ...harnessRoutes(), ...contentRoutes()];
+  return [
+    ...ROUTES,
+    ...clusterHubRoutes(),
+    ...harnessRoutes(),
+    ...contentRoutes(),
+  ];
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -88,11 +88,14 @@ export function readContent(
   return parseContent(fs.readFileSync(file, "utf8"), cluster, slug);
 }
 
+/** Metadata for every valid entry in one cluster, sorted by slug (hub pages). */
+export function listCluster(cluster: Cluster): ContentEntry[] {
+  return listSlugs(cluster)
+    .map((slug) => readContent(cluster, slug)?.meta)
+    .filter((meta): meta is ContentEntry => meta !== undefined);
+}
+
 /** Metadata for every valid entry across all clusters (sitemap + params). */
 export function listAllContent(): ContentEntry[] {
-  return CLUSTERS.flatMap((cluster) =>
-    listSlugs(cluster)
-      .map((slug) => readContent(cluster, slug)?.meta)
-      .filter((meta): meta is ContentEntry => meta !== undefined),
-  );
+  return CLUSTERS.flatMap((cluster) => listCluster(cluster));
 }
