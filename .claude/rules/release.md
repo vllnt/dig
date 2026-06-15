@@ -25,7 +25,7 @@ dig ships three artifacts — the Go CLI, the `@vllnt/dig` npm SDK, and the
 
 ## Canary mode is the default — stable is gated (BLOCKING)
 
-The repo is **private and pre-1.0**. Until the maintainer explicitly says "cut
+The repo is **public but pre-1.0**. Until the maintainer explicitly says "cut
 v1":
 
 - **NEVER cut a stable `vX.Y.Z` git tag** or publish a stable / `latest` / non-dev
@@ -37,17 +37,18 @@ v1":
 - `npm i @vllnt/dig` / `pip install dig-client` (bare) are expected to resolve only
   once v1 ships; for now consumers use `@vllnt/dig@canary` / `pip install --pre`.
 
-## Provenance / attestations are OFF while private (BLOCKING)
+## Provenance / attestations are ON now that the repo is public
 
 npm `--provenance` and PyPI attestations use sigstore, which **only supports
-public source repos**. `vllnt/dig` is private, so:
+public source repos**. `vllnt/dig` is public, so:
 
-- **npm.yml** publishes **without** `--provenance`.
-- **pypi.yml** sets **`attestations: false`**.
+- **npm.yml** publishes **with** `--provenance` (both OIDC jobs).
+- **pypi.yml** sets **`attestations: true`** on its OIDC steps. The `PYPI_TOKEN`
+  bridge steps keep `attestations: false` — a token can't mint attestations; only
+  OIDC can.
 
-Re-enable both (`--provenance`, `attestations: true`) only after the repo is made
-public. OIDC auth itself works fine on a private repo — provenance is the only
-part that needs public.
+If the repo is ever made private again, turn both back off (sigstore rejects
+private repos). OIDC auth itself is unaffected by visibility.
 
 ## When v1 is approved (the only stable path)
 
@@ -63,7 +64,8 @@ part that needs public.
 
 - Cut a `vX.Y.Z` tag, or publish a stable/`latest`/non-dev version, without
   explicit maintainer approval.
-- Add `--provenance` / `attestations: true` while the repo is private.
+- Add `--provenance` / `attestations: true` if the repo is ever made private
+  again (sigstore rejects private repos).
 - Add an `NPM_TOKEN` secret — npm is OIDC-only. (`PYPI_TOKEN` is allowed as a
   documented temporary bridge in `pypi.yml`; remove it once PyPI OIDC works.)
 - Force-move or delete a `vX.Y.Z` tag. (The rolling `canary` tag is the only
