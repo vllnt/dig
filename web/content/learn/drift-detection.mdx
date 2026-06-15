@@ -1,0 +1,28 @@
+---
+title: Drift detection — reconstructing the human changeset from disk
+description: dig diffs the live disk against its last manifest to reconstruct what a human did between runs. dig drift reports misfiled, misnamed, duplicated, and unsorted files; reconcile converges desired state with actual.
+updated: "2026-06-15"
+---
+
+Policy describes the **desired state**; the files on disk are the **actual state**; **drift is the diff**. dig is a reconciler — the Kubernetes-controller pattern applied to a file library.
+
+## Reconstructing what the human did
+
+Between runs, files appear, get renamed in Finder, edited in Obsidian, or deleted — none of it tracked. dig discovers these by **diffing the current disk against the last manifest** (what dig last knew), then treats the human as a concurrent writer whose changeset it reconstructs after the fact.
+
+`dig drift` reports each kind of divergence:
+
+- a new file matching a rule → filed per policy;
+- a new file with no rule → indexed and labelled `unsorted`;
+- a rename or move → accepted as intent, flagged only if it now violates policy;
+- a duplicate → flagged, collapsed per dedup policy on reconcile.
+
+```bash
+dig drift
+```
+
+## Reconcile converges
+
+`dig reconcile` turns the drift diff into a journaled changeset that converges actual back toward desired. The coexistence contract is firm: a *deliberate* human change is never silently overwritten — when human intent and policy disagree, dig **escalates rather than overwrites**. Re-running reconcile on an already-converged KB is a no-op.
+
+[Content-addressed store](/learn/content-addressed-store) · [Reversible changesets](/learn/reversible-changesets)

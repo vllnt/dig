@@ -80,13 +80,12 @@
   },
   "hero": {
     "badge": "Open source · MIT · local-first",
-    "title": "Persistent, local memory for your coding agent",
-    "subtitle": "dig gives Claude Code, Codex, Cursor — any MCP agent — a knowledge base it can search, remember across sessions, and keep organized to your rules. Fully on your machine, every change reversible.",
+    "title": "The knowledge base your coding agent keeps in order",
+    "subtitle": "dig keeps a knowledge base organized to your rules — deduped, versioned, every change reversible — and retrieves it fast over MCP for Claude Code, Codex, Cursor, any agent. A KB kept this clean is one your agent recalls across sessions. Runs fully on your machine.",
     "cta_agent": "Add to your agent",
-    "cta_install": "Install dig",
     "cta_github": "Star on GitHub",
     "cta_docs": "Read the architecture",
-    "proof": "98% hit@5 on LongMemEval — fully local",
+    "proof": "98% hit@5 retrieval on LongMemEval — fully local",
     "terminal_title": "install"
   },
   "problem": {

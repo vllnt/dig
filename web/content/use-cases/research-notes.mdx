@@ -1,0 +1,28 @@
+---
+title: Retrieve and recall across your research notes
+description: dig indexes a folder of research notes for hybrid search and hands your agent a token-budgeted, provenance-tagged recall pack — so it answers from your sources, locally.
+updated: "2026-06-15"
+---
+
+Research notes pile up faster than you can re-read them. dig makes the whole pile retrievable, and gives an agent exactly the slice it needs.
+
+## How it works
+
+1. **Index the notes.** `dig init ~/research && dig scan` builds a content-addressed store plus a search index over paths, labels, and note **content**.
+2. **Find across them.** `dig find "<query>" --mode hybrid --json` ranks results by fusing full-text and [semantic search](/learn/hybrid-retrieval) — the `--json` surface is built for an agent to consume.
+3. **Recall for the agent.** `dig recall "<query>" --budget 2000` returns the query-relevant window of each hit, capped to a token budget and tagged with provenance — no window overflow, every claim traceable to a note.
+
+```bash
+dig init ~/research
+dig scan
+dig find "transformer attention ablations" --mode hybrid --json
+dig recall "what did we conclude about scaling laws" --budget 2000
+```
+
+## Why dig
+
+- **Grounded, not guessed.** Recall serves passages from your notes; the agent and model do the answering. dig is the retriever.
+- **Local.** With no model endpoint configured, retrieval makes zero network calls — your research stays on your machine.
+- **Any agent.** Reach the same index from [Claude Code](/integrations/claude-code), Cursor, or the [AI SDK](/integrations/ai-sdk) over [MCP](/learn/what-is-mcp).
+
+[RAG over local files](/use-cases/rag-local-files) · [Agent memory](/use-cases/agent-memory)

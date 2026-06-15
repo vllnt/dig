@@ -1,0 +1,29 @@
+---
+title: Content-addressed store — BLAKE3 blobs, manifests, and free dedupe
+description: dig stores file content as BLAKE3-keyed blobs and snapshots the tree as immutable manifests. The search index is a derived view rebuilt by scan, and deduplication falls out of content-hashing for free.
+updated: "2026-06-15"
+---
+
+dig is a thin CLI over **one content-addressed store**. Dedupe, versioning, undo, and merge are not separate subsystems — they are all operations on that store.
+
+## Blobs and manifests
+
+Every file's content is hashed with **BLAKE3** and stored once as a **blob**, keyed by that hash. Two paths with identical content hash to the same key, so they point at the same blob — stored a single time.
+
+- **Blob** — file content, keyed by its BLAKE3 hash. Stored once.
+- **Manifest** — an immutable snapshot of the tree: `path → blob hash + metadata`, plus a `parent` pointer.
+- **Journal** — the ordered list of manifests; the history.
+
+Disk is the source of truth; the store is a versioned shadow. You edit real files with your own tools, and dig observes the live tree and snapshots it.
+
+## The index is a derived view
+
+The search index — FTS5, plus the opt-in vector index — is not primary state. It is a **derived view** over the store, rebuilt from manifests by `dig scan`. Drop it and a scan reconstructs it; nothing is lost.
+
+```bash
+dig scan
+```
+
+Because blobs are content-keyed, **dedupe is free**: two paths mapping to the same blob hash *are* the duplicate set, so detection costs nothing. Re-embedding is free too — a moved or renamed file re-embeds nothing; only new content costs.
+
+[Reversible changesets](/learn/reversible-changesets) · [Hybrid retrieval](/learn/hybrid-retrieval)

@@ -1,0 +1,30 @@
+---
+title: Organize a knowledge base by PARA, GTD, or Zettelkasten
+description: Encode your method as declarative dig org rules — folders, naming, labels — and dig files every note to match, reversibly. The mental model becomes policy, not manual upkeep.
+updated: "2026-06-15"
+---
+
+PARA, GTD, and Zettelkasten are all rules about where a note belongs and what it's called. dig's policy engine turns those rules into something that enforces itself.
+
+## How it works
+
+1. **Write the method as policy.** Each `[[rule]]` is a `match → action`: `into` sets the folder, `rename` sets the filename, `label` tags it. PARA becomes four destination rules; Zettelkasten becomes an ID naming template; GTD becomes context labels.
+2. **Apply it.** `dig org` files every matching note to the layout your rules describe. `--dry-run` previews every move first.
+3. **Keep it converged.** `dig drift` reports notes that no longer match the method; `dig reconcile` brings them back — auto where safe, by proposal where not.
+
+```bash
+# PARA example — projects / areas / resources / archive as rules
+dig init ~/kb
+dig scan
+dig org --dry-run    # preview the filing your rules produce
+dig org              # apply; every move/rename/label is journaled
+dig drift            # what has wandered from the method
+```
+
+## Why dig
+
+- **The method is the config.** You organize by writing rules in your policy file — no preset to pick, just the structure you want, declared once.
+- **Self-correcting.** Drift detection means the system tells you when reality diverges from the method, instead of you noticing months later.
+- **Reversible.** Re-foldered everything wrong? `dig undo` reverses the whole changeset.
+
+[Build a second brain](/use-cases/second-brain) · [Organize an Obsidian vault](/use-cases/obsidian-vault)

@@ -1,0 +1,28 @@
+---
+title: dig vs hosted RAG-as-a-service — local-first ownership over a managed pipeline
+description: RAG-as-a-service runs a managed cloud pipeline that ingests your documents and answers over them. dig is a local-first retriever you own — hybrid search, reversible history, no data leaving your machine.
+updated: "2026-06-15"
+---
+
+Same job — retrieve over your knowledge — opposite trust models.
+
+## What each one is
+
+**Hosted RAG-as-a-service** is a managed cloud pipeline: you upload documents, the service chunks, embeds, and indexes them, and you query over an API. The infrastructure is operated for you, and your data lives on the vendor's platform.
+
+**dig** is a local-first binary you drive from the command line or over [MCP](/learn/what-is-mcp). It indexes a directory of real files and retrieves with a [hybrid FTS + vector pipeline](/learn/hybrid-retrieval), with every change journaled and reversible. Nothing leaves the machine.
+
+## Where they differ
+
+- **Location.** A hosted service runs in the vendor's cloud on your uploaded data. dig runs fully local, on CPU — your knowledge base never leaves.
+- **Operation.** A managed pipeline removes setup but adds a dependency, an API, and a bill. dig is a single binary; `dig mcp` is the whole integration.
+- **Reversibility.** dig journals every mutation and `dig undo` walks it back. A hosted index gives you no changeset history.
+- **Portability.** dig is harness-agnostic — any agent ([Claude Code](/integrations/claude-code), [Codex](/integrations/codex), [Cursor](/integrations/cursor)) drives it over MCP, with no lock-in to one vendor's API.
+
+## When to use which
+
+Reach for **hosted RAG-as-a-service** when you want a managed pipeline with no infrastructure to run and you're fine with your documents living in the vendor's cloud.
+
+Reach for **dig** when ownership matters — local data, reversible history, no service, and the same hybrid retrieval available to any agent.
+
+[Install dig](/install) · [All integrations](/integrations)
