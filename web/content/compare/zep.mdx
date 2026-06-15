@@ -1,0 +1,28 @@
+---
+title: dig vs Zep — local, reversible agent memory without a hosted service
+description: Zep is a hosted agent-memory service built on a temporal knowledge graph. dig is local-first memory you own — hybrid retrieval, reversible history, no service to run. When to pick which.
+updated: "2026-06-15"
+---
+
+Both give an agent memory. One is a service you call; one is a binary you own.
+
+## What each one is
+
+**Zep** is an agent-memory service built on a temporal knowledge graph — entity resolution, contradiction detection, and validity windows over the facts an agent accumulates. It's a graph engine you operate or consume as a cloud service.
+
+**dig** is a local-first binary you drive from the command line or over [MCP](/learn/what-is-mcp). It [retains and recalls](/learn/agent-memory) agent memory over a [hybrid FTS + vector pipeline](/learn/hybrid-retrieval), with every change journaled and reversible. No service to run.
+
+## Where they differ
+
+- **Deployment.** Zep leans cloud/SaaS with a graph engine to operate. dig is a single Go binary; `dig mcp` is the whole integration. Nothing to host.
+- **Model.** Zep builds a temporal knowledge graph. dig stores real files and retrieves them — recall over content, paths, and labels, not a graph to maintain.
+- **Reversibility.** dig journals every mutation as a changeset you can preview and `dig undo`. Memory is data you can walk back.
+- **Sovereignty.** dig never sends your knowledge base anywhere; it runs fully local, on CPU, and scores 98% hit@5 on LongMemEval there.
+
+## When to use which
+
+Reach for **Zep** if you want a managed temporal-graph memory and a contradiction/validity model, and you're comfortable running or renting that engine.
+
+Reach for **dig** if you want memory and retrieval as a local, reversible, harness-agnostic layer you own end-to-end — no service, no cloud.
+
+[Install dig](/install) · [Agent memory](/use-cases/agent-memory)

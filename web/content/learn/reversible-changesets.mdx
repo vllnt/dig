@@ -1,0 +1,27 @@
+---
+title: Reversible changesets — the journaled spine of dig
+description: Every dig mutation is a journaled changeset — preview as a dry run, apply atomically, then dig undo restores byte-identical prior state. Reversibility is the spine, including AI- and auto-applied changes.
+updated: "2026-06-15"
+---
+
+In dig, **reversibility is the spine**. No mutation touches your files directly. Each one is proposed as a **changeset**, journaled, and `undo`-able — including AI- and auto-applied ones.
+
+## Preview, apply, undo
+
+Running policy over the current head manifest produces a changeset: a draft manifest plus an op list — never a direct disk write. It moves through a state machine before anything lands on disk:
+
+- **dry-run preview** — validate the proposed moves, renames, and labels; nothing has changed yet.
+- **apply** — disk is touched only at commit, atomically, *after* the journal entry is written.
+- **undo** — `dig undo` walks the journal back and restores the prior state.
+
+```bash
+dig undo
+```
+
+Because every mutation writes a new manifest with `parent = previous head`, undo is exact: it restores **byte-identical** content, and no blob is deleted while still referenced. This holds for a `scan`, an `org`, a `reconcile`, or an AI proposal alike.
+
+## Why the spine matters
+
+A wrong policy match or a bad model suggestion is never a disaster — it is always reversible, because every action inherits dry-run, journaling, and undo. That is what makes it safe to let agents and `watch` mode act: capturing memory with `retain` rewinds the index without deleting the file, the same guarantee that makes undoing a scan safe.
+
+[Content-addressed store](/learn/content-addressed-store) · [Drift detection](/learn/drift-detection)

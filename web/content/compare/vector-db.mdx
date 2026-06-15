@@ -1,0 +1,28 @@
+---
+title: dig vs a vector database — a complete retriever, not storage to operate
+description: A vector database (Pinecone, Weaviate, Qdrant, Chroma) is storage you run and embed into. dig is a complete local retriever — hybrid FTS plus vector, management, and reversibility, with no service to operate.
+updated: "2026-06-15"
+---
+
+A vector database is one component. dig is the whole retriever.
+
+## What each one is
+
+**A vector database** — Pinecone, Weaviate, Qdrant, Chroma — stores embeddings and serves nearest-neighbor queries. You operate it (hosted or self-run), generate the embeddings, write the ingestion, and build everything around it: chunking, lexical search, management.
+
+**dig** is a local-first binary you drive from the command line or over [MCP](/learn/what-is-mcp). It indexes a directory of real files and retrieves with a [hybrid FTS + vector pipeline](/learn/hybrid-retrieval) — the vector half plus lexical search and management in one tool. No service to provision.
+
+## Where they differ
+
+- **Scope.** A vector DB is similarity search over vectors you supply. dig is the full retriever: `dig find --mode fts|vector|hybrid` combines lexical and semantic in one query.
+- **Storage.** A vector DB is a store to keep in sync with your source. dig's index is a derived view over a [content-addressed store](/learn/content-addressed-store); `dig scan` rebuilds it — nothing to diverge.
+- **Reversibility.** dig journals every mutation and `dig undo` walks it back. A vector store offers no changeset history.
+- **Management.** dig also dedupes, detects drift, and reconciles the underlying files to a policy you declare. A vector DB stores; it doesn't organize.
+
+## When to use which
+
+Reach for **a vector database** when you're building a custom system that needs scalable, dedicated similarity search and you'll operate the surrounding pipeline.
+
+Reach for **dig** when you want a complete local retriever — hybrid search, management, reversibility — with no service to run and no embedding pipeline to build.
+
+[Install dig](/install) · [Hybrid retrieval](/learn/hybrid-retrieval)
