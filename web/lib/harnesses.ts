@@ -167,7 +167,7 @@ const HARNESSES_DATA = [
         content: "install the SDK, expose dig as AI SDK tools",
         type: "comment",
       },
-      { content: "npm i @vllnt/dig", type: "command" },
+      { content: "npm i @vllnt/dig@canary", type: "command" },
       { content: "", type: "output" },
       { content: 'import { digTools } from "@vllnt/dig/ai"', type: "output" },
     ],
