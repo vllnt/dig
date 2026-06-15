@@ -37,7 +37,10 @@ test("a visitor reaches docs from the nav and reads the command reference", asyn
   test.skip(isMobile, "the docs nav link is hidden on mobile");
 
   await page.goto("/");
-  await page.getByRole("link", { name: "Docs" }).click();
+  await page
+    .getByRole("navigation")
+    .getByRole("link", { name: "Docs" })
+    .click();
 
   await expect(page).toHaveURL(/\/docs$/);
   await expect(
