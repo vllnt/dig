@@ -14,7 +14,7 @@ All notable changes to dig are documented here. The format is based on
   `@vllnt/dig@canary` on npm (`npm.yml`), and `dig-client` `.devN` on PyPI
   (`pypi.yml`). npm and PyPI keep canary + release in one file each (OIDC trusted
   publishing, no tokens), gated on `CANARY_ENABLED`. Provenance/attestations are
-  off while the repo is private. Stable releases are tag-driven and gated behind
+  on now that the repo is public. Stable releases are tag-driven and gated behind
   maintainer approval — **canary mode is the default** (see
   `.claude/rules/release.md`). Runbook: [docs/RELEASING.md](docs/RELEASING.md).
 - **`dig retain [file]`** — the agent-memory capture primitive: writes content (a
