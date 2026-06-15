@@ -1,0 +1,27 @@
+---
+title: Local-first AI — sovereign retrieval that never phones home
+description: dig runs fully on your machine. With no configured endpoint it makes zero network calls, your data never leaves the device, it is self-hostable, and there is no vendor lock-in.
+updated: "2026-06-15"
+---
+
+Retrieval this good usually implies a hosted vector service. dig inverts that: the store, index, policy engine, and dedupe all run **on-device**, so your knowledge base stays yours.
+
+## Zero network by default
+
+dig's deterministic core does the whole job with no model and no cloud. AI is an *optional* layer, off by default, and even when on it points at an OpenAI-compatible endpoint that defaults to localhost.
+
+- With `mode = off` or a localhost endpoint, dig makes **zero external network calls**.
+- No cloud account, no telemetry, no required network.
+- The only optional network hop is an LLM or embedding endpoint *you* configure.
+
+```bash
+dig find "renewal terms" --mode fts
+```
+
+FTS needs no model at all, so deterministic search always works offline.
+
+## Self-hostable, no lock-in
+
+dig is a single static pure-Go binary — no cgo, cross-compiles everywhere, runs offline. The AI layer speaks one OpenAI-compatible contract, so the endpoint is just a `base_url`: a local runtime like Ollama or llama.cpp, or a gateway you control. Swap it freely; nothing ties you to a vendor. The benchmark scores — 98.0% hit@5 on LongMemEval — were produced exactly this way, on CPU with small open models.
+
+[Hybrid retrieval](/learn/hybrid-retrieval) · [What is MCP?](/learn/what-is-mcp)

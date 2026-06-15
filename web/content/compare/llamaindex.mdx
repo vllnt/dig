@@ -1,0 +1,28 @@
+---
+title: dig vs LlamaIndex — the local data layer under a RAG framework
+description: LlamaIndex is a framework for building RAG pipelines — loaders, indexes, query engines. dig is the local, reversible data and retrieval layer such a framework can sit on. They compose; they don't compete.
+updated: "2026-06-15"
+---
+
+These sit at different layers, and they fit together.
+
+## What each one is
+
+**LlamaIndex** is a framework for building RAG and agent applications — data loaders, index abstractions, and query engines you assemble in code. You wire your own storage, choose a vector store, and own the pipeline you build.
+
+**dig** is a local-first binary you drive from the command line or over [MCP](/learn/what-is-mcp). It indexes a directory of real files, retrieves with a [hybrid FTS + vector pipeline](/learn/hybrid-retrieval), and journals every change as a reversible changeset. No pipeline to assemble, no vector DB to provision.
+
+## Where they differ
+
+- **Layer.** LlamaIndex is the framework you write a pipeline in. dig is a complete retriever you point at a folder — `dig find --mode hybrid` works out of the box.
+- **Storage.** LlamaIndex expects you to bring and operate a store. dig's index is a derived view over a [content-addressed store](/learn/content-addressed-store); `dig scan` rebuilds it.
+- **Reversibility.** dig journals every mutation and `dig undo` walks it back. A framework leaves change tracking to you.
+- **Operation.** LlamaIndex runs inside your app process. dig is harness-agnostic — any agent drives it over MCP with no code.
+
+## When to use which
+
+Reach for **LlamaIndex** when you're building a custom RAG application and want framework-level control over loaders, indexes, and query logic.
+
+Reach for **dig** when you want retrieval and memory as a local, reversible layer any agent uses directly — or as the data substrate a framework like LlamaIndex retrieves from.
+
+[Install dig](/install) · [Hybrid retrieval](/learn/hybrid-retrieval)
