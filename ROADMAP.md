@@ -2,8 +2,8 @@
 
 > The open, local, reversible **knowledge-base layer for AI agents** — organize a knowledge base to *your* mental model and retrieve it fast, then plug it into any agent or framework (MCP first, then native SDKs). Configurable and extensible at every stage, bring-your-own organization model (PARA, GTD, Memory Palace, or your own). A KB kept this clean is one your agent can recall across sessions — memory that doesn't rot falls out of the management, never the other way around. Your own system end-to-end — and the data layer others build on.
 
-**Now:** two active fronts — (1) **semantic-retrieval.4 BEAM**: the keystone eval on the contested 1M–10M-token frontier (128K tier published, vector hit@10 64.8% vs FTS 58.3%; 500K+ open); (2) **site-growth** — MDX content clusters complete (compare 7/7, learn 11, use-cases 8/8; engine shipped #53); only sg.6 (a `dig serve` page + the MDX-vs-registry decision) remains. Agent-memory loop dogfooded: finished Claude Code sessions auto-capture (SessionEnd → `dig retain --transcript`) into a KB `dig recall` serves budgeted, also as `dig_retain`/`dig_recall` MCP tools. Integration surface shipped (MCP · daemon · TS/Python SDKs · AI-SDK tools · Claude plugin). DONE: public-release, site-launch, eval-harness, harness-plugins core, public-extensibility core, integrations core.
-**Last updated:** 2026-06-15
+**Now:** two active fronts — (1) **semantic-retrieval.4 BEAM**: the keystone eval on the contested 1M–10M-token frontier (128K tier published, vector hit@10 64.8% vs FTS 58.3%; 500K+ open); (2) **site-growth** — MDX content clusters complete (compare 7/7, learn 11, use-cases 8/8; engine shipped #53); only sg.6 (a `dig serve` page + the MDX-vs-registry decision) remains. Agent-memory loop dogfooded: finished Claude Code sessions auto-capture (SessionEnd → `dig retain --transcript`) into a KB `dig recall` serves budgeted, also as `dig_retain`/`dig_recall` MCP tools. Integration surface shipped (MCP · daemon · TS/Python SDKs · AI-SDK tools · Claude plugin). DONE: public-release, site-launch, eval-harness, harness-plugins core, public-extensibility core, integrations core. Top PLANNED next: **pluggable-seams** + **core-correctness** — make the documented extension seams injectable and fix the confirmed correctness bugs from the 2026-06-17 deep review (spine is healthy; the gap is unwired seams + overclaiming docs).
+**Last updated:** 2026-06-17
 
 ## vision-docs [DONE 2026-05]
 
@@ -23,8 +23,8 @@
 **Goal:** The reversible spine — content-addressed store, search index, and core CLI — before any destructive feature.
 **Exit criteria:** init/scan/find/log/undo work end-to-end on a real KB; undo restores prior manifest; tests pass with -race; CI green 4/4.
 
-- [x] foundation.1 Content store — BLAKE3 blobs behind StorageBackend seam, bbolt manifests + journal
-- [x] foundation.2 FTS5 index behind IndexBackend seam (pure-Go sqlite), rebuilt from manifests
+- [x] foundation.1 Content store — BLAKE3 blobs behind StorageBackend seam, bbolt manifests + journal (seam defined but not injectable — store.Open hardwires the FS backend; pluggable-seams.1)
+- [x] foundation.2 FTS5 index behind IndexBackend seam (pure-Go sqlite), rebuilt from manifests (IndexBackend not yet used as a type — consumers bind *FTS; pluggable-seams.2)
 - [x] foundation.3 KB resolution — per-KB .dig dir, --kb flag, walk-up discovery
 - [x] foundation.4 Scan walker — hash, store, manifest entries, skip .dig
 - [x] foundation.5 Cobra CLI — init, scan --dry-run, find --json, log, undo
@@ -81,7 +81,7 @@
 - [x] parallel-views.1 Work views — {base manifest, draft} fork as a pointer
 - [x] parallel-views.2 Changeset state machine — explicit transition table (DRAFT→PROPOSED→STAGED→MERGED/CONFLICT/ESCALATED/ABORTED)
 - [x] parallel-views.3 CAS commit + disjointness check in one serialized tx; overlap → CONFLICT, head untouched
-- [x] parallel-views.4 dig work <create|list|abort> / dig merge CLI
+- [x] parallel-views.4 dig work <create|list|abort> / dig merge CLI (create→merge inert — no verb attaches ops, merge errors; core-correctness.3)
 - [x] parallel-views.5 Race tests — 8 concurrent workers, all merges land, no lost ops, history chain intact
 
 ## conflict-escalation [DONE 2026-06]
@@ -161,6 +161,31 @@
 - [x] eval-harness.4 Benchmark adapters — LongMemEval + LoCoMo + BEAM shipped in tools/eval (#8/#10); the extra MemoryAgentBench + MemBench adapters parked to `## Later` (post-exit stretch) (2026-06-15)
 - [x] eval-harness.5 FTS baseline scoreboard — FTS/vector/hybrid scoreboard published in docs/evals.md (the bar semantic-retrieval beat) (#8)
 - [x] eval-harness.6 CI eval loop — .github/workflows/eval.yml: nightly + on-demand lifecycle regression + Large-corpus CLI journey; benchmark scoring stays local/on-demand (needs an embedding endpoint, documented in evals.md) (2026-06-12)
+
+## pluggable-seams [PLANNED]
+
+**Goal:** The extension seams the docs already promise become real and honest — the two shipped interfaces (StorageBackend, IndexBackend) are injectable, EventSink is an interface not a type-switch, and every doc claim matches the code — so "extension, not a fork" is true for storage + index before the public transports (public-extensibility) build on them. (2026-06-17 deep review: foundation.1/.2 shipped the seams as interfaces, but core hardwires the concrete impl, so a backend swap is currently a fork.)
+**Exit criteria:** a third-party StorageBackend and IndexBackend inject through a public constructor with no core edit; an exported conformance + real-disk failure-injection suite proves a backend correct; `dig policy validate` accepts every policy/sink example shipped in the docs; the docs/extensions.md X0 table reflects code reality with a file:line per seam.
+
+- [ ] pluggable-seams.1 Inject StorageBackend — `store.OpenWith(digDir, StorageBackend)`; `Open` delegates with `NewFSBackend` (zero call-site churn) + an in-memory test backend; converts storage from fork → extension (store.go:38 hardwires NewFSBackend today)
+- [ ] pluggable-seams.2 Make IndexBackend a real type — retype the consumers (cli/index_helper.go:31, watch.go:76, retrieval.go:85, tools/eval) to `IndexBackend`, add an `OpenBackend()` returning the interface + `var _ IndexBackend = (*FTS)(nil)`; the interface is decorative today (index.go:30, never used as a type)
+- [ ] pluggable-seams.3 EventSink interface + registry — `type Sink interface { Fire(Event) error }` + a type-keyed registry; exec/webhook register via init(); per-kind validation moves behind the factory (replaces the hardcoded `switch s.Type` in sink/sink.go:60 + policy.go:115); mirrors the StorageBackend shape
+- [ ] pluggable-seams.4 Seam conformance + fault tests — exported `store.RunStorageBackendTests` / `index.RunIndexBackendTests` (the vectortest pattern, doubling as the reference impl for extension authors) + real-disk fault tests on the blob/apply spine (blob Put rename-fail → ErrBlobNotFound; organize.Apply settle-fail → reconciled by scan); needs pluggable-seams.1
+- [ ] pluggable-seams.5 Propose-only safety invariant in the type — when extracting the public seam API, make the seam return a `*Plan`/proposal with read-only store access, so "an extension can only propose a changeset" (extensions.md:93) is enforced by the signature, not by docs; precedes any out-of-tree seam (public-extensibility.2–.5)
+- [ ] pluggable-seams.6 Docs-truth pass + CI guard — rewrite the extensions.md X0 "shipped" table per-seam with file:line (2 real interfaces, neither injectable until .1/.2; EventSink a struct; Extractor/Matcher/Action/Command/LLMProvider have no interface); fix the two rejected examples (extensions.md:53 + README.md:295 → `on`/`type`/`command`; README's `[llm]`/`[[workflow]]` policy block → a marked "planned" subsection); move the LLM-chat / PDF-OCR-extraction / "errgroup worker pool" claims to a roadmap section (they're remote-reach/Later, absent in code); resolve architecture.md §0-vs-§9; README "Go 1.22+" → "1.25+"; add a CI test that runs every fenced doc TOML through `policy.Parse`
+
+## core-correctness [PLANNED]
+
+**Goal:** The confirmed correctness bugs the 2026-06-17 deep review found in already-shipped code are fixed, so the reversibility guarantee holds under failure and shipped commands do what the docs say.
+**Exit criteria:** MergeView can't leave disk and journal disagreeing on a partial failure (fault-tested); Ctrl-C cancels an in-flight embed and `dig serve` shuts down gracefully; `dig work`/`dig merge` work end-to-end or are removed and unmarked; a typo'd policy never silently drops sinks/vectors; `find --json` matches the snake_case of every other command; the build toolchain carries no known std-lib CVEs.
+
+- [ ] core-correctness.1 MergeView atomicity — move `os.Rename` out of the bbolt write-tx (mirror organize.Apply: plan in a read tx → rename outside any tx with temp-name staging for swap chains → a short Update to write the manifest + advance head) + a fault test (read-only target mid-loop); today a partial failure desyncs disk and journal (store/views.go:245,362)
+- [ ] core-correctness.2 Context plumbing — `signal.NotifyContext` root ctx + `cli.NewRoot().ExecuteContext(ctx)` (main.go:22 uses bare Execute → serve.go:44 graceful-shutdown is dead code); thread ctx into vector.Client (`NewRequestWithContext`, client.go:138) so an in-flight embed cancels on Ctrl-C
+- [ ] core-correctness.3 Resolve `dig work` create→merge — dead on arrival: no verb attaches ops to a view and DRAFT→MERGED is illegal, so `dig merge` always errors (work.go:23, views.go:29). Either ship `dig work propose/stage` wiring ProposeView/StageView, or collapse the middle into merge and delete ProposeView/StageView/escapesRoot; until reachable, drop the "shipped" marking on the parallel-views CLI claim (parallel-views.4)
+- [ ] core-correctness.4 loadPolicy fail-loud — distinguish absent (os.ErrNotExist → nil) from invalid (→ warn to stderr); a typoed policy.toml currently silently drops sinks/vectors/retrieval on scan/find/undo (cli/index_helper.go:95)
+- [ ] core-correctness.5 find --json casing — add `json:"…"` tags to index.Result + vector.Result (PascalCase today vs snake_case everywhere else) + assert the key names in a `find --json` test (index.go:23, vector/index.go:19)
+- [ ] core-correctness.6 Lift the derived-rebuild pipeline out of internal/cli — `RebuildDerived(digDir, st, m, opts)` in a domain package (internal/views or reconcile), repointing the 8 CLI sites + tools/eval, which re-implements it and already drifts (never fires sinks; embed budget 500 vs 64) (cli/index_helper.go:27)
+- [ ] core-correctness.7 Bump Go toolchain ≥1.25.11 — add a `toolchain` directive (+ a CI assertion) clearing the 21 std-lib CVEs govulncheck flags from the unpatched go1.25.0 build (none from dig's own code) (go.mod:3)
 
 ## harness-plugins [PLANNED]
 
@@ -323,3 +348,9 @@
 - Vision-model OCR fallback when tesseract absent
 - Migrate branch protection to GitHub rulesets if collaborators join
 - Extra benchmark adapters — MemoryAgentBench + MemBench (selective-forgetting, contradiction, test-time-learning, capacity-under-growth → entity-graph + agent-memory), beyond the shipped LongMemEval/LoCoMo/BEAM adapters (parked from eval-harness.4, 2026-06-15)
+- DX onboarding — a "How a command works" map in CONTRIBUTING.md (resolve KB → open store → call domain → render, e.g. commands.go newScanCmd → rebuildIndex) + the required PATH for `go`/`golangci-lint` (deep review 2026-06-17)
+- In-package tests for internal/mcp, internal/sink, internal/kb — the extension-relevant packages currently covered only indirectly via e2e (deep review 2026-06-17)
+- `NewRoot(extra ...*cobra.Command)` + per-command --kb binding (kbFlag is a package global) — make an out-of-tree verb testable and allow t.Parallel() (deep review 2026-06-17)
+- Test sharpening — a `testing/quick` property test on RRF Fuse (sorted, len ≤ limit, deterministic) + multi-seed TestLifecycleRegression (the generator already takes a seed) (deep review 2026-06-17)
+- Split the internal/policy config catch-all (RetrievalPolicy/DedupPolicy/EventSink under one struct, fan-in 9) to owning packages as config grows (deep review 2026-06-17)
+- Dedup the ~9-command arg-building duplicated across cli/serve.go + cli/mcp.go into a shared table (deep review 2026-06-17)
