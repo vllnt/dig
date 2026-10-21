@@ -25,13 +25,13 @@
   "dependencies": {
     "@mdx-js/mdx": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
-    "@next/mdx": "^16.2.1",
+    "@next/mdx": "~16.3.8",
     "@vllnt/analytics": "^0.1.1",
     "@vllnt/logger": "^0.1.2",
     "@vllnt/ui": "^0.2.1",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.17.0",
-    "next": "^16.2.6",
+    "next": "~16.3.8",
     "next-intl": "^4.11.0",
     "next-themes": "^0.4.6",
     "react": "^19.2.0",
@@ -45,7 +45,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.11",
     "@vllnt/eslint-config": "^1.0.0",
     "@vllnt/typescript": "^1.0.0",
     "eslint": "^9.39.2",
@@ -53,6 +53,20 @@
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.8"
+    "vite": "^8.1.6",
+    "vitest": "^4.1.11"
+  },
+  "pnpm": {
+    "overrides": {
+      "baseline-browser-mapping@<2.11.0": "^2.11.0",
+      "brace-expansion@<1.1.21": "^1.1.21",
+      "brace-expansion@>=5 <5.0.7": "^5.0.7",
+      "browserslist@<4.28.7": "^4.28.7",
+      "handlebars@<4.7.10": "^4.7.10",
+      "js-yaml@<3.15.2": "^3.15.2",
+      "js-yaml@>=4 <4.3.2": "^4.3.2",
+      "source-map-js@<1.2.2": "^1.2.2",
+      "ws@>=8 <8.21.0": "^8.21.0"
+    }
   }
 }
