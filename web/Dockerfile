@@ -8,7 +8,7 @@
 
 # syntax=docker/dockerfile:1.6
 
-FROM node:22-alpine@sha256:968df39aedcea65eeb078fb336ed7191baf48f972b4479711397108be0966920 AS builder
+FROM node:22.23.4-alpine@sha256:ce8d97f7cfc7c5386421eb932df20a29df99b1a7f469f6157d5c9956702ffadc AS builder
 WORKDIR /src
 
 RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
@@ -25,7 +25,7 @@ RUN pnpm build
 
 # ---
 
-FROM node:22-alpine@sha256:968df39aedcea65eeb078fb336ed7191baf48f972b4479711397108be0966920 AS runtime
+FROM node:22.23.4-alpine@sha256:ce8d97f7cfc7c5386421eb932df20a29df99b1a7f469f6157d5c9956702ffadc AS runtime
 WORKDIR /app
 
 RUN addgroup -S -g 65532 app && adduser -S -u 65532 -G app app
