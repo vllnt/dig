@@ -21,7 +21,7 @@ tailscale serve --bg 3977
 # or explicit:
 tailscale serve --bg --https=443 localhost:3977
 
-tailscale serve status          # show the https://<host>.<tailnet>.ts.net URL
+tailscale serve status          # show the served HTTPS URL
 tailscale serve reset           # stop serving (clear all)
 ```
 
@@ -39,4 +39,4 @@ Convenience scripts: `pnpm -C web serve:tailscale` / `pnpm -C web serve:tailscal
 - **No collisions**: every local project owns a distinct, stable port.
 - **Private by default**: tailnet-only reach, no public exposure of an unfinished app.
 - **Real HTTPS**: device testing, OAuth callbacks, and secure-context APIs work without cert hacks.
-- **Stable URL**: the `*.ts.net` hostname doesn't churn between runs like tunnel URLs do.
+- **Stable URL**: the served hostname doesn't churn between runs like tunnel URLs do.
