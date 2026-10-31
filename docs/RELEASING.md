@@ -5,7 +5,7 @@ npm SDK, and the **`dig-client`** PyPI SDK:
 
 | Artifact | Workflow | Canary (push to `main`) | Stable (`vX.Y.Z` tag) |
 |----------|----------|-------------------------|------------------------|
-| **npm** `@vllnt/dig` | `npm.yml` | `@vllnt/dig@canary` | `@vllnt/dig@latest` (release / dispatch) |
+| **npm** `@vllnt/dig` | `npm.yml` | `@vllnt/dig@canary` | `@vllnt/dig@latest` (tag push) |
 | **Go CLI** | `canary.yml` + `release.yml` | rolling `canary` prerelease | GoReleaser binaries |
 | **PyPI** `dig-client` | `pypi.yml` | `.devN` prerelease | stable on release |
 
@@ -83,7 +83,7 @@ change it.
 
 - Bump the version: `clients/typescript/package.json`, `clients/python/pyproject.toml`,
   and (for visibility) the CLI is stamped from the git tag by GoReleaser.
-- Move the matching `CHANGELOG.md` entries from `[Unreleased]` to a dated
+- Move the matching `CHANGELOG.md` entries from `[Unreleased]` (or the pending `[X.Y.Z] - Unreleased`) to a dated
   `[X.Y.Z]` section. Keep the package CHANGELOGs in sync.
 - Merge the PR. The canary on `main` immediately publishes
   `…-canary.<sha>` / `@vllnt/dig@canary` — a dress rehearsal of the release.
@@ -100,10 +100,17 @@ That triggers:
 - **`release.yml`** → GoReleaser builds the cross-compiled binaries + checksums
   and creates the **GitHub Release** for `vX.Y.Z` (changelog from Conventional
   Commits).
-- The published-release event triggers the **`release` job in `npm.yml`** (OIDC,
-  publishes `@vllnt/dig@latest` — moving `latest` off any earlier canary) and the
-  **`release` job in `pypi.yml`** (OIDC, publishes `dig-client`). Both reuse the
-  same trusted publisher as their canary job — no tokens to manage.
+- The same tag push triggers the **`release` job in `npm.yml`** (OIDC with
+  provenance, publishes `@vllnt/dig@latest` — moving `latest` off any earlier
+  canary). It runs only for a `vX.Y.Z` tag whose commit is on `main`, where the tag
+  equals `clients/typescript/package.json` `version` and the root `CHANGELOG.md`
+  has a `## [X.Y.Z]` entry; it skips a version that is already published. It does
+  not create the GitHub release (`release.yml` does). The **`release` job in
+  `pypi.yml`** (OIDC, publishes `dig-client`) is unchanged. Both reuse the same
+  trusted publisher as their canary job — no tokens to manage.
+
+The npm canary can also be run by hand: **Actions → npm → Run workflow** on `main`.
+A canary of an already-published version is numbered from the next patch.
 
 ## Homebrew (wired at go-public + v1)
 

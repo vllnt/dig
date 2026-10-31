@@ -85,6 +85,59 @@ export class DigError extends Error {
 
 const DEFAULT_BASE_URL = "http://127.0.0.1:3978";
 
+const RETRIEVAL_MODES: readonly string[] = ["fts", "vector", "hybrid"];
+
+/** Reject a present-but-empty (or non-string) value; undefined means "not set". */
+function checkString(name: string, value: unknown): void {
+  if (value === undefined) return;
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new TypeError(`${name} must be a non-empty string`);
+  }
+}
+
+/** Reject zero, negative, fractional, NaN or infinite counts; undefined means "not set". */
+function checkCount(name: string, value: unknown): void {
+  if (value === undefined) return;
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+    throw new TypeError(`${name} must be a positive integer`);
+  }
+}
+
+function checkMode(value: unknown): void {
+  if (value === undefined) return;
+  if (typeof value !== "string" || !RETRIEVAL_MODES.includes(value)) {
+    throw new TypeError(`mode must be one of: ${RETRIEVAL_MODES.join(", ")}`);
+  }
+}
+
+/** An empty kb would silently fall back to the daemon's working-directory KB. */
+function checkKb(options: KbOptions): void {
+  checkString("kb", options.kb);
+}
+
+function normalizeBaseUrl(raw: string): string {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new TypeError(`baseUrl is not a valid URL: ${raw}`);
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new TypeError("baseUrl must use http or https");
+  }
+  if (url.search !== "" || url.hash !== "") {
+    throw new TypeError("baseUrl must not contain a query string or fragment");
+  }
+  return trimTrailingSlashes(raw);
+}
+
+/** A loop, not `/\/+$/`: that regex backtracks quadratically on a long run of slashes. */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === "/") end--;
+  return value.slice(0, end);
+}
+
 /**
  * A client for a local dig daemon.
  *
@@ -97,8 +150,13 @@ export class DigClient {
   private readonly doFetch: typeof fetch;
 
   constructor(options: DigClientOptions = {}) {
-    this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
-    this.doFetch = options.fetch ?? globalThis.fetch;
+    this.baseUrl = normalizeBaseUrl(options.baseUrl ?? DEFAULT_BASE_URL);
+    // Never call fetch as a method of the client: browsers throw "Illegal
+    // invocation" when fetch's `this` is not the window. The global is resolved
+    // at call time so a later polyfill is honored.
+    const custom = options.fetch;
+    this.doFetch = (input, init) =>
+      custom ? custom(input, init) : globalThis.fetch(input, init);
   }
 
   /** Liveness + daemon version. */
@@ -111,6 +169,10 @@ export class DigClient {
     query: string,
     options: KbOptions & { mode?: RetrievalMode; limit?: number } = {},
   ): Promise<FindResult[]> {
+    checkKb(options);
+    checkString("query", query);
+    checkMode(options.mode);
+    checkCount("limit", options.limit);
     return this.request<FindResult[]>("GET", "/find", {
       kb: options.kb,
       query,
@@ -131,6 +193,10 @@ export class DigClient {
     query: string,
     options: KbOptions & { mode?: RetrievalMode; budget?: number } = {},
   ): Promise<RecallPack> {
+    checkKb(options);
+    checkString("query", query);
+    checkMode(options.mode);
+    checkCount("budget", options.budget);
     return this.request<RecallPack>("GET", "/recall", {
       kb: options.kb,
       query,
@@ -151,6 +217,9 @@ export class DigClient {
     content: string,
     options: KbOptions & { as?: string } = {},
   ): Promise<RetainResult> {
+    checkKb(options);
+    checkString("content", content);
+    checkString("as", options.as);
     return this.request<RetainResult>(
       "POST",
       "/retain",
@@ -161,11 +230,13 @@ export class DigClient {
 
   /** Report how the KB diverges from its policy. Read-only. */
   async drift(options: KbOptions = {}): Promise<unknown> {
+    checkKb(options);
     return this.request("GET", "/drift", { kb: options.kb });
   }
 
   /** Browse change history, newest first. Read-only. */
   async log(options: KbOptions = {}): Promise<unknown> {
+    checkKb(options);
     return this.request("GET", "/log", { kb: options.kb });
   }
 
@@ -173,16 +244,20 @@ export class DigClient {
   async export(
     options: KbOptions & { filter?: string; at?: string } = {},
   ): Promise<string> {
-    const body = await this.request<{ output?: string }>("GET", "/export", {
+    checkKb(options);
+    checkString("filter", options.filter);
+    checkString("at", options.at);
+    const body = await this.request<{ output?: string } | undefined>("GET", "/export", {
       kb: options.kb,
       filter: options.filter,
       at: options.at,
     });
-    return body.output ?? "";
+    return body?.output ?? "";
   }
 
   /** Apply organization policy. Previews unless apply is true (reversible with undo). */
   async org(options: KbOptions & { apply?: boolean } = {}): Promise<unknown> {
+    checkKb(options);
     return this.request("POST", "/org", { kb: options.kb, apply: options.apply });
   }
 
@@ -190,6 +265,7 @@ export class DigClient {
   async reconcile(
     options: KbOptions & { apply?: boolean } = {},
   ): Promise<unknown> {
+    checkKb(options);
     return this.request("POST", "/reconcile", {
       kb: options.kb,
       apply: options.apply,
@@ -198,6 +274,7 @@ export class DigClient {
 
   /** Revert the last changeset. */
   async undo(options: KbOptions = {}): Promise<unknown> {
+    checkKb(options);
     return this.request("POST", "/undo", { kb: options.kb });
   }
 
@@ -216,10 +293,17 @@ export class DigClient {
     const response = await this.doFetch(url, init);
     const text = await response.text();
     if (!response.ok) {
-      const message = parseError(text) ?? response.statusText;
+      const message =
+        parseError(text) ||
+        response.statusText ||
+        `request failed with status ${response.status}`;
       throw new DigError(message, response.status);
     }
-    return parseBody<T>(text);
+    try {
+      return parseBody<T>(text);
+    } catch {
+      throw new DigError(`invalid JSON in response to ${method} ${path}`, response.status);
+    }
   }
 }
 

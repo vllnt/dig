@@ -45,7 +45,18 @@ await dig.log();
 
 Target a specific KB with `{ kb: "/path/or/name" }` on any call; omit it to use
 the KB at the daemon's working directory. Errors throw a `DigError` carrying the
-HTTP status.
+HTTP status (also for a success response that is not valid JSON).
+
+Clearly invalid arguments throw a `TypeError` before any request is sent: empty
+or blank strings (`query`, `kb`, `as`, `filter`, `at`, `content`), a `limit` or
+`budget` that is not a positive integer, a `mode` other than `fts`, `vector` or
+`hybrid`, and a `baseUrl` that is not an `http(s)` URL without query or fragment.
+An empty `kb` is rejected because the daemon would silently use its
+working-directory KB instead.
+
+Pass `fetch` to the constructor to add a timeout or abort signal, for example
+`new DigClient({ fetch: (url, init) => fetch(url, { ...init, signal: AbortSignal.timeout(10_000) }) })`.
+The client sets no timeout of its own.
 
 ## API
 
