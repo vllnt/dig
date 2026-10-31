@@ -109,3 +109,12 @@ test("dig_org tool previews, then applies, then dig_undo reverts", async () => {
   await t.dig_undo.execute!({ kb }, opts);
   assert.equal(moved(), false);
 });
+
+test("each tool carries its schema under both the ai 4 and ai 5 keys", () => {
+  for (const [name, t] of Object.entries(tools())) {
+    const def = t as unknown as Record<string, { safeParse(v: unknown): { success: boolean } }>;
+    assert.ok(def.parameters, `${name}: ai 4 reads parameters`);
+    assert.equal(def.inputSchema, def.parameters, `${name}: ai 5 reads inputSchema`);
+    assert.equal(def.inputSchema!.safeParse({ kb: 42 }).success, false, `${name}: schema validates`);
+  }
+});

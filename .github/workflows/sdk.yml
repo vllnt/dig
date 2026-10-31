@@ -55,6 +55,14 @@ jobs:
         run: pnpm test
         env:
           DIG_BIN: ${{ runner.temp }}/dig
+      # The ./ai entry declares peer `ai >=4 <6`; the devDependency is ai 5, so prove ai 4 too.
+      - name: Typecheck and test against ai 4
+        run: |
+          pnpm add -D ai@4.3.19
+          pnpm typecheck
+          pnpm test
+        env:
+          DIG_BIN: ${{ runner.temp }}/dig
 
   python:
     name: python client

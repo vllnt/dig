@@ -105,5 +105,9 @@ All notable changes to dig are documented here. The format is based on
   before any request; an error response without a JSON body now carries the HTTP status
   in its message, a non-JSON success response throws a `DigError`, and `export()` returns
   `""` for an empty body instead of throwing.
+- **`@vllnt/dig/ai`** — the tools now typecheck and run on both `ai` 4 and `ai` 5, as
+  the `ai >=4 <6` peer range promises. Each tool carries its schema under both
+  `parameters` (ai 4) and `inputSchema` (ai 5); CI runs the suite against `ai` 5 and
+  `ai` 4.
 
 [0.1.0]: https://github.com/vllnt/dig/commits/main
