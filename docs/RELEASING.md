@@ -83,7 +83,7 @@ change it.
 
 - Bump the version: `clients/typescript/package.json`, `clients/python/pyproject.toml`,
   and (for visibility) the CLI is stamped from the git tag by GoReleaser.
-- Move the matching `CHANGELOG.md` entries from `[Unreleased]` to a dated
+- Move the matching `CHANGELOG.md` entries from `[Unreleased]` (or the pending `[X.Y.Z] - Unreleased`) to a dated
   `[X.Y.Z]` section. Keep the package CHANGELOGs in sync.
 - Merge the PR. The canary on `main` immediately publishes
   `…-canary.<sha>` / `@vllnt/dig@canary` — a dress rehearsal of the release.

@@ -4,7 +4,7 @@ All notable changes to dig are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - Unreleased
 
 ### Added
 
@@ -86,5 +86,24 @@ All notable changes to dig are documented here. The format is based on
 
 - `main` branch protection hardened (`enforce_admins`, required CI checks) ahead of going
   public.
+- **npm release is tag-driven** — `npm.yml` publishes `@vllnt/dig@latest` only from a
+  pushed `vX.Y.Z` tag on `main` that matches `clients/typescript/package.json` and this
+  changelog (it no longer runs on a published release or any manual dispatch, and uses
+  the runner's bundled npm instead of `npx npm@latest`). The canary can also be run
+  manually on `main`; a canary of an already-published version is numbered from the next
+  patch. Workflow actions are pinned to commit SHAs, checkouts drop their credentials,
+  and installs use `--frozen-lockfile` with pnpm 10 and a 7-day release-age policy.
 
-[Unreleased]: https://github.com/vllnt/dig/commits/main
+### Fixed
+
+- **`@vllnt/dig` SDK** — `DigClient` no longer calls `fetch` as a method of itself
+  (browsers throw `Illegal invocation`); a `baseUrl` with several trailing slashes, or
+  one that is not an `http(s)` URL, is normalized or rejected when the client is built;
+  an empty `kb` (which the daemon silently turns into its working-directory KB, even for
+  `org`/`reconcile`/`undo`), empty `query`/`content`/`as`/`filter`/`at`, a `limit` or
+  `budget` that is not a positive integer, and an unknown `mode` throw a `TypeError`
+  before any request; an error response without a JSON body now carries the HTTP status
+  in its message, a non-JSON success response throws a `DigError`, and `export()` returns
+  `""` for an empty body instead of throwing.
+
+[0.1.0]: https://github.com/vllnt/dig/commits/main
