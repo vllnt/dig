@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 // copy it in (web/Dockerfile) or these files 404 in production.
 //
 // NOTE: `next dev` (the local webServer) serves public/ regardless, so this
-// suite only FAILS against the bug when pointed at the real image — i.e. the
+// suite fails on the bug when pointed at the real image — i.e. the
 // `ntk promote` e2e gate (NTK_PREVIEW_URL) or BASE_URL set to the deployment.
 
 test("llms.txt is served from the site root for AI discovery", async ({
