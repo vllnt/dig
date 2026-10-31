@@ -25,36 +25,36 @@
   "dependencies": {
     "@mdx-js/mdx": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
-    "@next/mdx": "~16.3.8",
+    "@next/mdx": "~16.4.3",
     "@vllnt/analytics": "^0.1.1",
     "@vllnt/logger": "^0.1.2",
     "@vllnt/ui": "^0.2.1",
     "gray-matter": "^4.0.3",
-    "lucide-react": "^1.17.0",
-    "next": "~16.3.8",
-    "next-intl": "^4.11.0",
+    "lucide-react": "^1.61.0",
+    "next": "~16.4.3",
+    "next-intl": "4.13.4",
     "next-themes": "^0.4.6",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "reading-time": "^1.5.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
-    "@tailwindcss/typography": "^0.5.16",
-    "@types/mdx": "^2.0.13",
-    "@types/node": "^22.0.0",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "@vitest/coverage-v8": "^4.1.11",
-    "@vllnt/eslint-config": "^1.0.0",
-    "@vllnt/typescript": "^1.0.0",
-    "eslint": "^9.39.2",
-    "postcss": "^8.5.0",
-    "tailwindcss": "^3.4.17",
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/typography": "^0.5.20",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "^5.0.5",
+    "@vllnt/eslint-config": "^2.0.0",
+    "@vllnt/typescript": "^2.0.0",
+    "eslint": "^9.39.5",
+    "postcss": "^8.5.31",
+    "tailwindcss": "^3.4.19",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.9.3",
-    "vite": "^8.1.6",
-    "vitest": "^4.1.11"
+    "typescript": "^6.0.3",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
   },
   "pnpm": {
     "overrides": {
@@ -62,11 +62,14 @@
       "brace-expansion@<1.1.21": "^1.1.21",
       "brace-expansion@>=5 <5.0.7": "^5.0.7",
       "browserslist@<4.28.7": "^4.28.7",
+      "deepmerge-ts@<8.0.0": "^8.0.0",
       "handlebars@<4.7.10": "^4.7.10",
       "js-yaml@<3.15.2": "^3.15.2",
       "js-yaml@>=4 <4.3.2": "^4.3.2",
+      "postcss-selector-parser@<6.1.5": "^6.1.5",
       "source-map-js@<1.2.2": "^1.2.2",
-      "ws@>=8 <8.21.0": "^8.21.0"
+      "ws@>=8 <8.21.0": "^8.21.0",
+      "zod@>=4 <4.6.6": "^4.6.6"
     }
   }
 }
