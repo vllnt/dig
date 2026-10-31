@@ -11,9 +11,10 @@ dig ships three artifacts — the Go CLI, the `@vllnt/dig` npm SDK, and the
 | npm `@vllnt/dig` | `npm.yml` | `@vllnt/dig@{version}-canary.<sha>` (tag `canary`) | `@vllnt/dig@{version}` (tag `latest`) |
 | PyPI `dig-client` | `pypi.yml` | `dig-client {version}.dev<run>` | `dig-client {version}` |
 
-- **npm.yml / pypi.yml** each have `quality` → `canary` (on push, gated on the
-  `CANARY_ENABLED` repo variable) → `release` (on a published GitHub release or
-  `workflow_dispatch`). One file, both channels — modeled on `@vllnt/ui`'s
+- **npm.yml / pypi.yml** each have `quality` → `canary` (on push to `main`,
+  gated on the `CANARY_ENABLED` repo variable; npm.yml also runs it on a manual
+  dispatch on `main`) → `release` (npm.yml: a pushed `vX.Y.Z` tag on `main`;
+  pypi.yml: a published GitHub release). One file, both channels — modeled on `@vllnt/ui`'s
   `publish.yml`.
 - **Auth is OIDC trusted publishing** for npm + PyPI — one trusted publisher per
   package points at its workflow (`npm.yml` / `pypi.yml`) and covers both jobs.
@@ -56,9 +57,10 @@ private repos). OIDC auth itself is unaffected by visibility.
    `clients/python/pyproject.toml`; move `CHANGELOG` `[Unreleased]` → `[X.Y.Z]`.
 2. Merge that PR (the canary publishes a dress rehearsal).
 3. `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z` → `release.yml`
-   (GoReleaser) creates the GitHub Release, whose `published` event fires the
-   `release` jobs in `npm.yml` + `pypi.yml` (npm `--tag latest` also moves
-   `latest` off the canary).
+   (GoReleaser) creates the GitHub Release, and the same tag push fires the
+   `release` job in `npm.yml` (`--tag latest` also moves `latest` off the canary;
+   it checks the tag against `package.json`, the root `CHANGELOG.md` and `main`).
+   The `release` job in `pypi.yml` fires on the release's `published` event.
 
 ## Never
 
