@@ -128,7 +128,14 @@ function normalizeBaseUrl(raw: string): string {
   if (url.search !== "" || url.hash !== "") {
     throw new TypeError("baseUrl must not contain a query string or fragment");
   }
-  return raw.replace(/\/+$/, "");
+  return trimTrailingSlashes(raw);
+}
+
+/** A loop, not `/\/+$/`: that regex backtracks quadratically on a long run of slashes. */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === "/") end--;
+  return value.slice(0, end);
 }
 
 /**

@@ -67,6 +67,13 @@ test("baseUrl is validated when the client is built", () => {
   }
 });
 
+test("trailing slashes are trimmed in linear time (no polynomial ReDoS)", () => {
+  const baseUrl = `http://127.0.0.1:9/${"/".repeat(100_000)}x`;
+  const started = performance.now();
+  new DigClient({ baseUrl, fetch: recorder().fetch });
+  assert.ok(performance.now() - started < 500, "baseUrl normalization took too long");
+});
+
 test("baseUrl keeps a path prefix and drops every trailing slash", async () => {
   const { fetch, seen } = recorder(() => Response.json({ status: "ok", version: "1" }));
   await new DigClient({ baseUrl: "http://127.0.0.1:9/dig///", fetch }).health();
