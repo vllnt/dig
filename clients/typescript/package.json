@@ -45,18 +45,17 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
-    "ai": "^5.0.281",
+    "ai": "^5.0.287",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "zod": "^3.25.76"
+    "zod": "^4.6.6"
   },
   "pnpm": {
     "ignoredBuiltDependencies": ["esbuild"],
     "minimumReleaseAge": 10080,
     "minimumReleaseAgeExclude": ["@vllnt/*"],
     "overrides": {
-      "jsondiffpatch@<0.7.6": "^0.7.6",
-      "nanoid@<3.3.18": "^3.3.18"
+      "undici@<6.29.1": "^6.29.1"
     }
   }
 }

@@ -5,8 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  jsondiffpatch@<0.7.6: ^0.7.6
-  nanoid@<3.3.18: ^3.3.18
+  undici@<6.29.1: ^6.29.1
 
 importers:
 
@@ -16,8 +15,8 @@ importers:
         specifier: ^26.6.5
         version: 26.6.5
       ai:
-        specifier: ^5.0.281
-        version: 5.0.281(zod@3.25.76)
+        specifier: ^5.0.287
+        version: 5.0.287(zod@4.6.7)
       tsx:
         specifier: ^4.23.15
         version: 4.23.15
@@ -25,19 +24,19 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       zod:
-        specifier: ^3.25.76
-        version: 3.25.76
+        specifier: ^4.6.6
+        version: 4.6.7
 
 packages:
 
-  '@ai-sdk/gateway@2.0.172':
-    resolution: {integrity: sha512-ziQ9HIi2gfE1/cXqNtw5qZDwjAN2GJh9Kjva64KKsSRMH6be16PlmcVx4PJlVO5wPcmShsFHClVB21B/Oy8Zhw==}
+  '@ai-sdk/gateway@2.0.178':
+    resolution: {integrity: sha512-Ehhbg+R894GKlKNMnzHrn4uO5fZlQsxZMBDTHnHz4Esr7PQWrf/KIA7Km354JQXUnUA7jfOlEM7GyEs4Ig0zEA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider-utils@3.0.42':
-    resolution: {integrity: sha512-5DMgJ2HD4rR6mvoc7mqeW5roLHTTqDKNkGuLOWnF0+UCOu96xqPFMy3RbGKYAYDh5YhkwGBdbV7f6xSkLxzGXw==}
+  '@ai-sdk/provider-utils@3.0.45':
+    resolution: {integrity: sha512-AfVd7CNBns6agdc9SWTr6kh8By45X48eenoyyYRUjX4we5rqoaowcff1L2U8sbYctxunKryiyBeNv005W60VDw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -202,10 +201,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@fastify/busboy@2.1.1':
-    resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
-    engines: {node: '>=14'}
-
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
@@ -340,8 +335,8 @@ packages:
     resolution: {integrity: sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w==}
     engines: {node: '>= 20'}
 
-  ai@5.0.281:
-    resolution: {integrity: sha512-UkuJOb6KkJYaDxX+fPhgJS2ya0Rki9d2n0AX6IgxsKbQpvfzo6zEPhg0SY+Jjkl8NqkqSawskIM8jk9fgNh4JQ==}
+  ai@5.0.287:
+    resolution: {integrity: sha512-tmRlFCznkvNfiJBP/QQT0WirKETvvhfwqyVxUyhMrTqEQ2ReT9HKHGUVLuzbdzrOkxbj6v6GPSv3ouczy3REIQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -376,29 +371,29 @@ packages:
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
-  undici@5.29.0:
-    resolution: {integrity: sha512-raqeBD6NQK4SkWhQzeYKd1KmIG6dllBOTt55Rmkt4HtI9mwdWtJljnrXjAFUBLTSN67HWrOIZ3EPF4kjUw80Bg==}
-    engines: {node: '>=14.0'}
+  undici@6.29.1:
+    resolution: {integrity: sha512-EvRlUt/QqAEvXdQeRMYUfwOQsfzpDztykrG2owGEE/rBOBoYv9uF39ZzsNDh4lTFHhTr2XOZjKkYgueD12ZmGA==}
+    engines: {node: '>=18.17'}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
 snapshots:
 
-  '@ai-sdk/gateway@2.0.172(zod@3.25.76)':
+  '@ai-sdk/gateway@2.0.178(zod@4.6.7)':
     dependencies:
       '@ai-sdk/provider': 2.0.5
-      '@ai-sdk/provider-utils': 3.0.42(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.45(zod@4.6.7)
       '@vercel/oidc': 3.1.0
-      zod: 3.25.76
+      zod: 4.6.7
 
-  '@ai-sdk/provider-utils@3.0.42(zod@3.25.76)':
+  '@ai-sdk/provider-utils@3.0.45(zod@4.6.7)':
     dependencies:
       '@ai-sdk/provider': 2.0.5
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.1.1
-      undici: 5.29.0
-      zod: 3.25.76
+      undici: 6.29.1
+      zod: 4.6.7
 
   '@ai-sdk/provider@2.0.5':
     dependencies:
@@ -482,8 +477,6 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@fastify/busboy@2.1.1': {}
-
   '@opentelemetry/api@1.9.0': {}
 
   '@standard-schema/spec@1.1.0': {}
@@ -554,13 +547,13 @@ snapshots:
 
   '@vercel/oidc@3.1.0': {}
 
-  ai@5.0.281(zod@3.25.76):
+  ai@5.0.287(zod@4.6.7):
     dependencies:
-      '@ai-sdk/gateway': 2.0.172(zod@3.25.76)
+      '@ai-sdk/gateway': 2.0.178(zod@4.6.7)
       '@ai-sdk/provider': 2.0.5
-      '@ai-sdk/provider-utils': 3.0.42(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.45(zod@4.6.7)
       '@opentelemetry/api': 1.9.0
-      zod: 3.25.76
+      zod: 4.6.7
 
   esbuild@0.28.2:
     optionalDependencies:
@@ -629,8 +622,6 @@ snapshots:
 
   undici-types@8.9.0: {}
 
-  undici@5.29.0:
-    dependencies:
-      '@fastify/busboy': 2.1.1
+  undici@6.29.1: {}
 
-  zod@3.25.76: {}
+  zod@4.6.7: {}
