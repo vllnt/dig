@@ -28,7 +28,7 @@ export default [
         {
           selector: "MemberExpression[object.name='console']",
           message:
-            'Use @vllnt/logger instead of console.*. Import createBackendLogger (server) or createLogger (client).',
+            'Use @vllnt/logger instead of console.* (add it to web/package.json first). Import createBackendLogger (server) or createLogger (client).',
         },
       ],
       // Mirror the @vllnt preset's prevent-abbreviations options, allowing the
