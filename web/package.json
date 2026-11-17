@@ -25,18 +25,16 @@
   "dependencies": {
     "@mdx-js/mdx": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
-    "@next/mdx": "~16.4.3",
+    "@next/mdx": "~16.4.6",
     "@vllnt/analytics": "^0.1.1",
-    "@vllnt/logger": "^0.1.2",
     "@vllnt/ui": "^0.2.1",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.61.0",
-    "next": "~16.4.3",
+    "next": "~16.4.6",
     "next-intl": "4.13.4",
     "next-themes": "^0.4.6",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "reading-time": "^1.5.0"
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
@@ -66,6 +64,7 @@
       "handlebars@<4.7.10": "^4.7.10",
       "js-yaml@<3.15.2": "^3.15.2",
       "js-yaml@>=4 <4.3.2": "^4.3.2",
+      "minimatch@>=7 <11.0.1": "^11.0.1",
       "postcss-selector-parser@<6.1.5": "^6.1.5",
       "source-map-js@<1.2.2": "^1.2.2",
       "ws@>=8 <8.21.0": "^8.21.0",
